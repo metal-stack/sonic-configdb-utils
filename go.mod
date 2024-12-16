@@ -5,6 +5,7 @@ go 1.23.4
 require (
 	github.com/metal-stack/v v1.0.3
 	github.com/spf13/cobra v1.8.1
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
