@@ -64,6 +64,7 @@ type Values struct {
 	Breakouts               map[string]string `yaml:"sonic_breakouts"`
 	DockerRoutingConfigMode `yaml:"sonic_docker_routing_config_mode"`
 	FRRMgmtFrameworkConfig  bool                    `yaml:"sonic_frr_mgmt_framework_config"`
+	Hostname                string                  `yaml:"sonic_hostname"`
 	Interconnects           map[string]Interconnect `yaml:"sonic_interconnects"`
 	LLDPHelloTimer          int                     `yaml:"sonic_lldp_hello_timer"`
 	LoopbackAddress         string                  `yaml:"sonic_loopback_address"`

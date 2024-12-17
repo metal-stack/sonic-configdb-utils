@@ -96,6 +96,21 @@ const (
 	FECModeRS   FECMode = "RS"
 )
 
+type Interface struct {
+	IPv6UseLinkLocalOnly IPv6UseLinkLocalOnlyMode `json:"ipv6_use_link_local_only,omitempty"`
+	VRFName              string                   `json:"vrf_name,omitempty"`
+}
+
+type IPv6UseLinkLocalOnlyMode string
+
+func (m IPv6UseLinkLocalOnlyMode) String() string {
+	return string(m)
+}
+
+const (
+	IPv6UseLinkLocalOnlyModeEnable IPv6UseLinkLocalOnlyMode = "ENABLE"
+)
+
 type LLDP struct {
 	Global LLDPGlobal `json:"GLOBAL"`
 }
@@ -104,8 +119,40 @@ type LLDPGlobal struct {
 	HelloTime int `json:"hello_time"`
 }
 
+type MCLAGDomain struct {
+	MCLAGSystemID string `json:"system_mac"`
+	PeerIP        string `json:"peer_ip"`
+	PeerLink      string `json:"peer_link"`
+	SourceIP      string `json:"source_ip"`
+}
+
+type MCLAGInterface struct {
+	IfType string `json:"if_type"`
+}
+
+type MCLAGUniqueIP struct {
+	UniqueIP MCLAGUniqueIPMode `json:"unique_ip"`
+}
+
+type MCLAGUniqueIPMode string
+
+func (m MCLAGUniqueIPMode) String() string {
+	return string(m)
+}
+
+const (
+	MCLAGUniqueIPModeEnable MCLAGUniqueIPMode = "ENABLE"
+)
+
+type Metadata struct {
+	DockerRoutingConfigMode `json:"docker_routing_config_mode"`
+	FRRMgmtFrameworkConfig  bool   `json:"frr_mgmt_framework_config"`
+	Hostname                string `json:"hostname"`
+	RouterType              `json:"type"`
+}
+
 type MgmtInterface struct {
-	GWAddr string `json:"gwaddr"`
+	GWAddr string `json:"gwaddr,omitempty"`
 }
 
 type MgmtPort struct {
@@ -116,13 +163,6 @@ type MgmtPort struct {
 
 type MgmtVRFConfig struct {
 	VRFGlobal `json:"vrf_global"`
-}
-
-type Metadata struct {
-	DockerRoutingConfigMode `json:"docker_routing_config_mode"`
-	FRRMgmtFrameworkConfig  bool   `json:"frr_mgmt_framework_config"`
-	Hostname                string `json:"hostname"`
-	RouterType              `json:"type"`
 }
 
 type NTP struct {
@@ -163,8 +203,9 @@ func (t RouterType) String() string {
 }
 
 const (
-	RouterTypeLeafRouter RouterType = "LEAF_ROUTER"
 	RouterTypeDualToR    RouterType = "DUAL_TOR"
+	RouterTypeLeafRouter RouterType = "LEAF_ROUTER"
+	RouterTypeToRRouter  RouterType = "TOR_ROUTER"
 )
 
 type VLAN struct {
