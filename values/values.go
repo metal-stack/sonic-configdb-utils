@@ -9,9 +9,9 @@ func (m DockerRoutingConfigMode) String() string {
 }
 
 const (
-	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "UNIFIED"
 	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "SEPARATED"
 	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "SPLIT"
+	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "UNIFIED"
 )
 
 type FECMode string
