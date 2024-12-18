@@ -4,10 +4,6 @@ import "gopkg.in/yaml.v2"
 
 type DockerRoutingConfigMode string
 
-func (m DockerRoutingConfigMode) String() string {
-	return string(m)
-}
-
 const (
 	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "SEPARATED"
 	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "SPLIT"
@@ -15,10 +11,6 @@ const (
 )
 
 type FECMode string
-
-func (m FECMode) String() string {
-	return string(m)
-}
 
 const (
 	FECModeNone FECMode = "NONE"

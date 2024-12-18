@@ -17,20 +17,12 @@ type ACLTable struct {
 
 type AdminStatus string
 
-func (s AdminStatus) String() string {
-	return string(s)
-}
-
 const (
 	AdminStatusUp   AdminStatus = "UP"
 	AdminStatusDown AdminStatus = "DOWN"
 )
 
 type AutonegMode string
-
-func (m AutonegMode) String() string {
-	return string(m)
-}
 
 const (
 	AutonegModeOn  AutonegMode = "ON"
@@ -43,10 +35,6 @@ type BreakoutConfig struct {
 
 type BreakoutMode string
 
-func (m BreakoutMode) String() string {
-	return string(m)
-}
-
 const (
 	BreakoutMode1x100G BreakoutMode = "1x100G[40G]"
 	BreakoutMode4x25G  BreakoutMode = "4x25G"
@@ -58,10 +46,6 @@ type DeviceMetadata struct {
 }
 
 type DockerRoutingConfigMode string
-
-func (m DockerRoutingConfigMode) String() string {
-	return string(m)
-}
 
 const (
 	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "SEPARATED"
@@ -76,20 +60,12 @@ type Feature struct {
 
 type FeatureMode string
 
-func (m FeatureMode) String() string {
-	return string(m)
-}
-
 const (
 	FeatureModeEnabled  FeatureMode = "ENABLED"
 	FeatureModeDisabled FeatureMode = "DISABLED"
 )
 
 type FECMode string
-
-func (m FECMode) String() string {
-	return string(m)
-}
 
 const (
 	FECModeNone FECMode = "NONE"
@@ -102,10 +78,6 @@ type Interface struct {
 }
 
 type IPv6UseLinkLocalOnlyMode string
-
-func (m IPv6UseLinkLocalOnlyMode) String() string {
-	return string(m)
-}
 
 const (
 	IPv6UseLinkLocalOnlyModeEnable IPv6UseLinkLocalOnlyMode = "ENABLE"
@@ -135,10 +107,6 @@ type MCLAGUniqueIP struct {
 }
 
 type MCLAGUniqueIPMode string
-
-func (m MCLAGUniqueIPMode) String() string {
-	return string(m)
-}
 
 const (
 	MCLAGUniqueIPModeEnable MCLAGUniqueIPMode = "ENABLE"
@@ -175,10 +143,6 @@ type NTPGlobal struct {
 
 type PacketAction string
 
-func (pa PacketAction) String() string {
-	return string(pa)
-}
-
 const (
 	PacketActionDrop   PacketAction = "DROP"
 	PacketActionAccept PacketAction = "ACCEPT"
@@ -197,10 +161,6 @@ type Port struct {
 }
 
 type RouterType string
-
-func (t RouterType) String() string {
-	return string(t)
-}
 
 const (
 	RouterTypeDualToR    RouterType = "DUAL_TOR"
