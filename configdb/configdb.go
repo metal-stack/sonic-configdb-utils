@@ -179,13 +179,6 @@ func getNTPServers(servers []string) map[string]struct{} {
 func getPorts(ports []values.Port, breakouts map[string]string) map[string]Port {
 	configPorts := make(map[string]Port)
 
-	// TODO: deduce ports from breakouts and default or deduce all other fields, then no running config should be needed
-
-	/*
-	 - use breakouts to add defaults for each port
-	 - for each port check if there is specific config in ports for it and override if necessary
-	*/
-
 	for _, port := range ports {
 		configPorts[port.Name] = Port{
 			AdminStatus: AdminStatusUp,
