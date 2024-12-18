@@ -33,8 +33,8 @@ type ConfigDB struct {
 	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER,omitempty"`
 	VRFs               map[string]VRF           `json:"VRF,omitempty"`
 	VXLANEVPN          `json:"VXLAN_EVPN_NVO,omitempty"`
-	VXLANTunnels       map[string]VXLANTunnel      `json:"VXLAN_TUNNEL,omitempty"`
-	VXLANTunnelMaps    []VXLANTunnelMapWithComment `json:"VXLAN_TUNNEL_MAP,omitempty"`
+	VXLANTunnels       map[string]VXLANTunnel `json:"VXLAN_TUNNEL,omitempty"`
+	VXLANTunnelMaps    []VXLANTunnelMap       `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
 func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
@@ -124,7 +124,7 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 				SrcIP: input.LoopbackAddress,
 			},
 		},
-		VXLANTunnelMaps: getVXLANTunnelMapWithComment(input.VTEPs),
+		VXLANTunnelMaps: getVXLANTunnelMaps(input.VTEPs),
 	}
 	return &configdb, nil
 }
@@ -431,20 +431,16 @@ func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, 
 	return vrfs
 }
 
-func getVXLANTunnelMapWithComment(vteps []values.VTEP) []VXLANTunnelMapWithComment {
-	vxlanTunnelMaps := make([]VXLANTunnelMapWithComment, 0)
+func getVXLANTunnelMaps(vteps []values.VTEP) []VXLANTunnelMap {
+	vxlanTunnelMaps := make([]VXLANTunnelMap, 0)
 
 	for _, vtep := range vteps {
-		mapWithComment := VXLANTunnelMapWithComment{
-			Comment: "#" + vtep.Comment,
-			TunnelMap: map[string]VXLANTunnelMap{
-				"vtep|map_" + vtep.VNI + "_" + vtep.VLAN: {
-					VLAN: vtep.VLAN,
-					VNI:  vtep.VNI,
-				},
+		vxlanTunnelMaps = append(vxlanTunnelMaps, VXLANTunnelMap{
+			"vtep|map_" + vtep.VNI + "_" + vtep.VLAN: VXLANTunnelMapEntry{
+				VLAN: vtep.VLAN,
+				VNI:  vtep.VNI,
 			},
-		}
-		vxlanTunnelMaps = append(vxlanTunnelMaps, mapWithComment)
+		})
 	}
 
 	return vxlanTunnelMaps

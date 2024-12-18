@@ -232,12 +232,9 @@ type VXLANTunnel struct {
 	SrcIP string `json:"src_ip,omitempty"`
 }
 
-type VXLANTunnelMap struct {
+type VXLANTunnelMap map[string]VXLANTunnelMapEntry
+
+type VXLANTunnelMapEntry struct {
 	VLAN string `json:"vlan,omitempty"`
 	VNI  string `json:"vni,omitempty"`
-}
-
-type VXLANTunnelMapWithComment struct {
-	Comment   string `json:"comment,omitempty"`
-	TunnelMap map[string]VXLANTunnelMap
 }
