@@ -1,6 +1,7 @@
 package configdb
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/metal-stack/sonic-configdb-utils/values"
@@ -31,11 +32,16 @@ type ConfigDB struct {
 	VXLANTunnelMaps   map[string]VXLANTunnelMap `json:"VXLAN_TUNNEL_MAP"`
 }
 
-func GenerateConfigDB(input *values.Values) *ConfigDB {
+func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
+	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts)
+	if err != nil {
+		return nil, err
+	}
+
 	configdb := ConfigDB{
 		ACLRules:  map[string]ACLRule{},
 		ACLTables: map[string]ACLTable{},
-		Breakouts: getBreakoutConfig(input.Breakouts),
+		Breakouts: breakouts,
 		DeviceMetadata: DeviceMetadata{
 			Localhost: Metadata{
 				DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
@@ -89,26 +95,14 @@ func GenerateConfigDB(input *values.Values) *ConfigDB {
 			},
 		},
 		NTPServers:      getNTPServers(input.NTPServers),
-		Ports:           getPorts(input.Ports, input.Breakouts),
+		Ports:           ports,
 		VLANs:           map[string]VLAN{},
 		VLANInterface:   map[string]struct{}{},
 		VXLANEVPN:       VXLANEVPN{},
 		VXLANTunnels:    map[string]VXLANTunnel{},
 		VXLANTunnelMaps: map[string]VXLANTunnelMap{},
 	}
-	return &configdb
-}
-
-func getBreakoutConfig(breakouts map[string]string) map[string]BreakoutConfig {
-	breakoutConfig := make(map[string]BreakoutConfig)
-
-	for port, breakout := range breakouts {
-		breakoutConfig[port] = BreakoutConfig{
-			BreakoutMode: BreakoutMode(breakout),
-		}
-	}
-
-	return breakoutConfig
+	return &configdb, nil
 }
 
 func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {
@@ -176,22 +170,50 @@ func getNTPServers(servers []string) map[string]struct{} {
 	return ntpServers
 }
 
-func getPorts(ports []values.Port, breakouts map[string]string) map[string]Port {
+func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
+	configBreakouts := make(map[string]BreakoutConfig)
 
-	for _, port := range ports {
-		configPorts[port.Name] = Port{
-			AdminStatus: AdminStatusUp,
-			Alias:       "",
-			Autoneg:     AutonegModeOff,
-			FEC:         "",
-			Index:       0,
-			Lanes:       "",
-			MTU:         0,
-			ParentPort:  "",
-			Speed:       0,
+	for portName, breakout := range breakouts {
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout)
+		if err != nil {
+			return nil, nil, err
+		}
+		for name, port := range breakoutPorts {
+			configPorts[name] = port
+		}
+		configBreakouts[portName] = BreakoutConfig{
+			BreakoutMode: BreakoutMode(breakout),
 		}
 	}
 
-	return configPorts
+	for _, port := range ports {
+		configPort, ok := configPorts[port.Name]
+		if !ok {
+			return nil, nil, fmt.Errorf("no breakout configuration found for port %s", port.Name)
+		}
+
+		switch configPort.Speed {
+		case 100000:
+			if port.Speed == 100000 || port.Speed == 40000 {
+				configPort.Speed = port.Speed
+			} else {
+				return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration only allows values 100000 or 40000", port.Speed, port.Name)
+			}
+		default:
+			if port.Speed != configPort.Speed {
+				return nil, nil, fmt.Errorf("invalid speed %d for port %s; check breakout configuration", port.Speed, port.Name)
+			}
+		}
+
+		if string(port.FECMode) != string(configPort.FEC) {
+			configPort.FEC = FECMode(port.FECMode)
+		}
+		if port.MTU != configPort.MTU {
+			configPort.MTU = port.MTU
+		}
+		configPorts[port.Name] = configPort
+	}
+
+	return configPorts, configBreakouts, nil
 }

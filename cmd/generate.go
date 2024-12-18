@@ -34,7 +34,11 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		config := configdb.GenerateConfigDB(values)
+		config, err := configdb.GenerateConfigDB(values)
+		if err != nil {
+			fmt.Printf("failed to generate config, %v\n", err)
+			os.Exit(1)
+		}
 
 		bytes, err = json.MarshalIndent(config, "", "  ")
 		if err != nil {

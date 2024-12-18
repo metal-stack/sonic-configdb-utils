@@ -35,13 +35,13 @@ func getLanesForPort(portIndex, number, offset int) string {
 	}
 }
 
-func getPortsFromBreakout(portName, breakoutMode string) ([]Port, error) {
+func getPortsFromBreakout(portName, breakoutMode string) (map[string]Port, error) {
 	number, speed, portIndex, err := parseBreakout(portName, breakoutMode)
 	if err != nil {
 		return nil, err
 	}
 
-	ports := make([]Port, number)
+	ports := make(map[string]Port)
 
 	for i := 0; i < number; i++ {
 		port := Port{
@@ -55,7 +55,10 @@ func getPortsFromBreakout(portName, breakoutMode string) ([]Port, error) {
 			ParentPort:  portName,
 			Speed:       speed,
 		}
-		ports[i] = port
+
+		nameSuffix := (portIndex-1)*4 + 4/number*i // works because i > 0 for number = 1 never occurs
+		name := fmt.Sprintf("Ethernet%d", nameSuffix)
+		ports[name] = port
 	}
 
 	return ports, nil

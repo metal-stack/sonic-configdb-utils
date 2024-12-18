@@ -93,7 +93,7 @@ func Test_parseBreakout(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotNumber, gotSpeed, gotPortIndex, err := parseBreakout(tt.portName, tt.breakoutMode)
-			if diff := cmp.Diff(err, tt.wantErr, testcommon.ErrorStringComparer()); diff != "" {
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Errorf("parseBreakout() error diff = %s", diff)
 			}
 
@@ -115,15 +115,15 @@ func Test_getPortsFromBreakout(t *testing.T) {
 		name         string
 		portName     string
 		breakoutMode string
-		want         []Port
+		want         map[string]Port
 		wantErr      bool
 	}{
 		{
 			name:         "add one 1x100G[40G] port",
 			portName:     "Ethernet120",
 			breakoutMode: "1x100G[40G]",
-			want: []Port{
-				{
+			want: map[string]Port{
+				"Ethernet120": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth31(Port31)",
 					Autoneg:     DefaultAutonegMode,
@@ -141,8 +141,8 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			name:         "add two 2x50G ports",
 			portName:     "Ethernet116",
 			breakoutMode: "2x50G",
-			want: []Port{
-				{
+			want: map[string]Port{
+				"Ethernet116": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth30/1(Port30)",
 					Autoneg:     DefaultAutonegMode,
@@ -153,7 +153,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					ParentPort:  "Ethernet116",
 					Speed:       50000,
 				},
-				{
+				"Ethernet118": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth30/2(Port30)",
 					Autoneg:     DefaultAutonegMode,
@@ -171,8 +171,8 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			name:         "add four 4x10G ports",
 			portName:     "Ethernet8",
 			breakoutMode: "4x10G",
-			want: []Port{
-				{
+			want: map[string]Port{
+				"Ethernet8": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth3/1(Port3)",
 					Autoneg:     DefaultAutonegMode,
@@ -183,7 +183,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
-				{
+				"Ethernet9": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth3/2(Port3)",
 					Autoneg:     DefaultAutonegMode,
@@ -194,7 +194,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
-				{
+				"Ethernet10": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth3/3(Port3)",
 					Autoneg:     DefaultAutonegMode,
@@ -205,7 +205,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
-				{
+				"Ethernet11": {
 					AdminStatus: DefaultAdminStatus,
 					Alias:       "Eth3/4(Port3)",
 					Autoneg:     DefaultAutonegMode,
