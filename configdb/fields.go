@@ -18,15 +18,15 @@ type ACLTable struct {
 type AdminStatus string
 
 const (
-	AdminStatusUp   AdminStatus = "UP"
-	AdminStatusDown AdminStatus = "DOWN"
+	AdminStatusUp   AdminStatus = "up"
+	AdminStatusDown AdminStatus = "down"
 )
 
 type AutonegMode string
 
 const (
-	AutonegModeOn  AutonegMode = "ON"
-	AutonegModeOff AutonegMode = "OFF"
+	AutonegModeOn  AutonegMode = "on"
+	AutonegModeOff AutonegMode = "off"
 )
 
 type BreakoutConfig struct {
@@ -48,9 +48,9 @@ type DeviceMetadata struct {
 type DockerRoutingConfigMode string
 
 const (
-	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "SEPARATED"
-	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "SPLIT"
-	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "UNIFIED"
+	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "separated"
+	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "split"
+	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "unified"
 )
 
 type Feature struct {
@@ -61,15 +61,15 @@ type Feature struct {
 type FeatureMode string
 
 const (
-	FeatureModeEnabled  FeatureMode = "ENABLED"
-	FeatureModeDisabled FeatureMode = "DISABLED"
+	FeatureModeEnabled  FeatureMode = "enabled"
+	FeatureModeDisabled FeatureMode = "disabled"
 )
 
 type FECMode string
 
 const (
-	FECModeNone FECMode = "NONE"
-	FECModeRS   FECMode = "RS"
+	FECModeNone FECMode = "none"
+	FECModeRS   FECMode = "rs"
 )
 
 type Interface struct {
@@ -80,13 +80,13 @@ type Interface struct {
 type IPv6UseLinkLocalOnlyMode string
 
 const (
-	IPv6UseLinkLocalOnlyModeEnable IPv6UseLinkLocalOnlyMode = "ENABLE"
+	IPv6UseLinkLocalOnlyModeEnable IPv6UseLinkLocalOnlyMode = "enable"
 )
 
 type LACPKeyMode string
 
 const (
-	LACPKeyModeAuto LACPKeyMode = "AUTO"
+	LACPKeyModeAuto LACPKeyMode = "auto"
 )
 
 type LLDP struct {
@@ -115,7 +115,7 @@ type MCLAGUniqueIP struct {
 type MCLAGUniqueIPMode string
 
 const (
-	MCLAGUniqueIPModeEnable MCLAGUniqueIPMode = "ENABLE"
+	MCLAGUniqueIPModeEnable MCLAGUniqueIPMode = "enable"
 )
 
 type Metadata struct {
@@ -150,8 +150,8 @@ type NTPGlobal struct {
 type PacketAction string
 
 const (
-	PacketActionDrop   PacketAction = "DROP"
-	PacketActionAccept PacketAction = "ACCEPT"
+	PacketActionDrop   PacketAction = "drop"
+	PacketActionAccept PacketAction = "accept"
 )
 
 type Port struct {
@@ -178,9 +178,9 @@ type Portchannel struct {
 type RouterType string
 
 const (
-	RouterTypeDualToR    RouterType = "DUAL_TOR"
-	RouterTypeLeafRouter RouterType = "LEAF_ROUTER"
-	RouterTypeToRRouter  RouterType = "TOR_ROUTER"
+	RouterTypeDualToR    RouterType = "DualToR"
+	RouterTypeLeafRouter RouterType = "LeafRouter"
+	RouterTypeToRRouter  RouterType = "ToRRouter"
 )
 
 type SAG struct {

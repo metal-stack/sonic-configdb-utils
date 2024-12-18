@@ -5,16 +5,16 @@ import "gopkg.in/yaml.v2"
 type DockerRoutingConfigMode string
 
 const (
-	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "SEPARATED"
-	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "SPLIT"
-	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "UNIFIED"
+	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "separated"
+	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "split"
+	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "unified"
 )
 
 type FECMode string
 
 const (
-	FECModeNone FECMode = "NONE"
-	FECModeRS   FECMode = "RS"
+	FECModeNone FECMode = "none"
+	FECModeRS   FECMode = "rs"
 )
 
 type Interconnect struct {
