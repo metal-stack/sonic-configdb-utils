@@ -8,33 +8,33 @@ import (
 )
 
 type ConfigDB struct {
-	ACLRules           map[string]ACLRule        `json:"ACL_RULE"`
-	ACLTables          map[string]ACLTable       `json:"ACL_TABLE"`
-	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG"`
-	DeviceMetadata     `json:"DEVICE_METADATA"`
-	Features           map[string]Feature   `json:"FEATURE"`
-	Interfaces         map[string]Interface `json:"INTERFACE"`
-	LLDP               `json:"LLDP"`
-	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE"`
-	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN"`
-	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE"`
-	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP"`
-	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE"`
-	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT"`
-	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG"`
-	NTP                `json:"NTP"`
-	NTPServers         map[string]struct{}    `json:"NTP_SERVER"`
-	Ports              map[string]Port        `json:"PORT"`
-	Portchannels       map[string]Portchannel `json:"PORTCHANNEL"`
-	PortchannelMembers map[string]struct{}    `json:"PORTCHANNEL_MEMBERS"`
-	SAG                `json:"SAG"`
-	VLANs              map[string]VLAN          `json:"VLAN"`
-	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE"`
-	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER"`
-	VRFs               map[string]VRF           `json:"VRF"`
-	VXLANEVPN          `json:"VXLAN_EVPN_NVO"`
-	VXLANTunnels       map[string]VXLANTunnel      `json:"VXLAN_TUNNEL"`
-	VXLANTunnelMaps    []VXLANTunnelMapWithComment `json:"VXLAN_TUNNEL_MAP"`
+	ACLRules           map[string]ACLRule        `json:"ACL_RULE,omitempty"`
+	ACLTables          map[string]ACLTable       `json:"ACL_TABLE,omitempty"`
+	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG,omitempty"`
+	DeviceMetadata     `json:"DEVICE_METADATA,omitempty"`
+	Features           map[string]Feature   `json:"FEATURE,omitempty"`
+	Interfaces         map[string]Interface `json:"INTERFACE,omitempty"`
+	LLDP               `json:"LLDP,omitempty"`
+	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
+	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
+	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
+	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP,omitempty"`
+	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE,omitempty"`
+	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT,omitempty"`
+	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG,omitempty"`
+	NTP                `json:"NTP,omitempty"`
+	NTPServers         map[string]struct{}    `json:"NTP_SERVER,omitempty"`
+	Ports              map[string]Port        `json:"PORT,omitempty"`
+	Portchannels       map[string]Portchannel `json:"PORTCHANNEL,omitempty"`
+	PortchannelMembers map[string]struct{}    `json:"PORTCHANNEL_MEMBERS,omitempty"`
+	SAG                `json:"SAG,omitempty"`
+	VLANs              map[string]VLAN          `json:"VLAN,omitempty"`
+	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE,omitempty"`
+	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER,omitempty"`
+	VRFs               map[string]VRF           `json:"VRF,omitempty"`
+	VXLANEVPN          `json:"VXLAN_EVPN_NVO,omitempty"`
+	VXLANTunnels       map[string]VXLANTunnel      `json:"VXLAN_TUNNEL,omitempty"`
+	VXLANTunnelMaps    []VXLANTunnelMapWithComment `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
 func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
