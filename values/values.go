@@ -18,7 +18,7 @@ const (
 )
 
 type Interconnect struct {
-	VNI int    `yaml:"vni"`
+	VNI string `yaml:"vni"`
 	VRF string `yaml:"vrf"`
 }
 
@@ -81,6 +81,7 @@ type VLAN struct {
 	DHCPServers   []string `yaml:"dhcp_servers"`
 	ID            string   `yaml:"id"`
 	IP            string   `yaml:"ip"`
+	SAG           bool     `yaml:"sag"`
 	TaggedPorts   []string `yaml:"tagged_ports"`
 	UntaggedPorts []string `yaml:"untagged_ports"`
 	VRF           string   `yaml:"vrf"`
@@ -88,7 +89,7 @@ type VLAN struct {
 
 type VTEP struct {
 	Comment string `yaml:"comment"`
-	VNI     int    `yaml:"vni"`
+	VNI     string `yaml:"vni"`
 	VLAN    string `yaml:"vlan"`
 }
 

@@ -83,6 +83,12 @@ const (
 	IPv6UseLinkLocalOnlyModeEnable IPv6UseLinkLocalOnlyMode = "ENABLE"
 )
 
+type LACPKeyMode string
+
+const (
+	LACPKeyModeAuto LACPKeyMode = "AUTO"
+)
+
 type LLDP struct {
 	Global LLDPGlobal `json:"GLOBAL"`
 }
@@ -160,6 +166,15 @@ type Port struct {
 	Speed       int         `json:"speed"`
 }
 
+type Portchannel struct {
+	AdminStatus `json:"admin_status"`
+	Fallback    bool        `json:"fallback"`
+	LACPKey     LACPKeyMode `json:"lacp_key"`
+	MinLinks    int         `json:"min_links"`
+	MixSpeed    bool        `json:"mix_speed"`
+	MTU         int         `json:"mtu"`
+}
+
 type RouterType string
 
 const (
@@ -168,9 +183,37 @@ const (
 	RouterTypeToRRouter  RouterType = "TOR_ROUTER"
 )
 
+type SAG struct {
+	SAGGlobal `json:"GLOBAL"`
+}
+
+type SAGGlobal struct {
+	GatewayMAC string `json:"gateway_mac"`
+}
+
+type TaggingMode string
+
+const (
+	TaggingModeTagged   TaggingMode = "tagged"
+	TaggingModeUntagged TaggingMode = "untagged"
+)
+
 type VLAN struct {
 	DHCPServers []string `json:"dhcp_servers"`
-	VLANID      int      `json:"vlanid"`
+	VLANID      string   `json:"vlanid"`
+}
+
+type VLANInterface struct {
+	StaticAnycastGateway bool   `json:"static_anycast_gateway"`
+	VRFName              string `json:"vrf_name"`
+}
+
+type VLANMember struct {
+	TaggingMode `json:"tagging_mode"`
+}
+
+type VRF struct {
+	VNI string `json:"vni"`
 }
 
 type VRFGlobal struct {
@@ -191,5 +234,10 @@ type VXLANTunnel struct {
 
 type VXLANTunnelMap struct {
 	VLAN string `json:"vlan"`
-	VNI  int    `json:"vni"`
+	VNI  string `json:"vni"`
+}
+
+type VXLANTunnelMapWithComment struct {
+	Comment   string `json:"comment"`
+	TunnelMap map[string]VXLANTunnelMap
 }

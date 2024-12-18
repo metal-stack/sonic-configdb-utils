@@ -252,3 +252,88 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 		})
 	}
 }
+
+func Test_getVRFs(t *testing.T) {
+	tests := []struct {
+		name          string
+		interconnects map[string]values.Interconnect
+		ports         []values.Port
+		vlans         []values.VLAN
+		want          map[string]VRF
+	}{
+		{
+			name: "no ports or vlans to add",
+			interconnects: map[string]values.Interconnect{
+				"mpls": {
+					VNI: "1",
+					VRF: "Vrf40",
+				},
+			},
+			ports: []values.Port{},
+			vlans: []values.VLAN{},
+			want: map[string]VRF{
+				"Vrf40": {
+					VNI: "1",
+				},
+			},
+		},
+		{
+			name: "duplicates are not added",
+			interconnects: map[string]values.Interconnect{
+				"mpls": {
+					VNI: "1",
+					VRF: "Vrf40",
+				},
+			},
+			ports: []values.Port{
+				{
+					VRF: "Vrf40",
+				},
+			},
+			vlans: []values.VLAN{
+				{
+					VRF: "Vrf40",
+				},
+			},
+			want: map[string]VRF{
+				"Vrf40": {
+					VNI: "1",
+				},
+			},
+		},
+		{
+			name: "new vrfs are added",
+			interconnects: map[string]values.Interconnect{
+				"mpls": {
+					VNI: "1",
+					VRF: "Vrf40",
+				},
+			},
+			ports: []values.Port{
+				{
+					VRF: "Vrf41",
+				},
+			},
+			vlans: []values.VLAN{
+				{
+					VRF: "Vrf42",
+				},
+			},
+			want: map[string]VRF{
+				"Vrf40": {
+					VNI: "1",
+				},
+				"Vrf41": {},
+				"Vrf42": {},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getVRFs(tt.interconnects, tt.ports, tt.vlans)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("getVRFs() diff = %s", diff)
+			}
+		})
+	}
+}

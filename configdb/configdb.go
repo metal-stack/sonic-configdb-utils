@@ -8,28 +8,33 @@ import (
 )
 
 type ConfigDB struct {
-	ACLRules          map[string]ACLRule        `json:"ACL_RULE"`
-	ACLTables         map[string]ACLTable       `json:"ACL_TABLE"`
-	Breakouts         map[string]BreakoutConfig `json:"BREAKOUT_CFG"`
-	DeviceMetadata    `json:"DEVICE_METADATA"`
-	Features          map[string]Feature   `json:"FEATURE"`
-	Interfaces        map[string]Interface `json:"INTERFACE"`
-	LLDP              `json:"LLDP"`
-	LoopbackInterface map[string]struct{}       `json:"LOOPBACK_INTERFACE"`
-	MCLAGDomains      map[string]MCLAGDomain    `json:"MCLAG_DOMAIN"`
-	MCLAGInterfaces   map[string]MCLAGInterface `json:"MCLAG_INTERFACE"`
-	MCLAGUniqueIPs    map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP"`
-	MgmtInterfaces    map[string]MgmtInterface  `json:"MGMT_INTERFACE"`
-	MgmtPorts         map[string]MgmtPort       `json:"MGMT_PORT"`
-	MgmtVRFConfig     `json:"MGMT_VRF_CONFIG"`
-	NTP               `json:"NTP"`
-	NTPServers        map[string]struct{} `json:"NTP_SERVER"`
-	Ports             map[string]Port     `json:"PORT"`
-	VLANs             map[string]VLAN     `json:"VLAN"`
-	VLANInterface     map[string]struct{} `json:"VLAN_INTERFACE"`
-	VXLANEVPN         `json:"VXLAN_EVPN_NVO"`
-	VXLANTunnels      map[string]VXLANTunnel    `json:"VXLAN_TUNNEL"`
-	VXLANTunnelMaps   map[string]VXLANTunnelMap `json:"VXLAN_TUNNEL_MAP"`
+	ACLRules           map[string]ACLRule        `json:"ACL_RULE"`
+	ACLTables          map[string]ACLTable       `json:"ACL_TABLE"`
+	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG"`
+	DeviceMetadata     `json:"DEVICE_METADATA"`
+	Features           map[string]Feature   `json:"FEATURE"`
+	Interfaces         map[string]Interface `json:"INTERFACE"`
+	LLDP               `json:"LLDP"`
+	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE"`
+	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN"`
+	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE"`
+	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP"`
+	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE"`
+	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT"`
+	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG"`
+	NTP                `json:"NTP"`
+	NTPServers         map[string]struct{}    `json:"NTP_SERVER"`
+	Ports              map[string]Port        `json:"PORT"`
+	Portchannels       map[string]Portchannel `json:"PORTCHANNEL"`
+	PortchannelMembers map[string]struct{}    `json:"PORTCHANNEL_MEMBERS"`
+	SAG                `json:"SAG"`
+	VLANs              map[string]VLAN          `json:"VLAN"`
+	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE"`
+	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER"`
+	VRFs               map[string]VRF           `json:"VRF"`
+	VXLANEVPN          `json:"VXLAN_EVPN_NVO"`
+	VXLANTunnels       map[string]VXLANTunnel      `json:"VXLAN_TUNNEL"`
+	VXLANTunnelMaps    []VXLANTunnelMapWithComment `json:"VXLAN_TUNNEL_MAP"`
 }
 
 func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
@@ -38,9 +43,11 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 		return nil, err
 	}
 
+	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
+
 	configdb := ConfigDB{
-		ACLRules:  map[string]ACLRule{},
-		ACLTables: map[string]ACLTable{},
+		ACLRules:  rules,
+		ACLTables: tables,
 		Breakouts: breakouts,
 		DeviceMetadata: DeviceMetadata{
 			Localhost: Metadata{
@@ -57,7 +64,11 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 			},
 		},
 		Interfaces: getInterfaces(input.Ports, input.BGPPorts),
-		LLDP:       LLDP{},
+		LLDP: LLDP{
+			Global: LLDPGlobal{
+				HelloTime: input.LLDPHelloTimer,
+			},
+		},
 		LoopbackInterface: map[string]struct{}{
 			"Loopback0": {},
 			"Loopback0|" + input.LoopbackAddress + "/32": {},
@@ -94,15 +105,79 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 				SrcIntf: "eth0",
 			},
 		},
-		NTPServers:      getNTPServers(input.NTPServers),
-		Ports:           ports,
-		VLANs:           map[string]VLAN{},
-		VLANInterface:   map[string]struct{}{},
-		VXLANEVPN:       VXLANEVPN{},
-		VXLANTunnels:    map[string]VXLANTunnel{},
-		VXLANTunnelMaps: map[string]VXLANTunnelMap{},
+		NTPServers:         getNTPServers(input.NTPServers),
+		Ports:              ports,
+		Portchannels:       getPortchannels(input.Portchannels, input.PortchannelsDefaultMTU),
+		PortchannelMembers: getPortchannelMembers(input.Portchannels),
+		SAG:                getSAG(input.SAG),
+		VLANs:              getVLANs(input.VLANs),
+		VLANInterfaces:     getVLANInterfaces(input.VLANs),
+		VLANMembers:        getVLANMembers(input.VLANs),
+		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
+		VXLANEVPN: VXLANEVPN{
+			VXLANEVPNNVO: VXLANEVPNNVO{
+				SourceVTEP: "vtep",
+			},
+		},
+		VXLANTunnels: map[string]VXLANTunnel{
+			"vtep": {
+				SrcIP: input.LoopbackAddress,
+			},
+		},
+		VXLANTunnelMaps: getVXLANTunnelMapWithComment(input.VTEPs),
 	}
 	return &configdb, nil
+}
+
+func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string]ACLTable) {
+	if len(sourceRanges) == 0 {
+		return nil, nil
+	}
+
+	rules := map[string]ACLRule{
+		"ALLOW_SSH|DEFAULT_RULE": {
+			EtherType:    "2048",
+			PacketAction: PacketActionDrop,
+			Priority:     "1",
+		},
+		"ALLOW_NTP|DEFAULT_RULE": {
+			EtherType:    "2048",
+			PacketAction: PacketActionDrop,
+			Priority:     "1",
+		},
+		"ALLOW_NTP|RULE_1": {
+			PacketAction: PacketActionAccept,
+			Priority:     "99",
+			SrcIP:        "0.0.0.0/0",
+		},
+	}
+
+	tables := map[string]ACLTable{
+		"ALLOW_SSH": {
+			PolicyDesc: "Allow SSH access",
+			Ports:      []string{},
+			Services:   []string{"SSH"},
+			Stage:      "ingress",
+			Type:       "CTRLPLANE",
+		},
+		"ALLOW_NTP": {
+			PolicyDesc: "Allow NTP",
+			Ports:      []string{},
+			Services:   []string{"NTP"},
+			Stage:      "ingress",
+			Type:       "CTRLPLANE",
+		},
+	}
+
+	for i, cidr := range sourceRanges {
+		rules[fmt.Sprintf("ALLOW_SSH|RULE_%d", i+1)] = ACLRule{
+			PacketAction: PacketActionAccept,
+			Priority:     fmt.Sprintf("9%d", i+1),
+			SrcIP:        cidr,
+		}
+	}
+
+	return rules, tables
 }
 
 func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {
@@ -170,6 +245,43 @@ func getNTPServers(servers []string) map[string]struct{} {
 	return ntpServers
 }
 
+func getPortchannels(portchannels []values.Portchannel, defaultPortchannelMTU int) map[string]Portchannel {
+	configPortchannels := make(map[string]Portchannel)
+
+	for _, pc := range portchannels {
+		mtu := defaultMTU
+		if defaultPortchannelMTU != 0 {
+			mtu = defaultPortchannelMTU
+		}
+		if pc.MTU != 0 {
+			mtu = pc.MTU
+		}
+
+		configPortchannels["PortChannel"+pc.Number] = Portchannel{
+			AdminStatus: defaultAdminStatus,
+			Fallback:    true,
+			LACPKey:     LACPKeyModeAuto,
+			MinLinks:    1,
+			MixSpeed:    false,
+			MTU:         mtu,
+		}
+	}
+
+	return configPortchannels
+}
+
+func getPortchannelMembers(portchannels []values.Portchannel) map[string]struct{} {
+	portchannelMembers := make(map[string]struct{})
+
+	for _, pc := range portchannels {
+		for _, member := range pc.Members {
+			portchannelMembers["PortChannel"+pc.Number+"|"+member] = struct{}{}
+		}
+	}
+
+	return portchannelMembers
+}
+
 func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defaultFECMode values.FECMode, defaultMTU int) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
@@ -216,4 +328,124 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 	}
 
 	return configPorts, configBreakouts, nil
+}
+
+func getSAG(sag values.SAG) SAG {
+	if sag.MAC == "" {
+		return SAG{}
+	}
+
+	return SAG{
+		SAGGlobal: SAGGlobal{
+			GatewayMAC: sag.MAC,
+		},
+	}
+}
+
+func getVLANs(vlans []values.VLAN) map[string]VLAN {
+	configVLANs := make(map[string]VLAN)
+
+	for _, vlan := range vlans {
+		configVLANs["Vlan"+vlan.ID] = VLAN{
+			DHCPServers: vlan.DHCPServers,
+			VLANID:      vlan.ID,
+		}
+	}
+
+	return configVLANs
+}
+
+func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
+	vlanInterfaces := make(map[string]VLANInterface)
+
+	for _, vlan := range vlans {
+		var vlanInterface VLANInterface
+
+		if vlan.VRF != "" {
+			vlanInterface = VLANInterface{
+				StaticAnycastGateway: vlan.SAG,
+				VRFName:              vlan.VRF,
+			}
+		}
+
+		vlanInterfaces["Vlan"+vlan.ID] = vlanInterface
+
+		if vlan.IP == "" {
+			continue
+		}
+
+		vlanInterfaces["Vlan"+vlan.ID+"|"+vlan.IP] = VLANInterface{}
+	}
+
+	return vlanInterfaces
+}
+
+func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {
+	vlanMembers := make(map[string]VLANMember)
+
+	for _, vlan := range vlans {
+		for _, untagged := range vlan.UntaggedPorts {
+			vlanMembers["Vlan"+vlan.ID+"|"+untagged] = VLANMember{
+				TaggingMode: TaggingModeUntagged,
+			}
+		}
+		for _, tagged := range vlan.TaggedPorts {
+			vlanMembers["Vlan"+vlan.ID+"|"+tagged] = VLANMember{
+				TaggingMode: TaggingModeTagged,
+			}
+		}
+	}
+
+	return vlanMembers
+}
+
+func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, vlans []values.VLAN) map[string]VRF {
+	vrfs := make(map[string]VRF)
+
+	for _, interconnect := range interconnects {
+		vrfs[interconnect.VRF] = VRF{
+			VNI: interconnect.VNI,
+		}
+	}
+
+	for _, port := range ports {
+		if port.VRF == "" {
+			continue
+		}
+		if _, ok := vrfs[port.VRF]; ok {
+			continue
+		}
+		vrfs[port.VRF] = VRF{}
+	}
+
+	for _, vlan := range vlans {
+		if vlan.VRF == "" {
+			continue
+		}
+		if _, ok := vrfs[vlan.VRF]; ok {
+			continue
+		}
+		vrfs[vlan.VRF] = VRF{}
+	}
+
+	return vrfs
+}
+
+func getVXLANTunnelMapWithComment(vteps []values.VTEP) []VXLANTunnelMapWithComment {
+	vxlanTunnelMaps := make([]VXLANTunnelMapWithComment, 0)
+
+	for _, vtep := range vteps {
+		mapWithComment := VXLANTunnelMapWithComment{
+			Comment: "#" + vtep.Comment,
+			TunnelMap: map[string]VXLANTunnelMap{
+				"vtep|map_" + vtep.VNI + "_" + vtep.VLAN: {
+					VLAN: vtep.VLAN,
+					VNI:  vtep.VNI,
+				},
+			},
+		}
+		vxlanTunnelMaps = append(vxlanTunnelMaps, mapWithComment)
+	}
+
+	return vxlanTunnelMaps
 }
