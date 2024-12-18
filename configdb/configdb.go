@@ -33,7 +33,7 @@ type ConfigDB struct {
 }
 
 func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
-	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts)
+	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU)
 	if err != nil {
 		return nil, err
 	}
@@ -170,12 +170,12 @@ func getNTPServers(servers []string) map[string]struct{} {
 	return ntpServers
 }
 
-func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string) (map[string]Port, map[string]BreakoutConfig, error) {
+func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defaultFECMode values.FECMode, defaultMTU int) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
 
 	for portName, breakout := range breakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU)
 		if err != nil {
 			return nil, nil, err
 		}

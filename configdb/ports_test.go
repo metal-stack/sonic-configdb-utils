@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
+	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
 func Test_parseBreakout(t *testing.T) {
@@ -112,25 +113,29 @@ func Test_parseBreakout(t *testing.T) {
 
 func Test_getPortsFromBreakout(t *testing.T) {
 	tests := []struct {
-		name         string
-		portName     string
-		breakoutMode string
-		want         map[string]Port
-		wantErr      bool
+		name               string
+		portName           string
+		breakoutMode       string
+		defaultPortFECMode values.FECMode
+		defaultMTU         int
+		want               map[string]Port
+		wantErr            bool
 	}{
 		{
-			name:         "add one 1x100G[40G] port",
-			portName:     "Ethernet120",
-			breakoutMode: "1x100G[40G]",
+			name:               "add one 1x100G[40G] port with different defaults",
+			portName:           "Ethernet120",
+			breakoutMode:       "1x100G[40G]",
+			defaultPortFECMode: values.FECModeRS,
+			defaultMTU:         1500,
 			want: map[string]Port{
 				"Ethernet120": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth31(Port31)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         FECModeRS,
 					Index:       31,
 					Lanes:       "121,122,123,124",
-					MTU:         DefaultMTU,
+					MTU:         1500,
 					ParentPort:  "Ethernet120",
 					Speed:       100000,
 				},
@@ -143,24 +148,24 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			breakoutMode: "2x50G",
 			want: map[string]Port{
 				"Ethernet116": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth30/1(Port30)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       30,
 					Lanes:       "117,118",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet116",
 					Speed:       50000,
 				},
 				"Ethernet118": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth30/2(Port30)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       30,
 					Lanes:       "119,120",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet116",
 					Speed:       50000,
 				},
@@ -173,46 +178,46 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			breakoutMode: "4x10G",
 			want: map[string]Port{
 				"Ethernet8": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth3/1(Port3)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       3,
 					Lanes:       "9",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
 				"Ethernet9": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth3/2(Port3)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       3,
 					Lanes:       "10",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
 				"Ethernet10": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth3/3(Port3)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       3,
 					Lanes:       "11",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
 				"Ethernet11": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth3/4(Port3)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       3,
 					Lanes:       "12",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet8",
 					Speed:       10000,
 				},
@@ -222,7 +227,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPortsFromBreakout(tt.portName, tt.breakoutMode)
+			got, err := getPortsFromBreakout(tt.portName, tt.breakoutMode, tt.defaultPortFECMode, tt.defaultMTU)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPortsFromBreakout() error = %v, wantErr %v", err, tt.wantErr)
 				return

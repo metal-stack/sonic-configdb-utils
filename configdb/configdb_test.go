@@ -118,12 +118,14 @@ func Test_getInterfaces(t *testing.T) {
 
 func Test_getPortsAndBreakouts(t *testing.T) {
 	tests := []struct {
-		name          string
-		ports         []values.Port
-		breakouts     map[string]string
-		wantPorts     map[string]Port
-		wantBreakouts map[string]BreakoutConfig
-		wantErr       error
+		name           string
+		ports          []values.Port
+		breakouts      map[string]string
+		defaultFECMode values.FECMode
+		defaultMTU     int
+		wantPorts      map[string]Port
+		wantBreakouts  map[string]BreakoutConfig
+		wantErr        error
 	}{
 		{
 			name:  "only breakouts defined",
@@ -133,13 +135,13 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			},
 			wantPorts: map[string]Port{
 				"Ethernet0": {
-					AdminStatus: DefaultAdminStatus,
+					AdminStatus: defaultAdminStatus,
 					Alias:       "Eth1(Port1)",
-					Autoneg:     DefaultAutonegMode,
-					FEC:         DefaultFECMode,
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
 					Index:       1,
 					Lanes:       "1,2,3,4",
-					MTU:         DefaultMTU,
+					MTU:         defaultMTU,
 					ParentPort:  "Ethernet0",
 					Speed:       100000,
 				},
@@ -236,7 +238,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPorts, gotBreakouts, err := getPortsAndBreakouts(tt.ports, tt.breakouts)
+			gotPorts, gotBreakouts, err := getPortsAndBreakouts(tt.ports, tt.breakouts, tt.defaultFECMode, tt.defaultMTU)
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Errorf("getPortsAndBreakouts() error = %v, wantErr %v", err, tt.wantErr)
 				return

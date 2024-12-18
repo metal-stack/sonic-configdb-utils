@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
 const (
-	DefaultAdminStatus = AdminStatusUp
-	DefaultAutonegMode = AutonegModeOff
-	DefaultFECMode     = FECModeNone
-	DefaultMTU         = 9000
+	defaultAdminStatus = AdminStatusUp
+	defaultAutonegMode = AutonegModeOff
+	defaultFECMode     = FECModeNone
+	defaultMTU         = 9000
 )
 
 func getPortAlias(portIndex, number, offset int) string {
@@ -35,7 +37,7 @@ func getLanesForPort(portIndex, number, offset int) string {
 	}
 }
 
-func getPortsFromBreakout(portName, breakoutMode string) (map[string]Port, error) {
+func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode values.FECMode, defaultPortMTU int) (map[string]Port, error) {
 	number, speed, portIndex, err := parseBreakout(portName, breakoutMode)
 	if err != nil {
 		return nil, err
@@ -45,15 +47,22 @@ func getPortsFromBreakout(portName, breakoutMode string) (map[string]Port, error
 
 	for i := 0; i < number; i++ {
 		port := Port{
-			AdminStatus: DefaultAdminStatus,
+			AdminStatus: defaultAdminStatus,
 			Alias:       getPortAlias(portIndex, number, i),
-			Autoneg:     DefaultAutonegMode,
-			FEC:         DefaultFECMode,
+			Autoneg:     defaultAutonegMode,
+			FEC:         defaultFECMode,
 			Index:       portIndex,
 			Lanes:       getLanesForPort(portIndex, number, i),
-			MTU:         DefaultMTU,
+			MTU:         defaultMTU,
 			ParentPort:  portName,
 			Speed:       speed,
+		}
+
+		if defaultPortFECMode != "" {
+			port.FEC = FECMode(defaultPortFECMode)
+		}
+		if defaultPortMTU != 0 {
+			port.MTU = defaultPortMTU
 		}
 
 		nameSuffix := (portIndex-1)*4 + 4/number*i // works because i > 0 for number = 1 never occurs
