@@ -5,6 +5,7 @@ sonic_bgp_ports:
 sonic_breakouts:
   Ethernet0: 4x25G
   Ethernet4: 1x100G[40G]
+  Ethernet120: 1x100G[40G]
 
 sonic_docker_routing_config_mode: split
 sonic_frr_mgmt_framework_config: false
@@ -13,7 +14,10 @@ sonic_interconnects:
   mpls:
     vni: 104010
     vrf: VrfMpls
+  internet:
+    vrf: VrfInternet
 
+sonic_hostname: leaf01
 sonic_lldp_hello_timer: 10
 sonic_loopback_address: 10.7.7.7
 
@@ -44,17 +48,32 @@ sonic_portchannels:
     members:
       - Ethernet4
       - Ethernet5
+  - number: "11"
 
 sonic_portchannels_default_mtu: 9000
 
 sonic_ports:
-  - ips:
+  - name: Ethernet0
+    ips:
       - 10.4.3.2
     fec: rs
     mtu: 1500
-    name: Ethernet0
     speed: 25000
     vrf: VrfMpls
+  - name: Ethernet1
+    fec: none
+    mtu: 1500
+    speed: 25000
+  - name: Ethernet4
+    fec: none
+    mtu: 1500
+    speed: 100000
+    vrf: VrfInternet
+  - name: Ethernet120
+    fec: none
+    mtu: 9000
+    speed: 100000
+
 
 sonic_ports_default_fec: none
 sonic_ports_default_mtu: 9000
@@ -67,17 +86,20 @@ sonic_ssh_sourceranges:
   - 10.1.23.1/30
 
 sonic_vlans:
-  - dhcp_servers:
+  - id: 4000
+    dhcp_servers:
       - 10.9.8.7
-    id: 4000
+      - 10.9.8.6
     ip: 10.9.7.0
     tagged_ports:
       - PortChannel01
     untagged_ports:
       - PortChannel11
     vrf: Vrf45
+  - id: 4001
+
+sonic_vlan_members: true
 
 sonic_vteps:
-  - comment: Dummy
-    vni: 103999
+  - vni: 103999
     vlan: Vlan3999
