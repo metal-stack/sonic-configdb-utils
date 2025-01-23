@@ -9,7 +9,6 @@ type ACLRule struct {
 
 type ACLTable struct {
 	PolicyDesc string   `json:"policy_desc,omitempty"`
-	Ports      []string `json:"ports,omitempty"`
 	Services   []string `json:"services,omitempty"`
 	Stage      string   `json:"stage,omitempty"`
 	Type       string   `json:"type,omitempty"`
@@ -90,15 +89,15 @@ const (
 )
 
 type LLDP struct {
-	Global LLDPGlobal `json:"GLOBAL,omitempty"`
+	Global LLDPGlobal `json:"Global,omitempty"`
 }
 
 type LLDPGlobal struct {
-	HelloTime int `json:"hello_time,omitempty"`
+	HelloTime string `json:"hello_time,omitempty"`
 }
 
 type MCLAGDomain struct {
-	MCLAGSystemID string `json:"system_mac,omitempty"`
+	MCLAGSystemID string `json:"mclag_system_id,omitempty"`
 	PeerIP        string `json:"peer_ip,omitempty"`
 	PeerLink      string `json:"peer_link,omitempty"`
 	SourceIP      string `json:"source_ip,omitempty"`
@@ -120,7 +119,7 @@ const (
 
 type Metadata struct {
 	DockerRoutingConfigMode `json:"docker_routing_config_mode,omitempty"`
-	FRRMgmtFrameworkConfig  bool   `json:"frr_mgmt_framework_config,omitempty"`
+	FRRMgmtFrameworkConfig  string `json:"frr_mgmt_framework_config,omitempty"`
 	Hostname                string `json:"hostname,omitempty"`
 	RouterType              `json:"type,omitempty"`
 }
@@ -150,8 +149,8 @@ type NTPGlobal struct {
 type PacketAction string
 
 const (
-	PacketActionDrop   PacketAction = "drop"
-	PacketActionAccept PacketAction = "accept"
+	PacketActionDrop   PacketAction = "DROP"
+	PacketActionAccept PacketAction = "ACCEPT"
 )
 
 type Port struct {
@@ -159,20 +158,21 @@ type Port struct {
 	Alias       string      `json:"alias,omitempty"`
 	Autoneg     AutonegMode `json:"autoneg,omitempty"`
 	FEC         FECMode     `json:"fec,omitempty"`
-	Index       int         `json:"index,omitempty"`
+	Index       string      `json:"index,omitempty"`
 	Lanes       string      `json:"lanes,omitempty"`
-	MTU         int         `json:"mtu,omitempty"`
+	MTU         string      `json:"mtu,omitempty"`
 	ParentPort  string      `json:"parent_port,omitempty"`
-	Speed       int         `json:"speed,omitempty"`
+	Speed       string      `json:"speed,omitempty"`
 }
 
-type Portchannel struct {
+type PortChannel struct {
 	AdminStatus `json:"admin_status,omitempty"`
-	Fallback    bool        `json:"fallback,omitempty"`
+	Fallback    string      `json:"fallback,omitempty"`
+	FastRate    string      `json:"fast_rate,omitempty"`
 	LACPKey     LACPKeyMode `json:"lacp_key,omitempty"`
-	MinLinks    int         `json:"min_links,omitempty"`
-	MixSpeed    bool        `json:"mix_speed,omitempty"`
-	MTU         int         `json:"mtu,omitempty"`
+	MinLinks    string      `json:"min_links,omitempty"`
+	MixSpeed    string      `json:"mix_speed,omitempty"`
+	MTU         string      `json:"mtu,omitempty"`
 }
 
 type RouterType string
@@ -204,7 +204,7 @@ type VLAN struct {
 }
 
 type VLANInterface struct {
-	StaticAnycastGateway bool   `json:"static_anycast_gateway,omitempty"`
+	StaticAnycastGateway string `json:"static_anycast_gateway,omitempty"`
 	VRFName              string `json:"vrf_name,omitempty"`
 }
 
@@ -217,7 +217,7 @@ type VRF struct {
 }
 
 type VRFGlobal struct {
-	MgmtVRFEnabled bool `json:"mgmtVrfEnabled,omitempty"`
+	MgmtVRFEnabled string `json:"mgmtVrfEnabled,omitempty"`
 }
 
 type VXLANEVPN struct {

@@ -23,6 +23,9 @@ LINKMODE := $(LINKMODE) \
 		 -X 'github.com/metal-stack/v.GitSHA1=$(SHA)' \
 		 -X 'github.com/metal-stack/v.BuildDate=$(BUILDDATE)'
 
+.PHONY: all
+all: test test-generate build
+
 .PHONY: build
 build:
 	go build \
@@ -33,3 +36,11 @@ build:
 		github.com/metal-stack/sonic-configdb-utils
 
 	md5sum bin/$(BINARY) > bin/$(BINARY).md5
+
+.PHONY: test
+test:
+	go test ./...
+
+.PHONY: test-generate
+test-generate:
+	./tests/test.sh

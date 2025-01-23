@@ -40,7 +40,7 @@ type Port struct {
 	VRF     string `yaml:"vrf,omitempty"`
 }
 
-type Portchannel struct {
+type PortChannel struct {
 	Number   string   `yaml:"number,omitempty"`
 	MTU      int      `yaml:"mtu,omitempty"`
 	Fallback bool     `yaml:"fallback,omitempty"`
@@ -65,8 +65,8 @@ type Values struct {
 	MgmtIfIP                string        `yaml:"sonic_mgmtif_ip,omitempty"`
 	MgmtVRF                 bool          `yaml:"sonic_mgmt_vrf,omitempty"`
 	NTPServers              []string      `yaml:"sonic_ntpservers,omitempty"`
-	Portchannels            []Portchannel `yaml:"sonic_portchannels,omitempty"`
-	PortchannelsDefaultMTU  int           `yaml:"sonic_portchannels_default_mtu,omitempty"`
+	PortChannels            []PortChannel `yaml:"sonic_portchannels,omitempty"`
+	PortChannelsDefaultMTU  int           `yaml:"sonic_portchannels_default_mtu,omitempty"`
 	Ports                   []Port        `yaml:"sonic_ports,omitempty"`
 	PortsDefaultFEC         FECMode       `yaml:"sonic_ports_default_fec,omitempty"`
 	PortsDefaultMTU         int           `yaml:"sonic_ports_default_mtu,omitempty"`

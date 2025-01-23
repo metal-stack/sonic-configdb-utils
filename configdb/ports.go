@@ -51,18 +51,18 @@ func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode valu
 			Alias:       getPortAlias(portIndex, number, i),
 			Autoneg:     defaultAutonegMode,
 			FEC:         defaultFECMode,
-			Index:       portIndex,
+			Index:       fmt.Sprintf("%d", portIndex),
 			Lanes:       getLanesForPort(portIndex, number, i),
-			MTU:         defaultMTU,
+			MTU:         fmt.Sprintf("%d", defaultMTU),
 			ParentPort:  portName,
-			Speed:       speed,
+			Speed:       fmt.Sprintf("%d", speed),
 		}
 
 		if defaultPortFECMode != "" {
 			port.FEC = FECMode(defaultPortFECMode)
 		}
 		if defaultPortMTU != 0 {
-			port.MTU = defaultPortMTU
+			port.MTU = fmt.Sprintf("%d", defaultPortMTU)
 		}
 
 		nameSuffix := (portIndex-1)*4 + 4/number*i // works because i > 0 for number = 1 never occurs

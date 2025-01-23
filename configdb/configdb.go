@@ -3,6 +3,7 @@ package configdb
 import (
 	"fmt"
 	"slices"
+	"strconv"
 
 	"github.com/metal-stack/sonic-configdb-utils/values"
 )
@@ -25,8 +26,8 @@ type ConfigDB struct {
 	NTP                `json:"NTP,omitempty"`
 	NTPServers         map[string]struct{}    `json:"NTP_SERVER,omitempty"`
 	Ports              map[string]Port        `json:"PORT,omitempty"`
-	Portchannels       map[string]Portchannel `json:"PORTCHANNEL,omitempty"`
-	PortchannelMembers map[string]struct{}    `json:"PORTCHANNEL_MEMBERS,omitempty"`
+	PortChannels       map[string]PortChannel `json:"PORTCHANNEL,omitempty"`
+	PortChannelMembers map[string]struct{}    `json:"PORTCHANNEL_MEMBER,omitempty"`
 	SAG                `json:"SAG,omitempty"`
 	VLANs              map[string]VLAN          `json:"VLAN,omitempty"`
 	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE,omitempty"`
@@ -52,7 +53,7 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 		DeviceMetadata: DeviceMetadata{
 			Localhost: Metadata{
 				DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
-				FRRMgmtFrameworkConfig:  input.FRRMgmtFrameworkConfig,
+				FRRMgmtFrameworkConfig:  strconv.FormatBool(input.FRRMgmtFrameworkConfig),
 				Hostname:                input.Hostname,
 				RouterType:              "LeafRouter",
 			},
@@ -66,7 +67,7 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 		Interfaces: getInterfaces(input.Ports, input.BGPPorts),
 		LLDP: LLDP{
 			Global: LLDPGlobal{
-				HelloTime: input.LLDPHelloTimer,
+				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTimer),
 			},
 		},
 		LoopbackInterface: map[string]struct{}{
@@ -97,7 +98,7 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 		},
 		MgmtVRFConfig: MgmtVRFConfig{
 			VRFGlobal: VRFGlobal{
-				MgmtVRFEnabled: input.MgmtVRF,
+				MgmtVRFEnabled: strconv.FormatBool(input.MgmtVRF),
 			},
 		},
 		NTP: NTP{
@@ -107,8 +108,8 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 		},
 		NTPServers:         getNTPServers(input.NTPServers),
 		Ports:              ports,
-		Portchannels:       getPortchannels(input.Portchannels, input.PortchannelsDefaultMTU),
-		PortchannelMembers: getPortchannelMembers(input.Portchannels),
+		PortChannels:       getPortChannels(input.PortChannels, input.PortChannelsDefaultMTU),
+		PortChannelMembers: getPortChannelMembers(input.PortChannels),
 		SAG:                getSAG(input.SAG),
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
@@ -155,14 +156,12 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	tables := map[string]ACLTable{
 		"ALLOW_SSH": {
 			PolicyDesc: "Allow SSH access",
-			Ports:      []string{},
 			Services:   []string{"SSH"},
 			Stage:      "ingress",
 			Type:       "CTRLPLANE",
 		},
 		"ALLOW_NTP": {
 			PolicyDesc: "Allow NTP",
-			Ports:      []string{},
 			Services:   []string{"NTP"},
 			Stage:      "ingress",
 			Type:       "CTRLPLANE",
@@ -210,7 +209,7 @@ func getMCLAGInterfaces(memberPortChannels []string) map[string]MCLAGInterface {
 	mclagInterfaces := make(map[string]MCLAGInterface)
 
 	for _, channel := range memberPortChannels {
-		mclagInterfaces["1|Portchannel"+channel] = MCLAGInterface{
+		mclagInterfaces["1|PortChannel"+channel] = MCLAGInterface{
 			IfType: "PortChannel",
 		}
 	}
@@ -245,32 +244,33 @@ func getNTPServers(servers []string) map[string]struct{} {
 	return ntpServers
 }
 
-func getPortchannels(portchannels []values.Portchannel, defaultPortchannelMTU int) map[string]Portchannel {
-	configPortchannels := make(map[string]Portchannel)
+func getPortChannels(portChannels []values.PortChannel, defaultPortChannelMTU int) map[string]PortChannel {
+	configPortChannels := make(map[string]PortChannel)
 
-	for _, pc := range portchannels {
+	for _, pc := range portChannels {
 		mtu := defaultMTU
-		if defaultPortchannelMTU != 0 {
-			mtu = defaultPortchannelMTU
+		if defaultPortChannelMTU != 0 {
+			mtu = defaultPortChannelMTU
 		}
 		if pc.MTU != 0 {
 			mtu = pc.MTU
 		}
 
-		configPortchannels["PortChannel"+pc.Number] = Portchannel{
+		configPortChannels["PortChannel"+pc.Number] = PortChannel{
 			AdminStatus: defaultAdminStatus,
-			Fallback:    true,
+			Fallback:    "true",
+			FastRate:    "false",
 			LACPKey:     LACPKeyModeAuto,
-			MinLinks:    1,
-			MixSpeed:    false,
-			MTU:         mtu,
+			MinLinks:    "1",
+			MixSpeed:    "false",
+			MTU:         fmt.Sprintf("%d", mtu),
 		}
 	}
 
-	return configPortchannels
+	return configPortChannels
 }
 
-func getPortchannelMembers(portchannels []values.Portchannel) map[string]struct{} {
+func getPortChannelMembers(portchannels []values.PortChannel) map[string]struct{} {
 	portchannelMembers := make(map[string]struct{})
 
 	for _, pc := range portchannels {
@@ -306,14 +306,14 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 		}
 
 		switch configPort.Speed {
-		case 100000:
+		case "100000":
 			if port.Speed == 100000 || port.Speed == 40000 {
-				configPort.Speed = port.Speed
+				configPort.Speed = fmt.Sprintf("%d", port.Speed)
 			} else {
 				return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration only allows values 100000 or 40000", port.Speed, port.Name)
 			}
 		default:
-			if port.Speed != configPort.Speed {
+			if fmt.Sprintf("%d", port.Speed) != configPort.Speed {
 				return nil, nil, fmt.Errorf("invalid speed %d for port %s; check breakout configuration", port.Speed, port.Name)
 			}
 		}
@@ -321,8 +321,8 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 		if string(port.FECMode) != string(configPort.FEC) {
 			configPort.FEC = FECMode(port.FECMode)
 		}
-		if port.MTU != configPort.MTU {
-			configPort.MTU = port.MTU
+		if fmt.Sprintf("%d", port.MTU) != configPort.MTU {
+			configPort.MTU = fmt.Sprintf("%d", port.MTU)
 		}
 		configPorts[port.Name] = configPort
 	}
@@ -363,7 +363,7 @@ func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
 
 		if vlan.VRF != "" {
 			vlanInterface = VLANInterface{
-				StaticAnycastGateway: vlan.SAG,
+				StaticAnycastGateway: strconv.FormatBool(vlan.SAG),
 				VRFName:              vlan.VRF,
 			}
 		}

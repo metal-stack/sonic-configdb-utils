@@ -1,15 +1,5 @@
 {
   "ACL_RULE": {
-    "ALLOW_SSH|DEFAULT_RULE": {
-      "ETHER_TYPE": "2048",
-      "PACKET_ACTION": "DROP",
-      "PRIORITY": "1"
-    },
-    "ALLOW_SSH|RULE_1": {
-      "PACKET_ACTION": "ACCEPT",
-      "PRIORITY": "91",
-      "SRC_IP": "10.1.23.1/30"
-    },
     "ALLOW_NTP|DEFAULT_RULE": {
       "ETHER_TYPE": "2048",
       "PACKET_ACTION": "DROP",
@@ -20,41 +10,52 @@
       "PRIORITY": "99",
       "SRC_IP": "0.0.0.0/0"
     },
-    "ACL_TABLE": {
-      "ALLOW_SSH": {
-        "policy_desc": "Allow SSH access",
-        "ports": [],
-        "services": [
-          "SSH"
-        ],
-        "stage": "ingress",
-        "type": "CTRLPLANE"
-      },
-      "ALLOW_NTP": {
-        "policy_desc": "Allow NTP",
-        "ports": [],
-        "services": [
-          "NTP"
-        ],
-        "stage": "ingress",
-        "type": "CTRLPLANE"
-      }
+    "ALLOW_SSH|DEFAULT_RULE": {
+      "ETHER_TYPE": "2048",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "1"
+    },
+    "ALLOW_SSH|RULE_1": {
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "91",
+      "SRC_IP": "10.1.23.1/30"
+    }
+  },
+  "ACL_TABLE": {
+    "ALLOW_NTP": {
+      "policy_desc": "Allow NTP",
+      "services": [
+        "NTP"
+      ],
+      "stage": "ingress",
+      "type": "CTRLPLANE"
+    },
+    "ALLOW_SSH": {
+      "policy_desc": "Allow SSH access",
+      "services": [
+        "SSH"
+      ],
+      "stage": "ingress",
+      "type": "CTRLPLANE"
     }
   },
   "BREAKOUT_CFG": {
     "Ethernet0": {
       "brkout_mode": "4x25G"
     },
+    "Ethernet120": {
+      "brkout_mode": "1x100G[40G]"
+    },
     "Ethernet4": {
-      "brkout_mode": "1x100G"
+      "brkout_mode": "1x100G[40G]"
     }
   },
   "DEVICE_METADATA": {
     "localhost": {
       "docker_routing_config_mode": "split",
+      "frr_mgmt_framework_config": "false",
       "hostname": "leaf01",
-      "type": "LeafRouter",
-      "frr_mgmt_framework_config": "false"
+      "type": "LeafRouter"
     }
   },
   "FEATURE": {
@@ -65,19 +66,19 @@
   },
   "INTERFACE": {
     "Ethernet0": {
-      "ipv6_use_link_local_only": "enable",
       "vrf_name": "VrfMpls"
     },
     "Ethernet0|10.4.3.2": {},
-    "Ethernet4": {
-      "ipv6_use_link_local_only": "enable",
-      "vrf_name": "VrfInternet"
+    "Ethernet120": {
+      "ipv6_use_link_local_only": "enable"
     },
-    "Ethernet120": {}
+    "Ethernet4": {
+      "vrf_name": "VrfInternet"
+    }
   },
   "LLDP": {
     "Global": {
-      "hello_time": 10
+      "hello_time": "10"
     }
   },
   "LOOPBACK_INTERFACE": {
@@ -89,7 +90,7 @@
       "mclag_system_id": "aa:aa:aa:aa:aa:aa",
       "peer_ip": "192.168.255.1",
       "peer_link": "PortChannel01",
-      "soure_ip": "192.168.255.2"
+      "source_ip": "192.168.255.2"
     }
   },
   "MCLAG_INTERFACE": {
@@ -112,8 +113,8 @@
   },
   "MGMT_PORT": {
     "eth0": {
-      "alias": "eth0",
       "admin_status": "up",
+      "alias": "eth0",
       "description": "Management Port"
     }
   },
@@ -142,6 +143,7 @@
       "index": "1",
       "lanes": "1",
       "mtu": "1500",
+      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet1": {
@@ -152,7 +154,19 @@
       "index": "1",
       "lanes": "2",
       "mtu": "1500",
+      "parent_port": "Ethernet0",
       "speed": "25000"
+    },
+    "Ethernet120": {
+      "admin_status": "up",
+      "alias": "Eth31(Port31)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "31",
+      "lanes": "121,122,123,124",
+      "mtu": "9000",
+      "parent_port": "Ethernet120",
+      "speed": "100000"
     },
     "Ethernet2": {
       "admin_status": "up",
@@ -161,7 +175,8 @@
       "fec": "none",
       "index": "1",
       "lanes": "3",
-      "mtu": "1500",
+      "mtu": "9000",
+      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet3": {
@@ -171,27 +186,19 @@
       "fec": "none",
       "index": "1",
       "lanes": "4",
-      "mtu": "1500",
+      "mtu": "9000",
+      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet4": {
       "admin_status": "up",
-      "alias": "Eth2/1(Port2)",
+      "alias": "Eth2(Port2)",
       "autoneg": "off",
       "fec": "none",
       "index": "2",
       "lanes": "5,6,7,8",
       "mtu": "1500",
-      "speed": "100000"
-    },
-    "Ethernet120": {
-      "admin_status": "up",
-      "alias": "Eth32/1(Port32)",
-      "autoneg": "off",
-      "fec": "none",
-      "index": "32",
-      "lanes": "121,122,123,124",
-      "mtu": "9000",
+      "parent_port": "Ethernet4",
       "speed": "100000"
     }
   },
@@ -205,8 +212,9 @@
       "mix_speed": "false",
       "mtu": "1500"
     },
-    "PortChannel02": {
+    "PortChannel11": {
       "admin_status": "up",
+      "fallback": "true",
       "fast_rate": "false",
       "lacp_key": "auto",
       "min_links": "1",
@@ -216,7 +224,7 @@
   },
   "PORTCHANNEL_MEMBER": {
     "PortChannel01|Ethernet4": {},
-    "PortChannel11|Ethernet5": {}
+    "PortChannel01|Ethernet5": {}
   },
   "SAG": {
     "GLOBAL": {
@@ -252,11 +260,11 @@
     }
   },
   "VRF": {
+    "Vrf45": {},
     "VrfInternet": {},
     "VrfMpls": {
       "vni": "104010"
-    },
-    "Vrf45": {}
+    }
   },
   "VXLAN_EVPN_NVO": {
     "nvo": {

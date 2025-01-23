@@ -91,6 +91,7 @@ sonic_vlans:
       - 10.9.8.7
       - 10.9.8.6
     ip: 10.9.7.0
+    sag: true
     tagged_ports:
       - PortChannel01
     untagged_ports:
