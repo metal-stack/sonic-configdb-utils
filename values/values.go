@@ -60,16 +60,16 @@ type Values struct {
 	Interconnects           map[string]Interconnect `yaml:"sonic_interconnects,omitempty"`
 	LLDPHelloTimer          int                     `yaml:"sonic_lldp_hello_timer,omitempty"`
 	LoopbackAddress         string                  `yaml:"sonic_loopback_address,omitempty"`
-	MCLAG                   `yaml:"sonic_mclag,omitempty"`
-	MgmtIfGateway           string        `yaml:"sonic_mgmtif_gateway,omitempty"`
-	MgmtIfIP                string        `yaml:"sonic_mgmtif_ip,omitempty"`
-	MgmtVRF                 bool          `yaml:"sonic_mgmt_vrf,omitempty"`
-	NTPServers              []string      `yaml:"sonic_ntpservers,omitempty"`
-	PortChannels            []PortChannel `yaml:"sonic_portchannels,omitempty"`
-	PortChannelsDefaultMTU  int           `yaml:"sonic_portchannels_default_mtu,omitempty"`
-	Ports                   []Port        `yaml:"sonic_ports,omitempty"`
-	PortsDefaultFEC         FECMode       `yaml:"sonic_ports_default_fec,omitempty"`
-	PortsDefaultMTU         int           `yaml:"sonic_ports_default_mtu,omitempty"`
+	MCLAG                   *MCLAG                  `yaml:"sonic_mclag,omitempty"`
+	MgmtIfGateway           string                  `yaml:"sonic_mgmtif_gateway,omitempty"`
+	MgmtIfIP                string                  `yaml:"sonic_mgmtif_ip,omitempty"`
+	MgmtVRF                 bool                    `yaml:"sonic_mgmt_vrf,omitempty"`
+	NTPServers              []string                `yaml:"sonic_ntpservers,omitempty"`
+	PortChannels            []PortChannel           `yaml:"sonic_portchannels,omitempty"`
+	PortChannelsDefaultMTU  int                     `yaml:"sonic_portchannels_default_mtu,omitempty"`
+	Ports                   []Port                  `yaml:"sonic_ports,omitempty"`
+	PortsDefaultFEC         FECMode                 `yaml:"sonic_ports_default_fec,omitempty"`
+	PortsDefaultMTU         int                     `yaml:"sonic_ports_default_mtu,omitempty"`
 	SAG                     `yaml:"sonic_sag,omitempty"`
 	SSHSourceranges         []string `yaml:"sonic_ssh_sourceranges,omitempty"`
 	VLANs                   []VLAN   `yaml:"sonic_vlans,omitempty"`

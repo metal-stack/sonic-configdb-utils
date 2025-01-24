@@ -24,18 +24,18 @@ type ConfigDB struct {
 	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT,omitempty"`
 	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG,omitempty"`
 	NTP                `json:"NTP,omitempty"`
-	NTPServers         map[string]struct{}    `json:"NTP_SERVER,omitempty"`
-	Ports              map[string]Port        `json:"PORT,omitempty"`
-	PortChannels       map[string]PortChannel `json:"PORTCHANNEL,omitempty"`
-	PortChannelMembers map[string]struct{}    `json:"PORTCHANNEL_MEMBER,omitempty"`
-	SAG                `json:"SAG,omitempty"`
+	NTPServers         map[string]struct{}      `json:"NTP_SERVER,omitempty"`
+	Ports              map[string]Port          `json:"PORT,omitempty"`
+	PortChannels       map[string]PortChannel   `json:"PORTCHANNEL,omitempty"`
+	PortChannelMembers map[string]struct{}      `json:"PORTCHANNEL_MEMBER,omitempty"`
+	SAG                *SAG                     `json:"SAG,omitempty"`
 	VLANs              map[string]VLAN          `json:"VLAN,omitempty"`
 	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE,omitempty"`
 	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER,omitempty"`
 	VRFs               map[string]VRF           `json:"VRF,omitempty"`
 	VXLANEVPN          `json:"VXLAN_EVPN_NVO,omitempty"`
 	VXLANTunnels       map[string]VXLANTunnel `json:"VXLAN_TUNNEL,omitempty"`
-	VXLANTunnelMaps    []VXLANTunnelMap       `json:"VXLAN_TUNNEL_MAP,omitempty"`
+	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
 func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
@@ -74,21 +74,10 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 			"Loopback0": {},
 			"Loopback0|" + input.LoopbackAddress + "/32": {},
 		},
-		MCLAGDomains: map[string]MCLAGDomain{
-			"1": {
-				MCLAGSystemID: input.SystemMAC,
-				PeerIP:        input.PeerIP,
-				PeerLink:      input.PeerLink,
-				SourceIP:      input.SourceIP,
-			},
-		},
-		MCLAGInterfaces: getMCLAGInterfaces(input.MemberPortChannels),
-		MCLAGUniqueIPs: map[string]MCLAGUniqueIP{
-			"Vlan" + input.KeepaliveVLAN: {
-				UniqueIP: MCLAGUniqueIPModeEnable,
-			},
-		},
-		MgmtInterfaces: getMgmtInterfaces(input.MgmtIfIP, input.MgmtIfGateway),
+		MCLAGDomains:    getMCLAGDomains(input.MCLAG),
+		MCLAGInterfaces: getMCLAGInterfaces(input.MCLAG),
+		MCLAGUniqueIPs:  getMCLAGUniqueIPs(input.MCLAG),
+		MgmtInterfaces:  getMgmtInterfaces(input.MgmtIfIP, input.MgmtIfGateway),
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -125,7 +114,7 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 				SrcIP: input.LoopbackAddress,
 			},
 		},
-		VXLANTunnelMaps: getVXLANTunnelMaps(input.VTEPs),
+		VXLANTunnelMap: getVXLANTunnelMap(input.VTEPs),
 	}
 	return &configdb, nil
 }
@@ -205,16 +194,47 @@ func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface 
 	return interfaces
 }
 
-func getMCLAGInterfaces(memberPortChannels []string) map[string]MCLAGInterface {
+func getMCLAGDomains(mclag *values.MCLAG) map[string]MCLAGDomain {
+	if mclag == nil {
+		return nil
+	}
+
+	return map[string]MCLAGDomain{
+		"1": {
+			MCLAGSystemID: mclag.SystemMAC,
+			PeerIP:        mclag.PeerIP,
+			PeerLink:      mclag.PeerLink,
+			SourceIP:      mclag.SourceIP,
+		},
+	}
+}
+
+func getMCLAGInterfaces(mclag *values.MCLAG) map[string]MCLAGInterface {
+	if mclag == nil {
+		return nil
+	}
+
 	mclagInterfaces := make(map[string]MCLAGInterface)
 
-	for _, channel := range memberPortChannels {
+	for _, channel := range mclag.MemberPortChannels {
 		mclagInterfaces["1|PortChannel"+channel] = MCLAGInterface{
 			IfType: "PortChannel",
 		}
 	}
 
 	return mclagInterfaces
+}
+
+func getMCLAGUniqueIPs(mclag *values.MCLAG) map[string]MCLAGUniqueIP {
+	if mclag == nil {
+		return nil
+	}
+
+	return map[string]MCLAGUniqueIP{
+		"Vlan" + mclag.KeepaliveVLAN: {
+			UniqueIP: MCLAGUniqueIPModeEnable,
+		},
+	}
 }
 
 func getMgmtInterfaces(mgmtIfIP, mgmtIfGateway string) map[string]MgmtInterface {
@@ -332,12 +352,12 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 	return configPorts, configBreakouts, nil
 }
 
-func getSAG(sag values.SAG) SAG {
+func getSAG(sag values.SAG) *SAG {
 	if sag.MAC == "" {
-		return SAG{}
+		return nil
 	}
 
-	return SAG{
+	return &SAG{
 		SAGGlobal: SAGGlobal{
 			GatewayMAC: sag.MAC,
 		},
@@ -433,17 +453,15 @@ func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, 
 	return vrfs
 }
 
-func getVXLANTunnelMaps(vteps []values.VTEP) []VXLANTunnelMap {
-	vxlanTunnelMaps := make([]VXLANTunnelMap, 0)
+func getVXLANTunnelMap(vteps []values.VTEP) VXLANTunnelMap {
+	vxlanTunnelMap := make(VXLANTunnelMap)
 
 	for _, vtep := range vteps {
-		vxlanTunnelMaps = append(vxlanTunnelMaps, VXLANTunnelMap{
-			"vtep|map_" + vtep.VNI + "_" + vtep.VLAN: VXLANTunnelMapEntry{
-				VLAN: vtep.VLAN,
-				VNI:  vtep.VNI,
-			},
-		})
+		vxlanTunnelMap["vtep|map_"+vtep.VNI+"_"+vtep.VLAN] = VXLANTunnelMapEntry{
+			VLAN: vtep.VLAN,
+			VNI:  vtep.VNI,
+		}
 	}
 
-	return vxlanTunnelMaps
+	return vxlanTunnelMap
 }
