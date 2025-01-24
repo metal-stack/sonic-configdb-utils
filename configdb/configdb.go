@@ -102,7 +102,7 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 		SAG:                getSAG(input.SAG),
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
-		VLANMembers:        getVLANMembers(input.VLANs),
+		VLANMembers:        getVLANMembers(input.VLANs, input.VLANMembers),
 		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
 		VXLANEVPN: VXLANEVPN{
 			VXLANEVPNNVO: VXLANEVPNNVO{
@@ -402,7 +402,11 @@ func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
 	return vlanInterfaces
 }
 
-func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {
+func getVLANMembers(vlans []values.VLAN, addVlanMembers bool) map[string]VLANMember {
+	if !addVlanMembers {
+		return nil
+	}
+
 	vlanMembers := make(map[string]VLANMember)
 
 	for _, vlan := range vlans {

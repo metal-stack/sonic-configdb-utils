@@ -72,6 +72,7 @@ type Values struct {
 	PortsDefaultMTU         int                     `yaml:"sonic_ports_default_mtu,omitempty"`
 	SAG                     `yaml:"sonic_sag,omitempty"`
 	SSHSourceranges         []string `yaml:"sonic_ssh_sourceranges,omitempty"`
+	VLANMembers             bool     `yaml:"sonic_vlan_members,omitempty"`
 	VLANs                   []VLAN   `yaml:"sonic_vlans,omitempty"`
 	VTEPs                   []VTEP   `yaml:"sonic_vteps,omitempty"`
 }
