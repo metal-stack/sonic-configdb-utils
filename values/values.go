@@ -70,7 +70,6 @@ type Values struct {
 	Ports                   []Port        `yaml:"sonic_ports,omitempty"`
 	PortsDefaultFEC         FECMode       `yaml:"sonic_ports_default_fec,omitempty"`
 	PortsDefaultMTU         int           `yaml:"sonic_ports_default_mtu,omitempty"`
-	PortsDefaultSpeed       int           `yaml:"sonic_ports_default_speed,omitempty"`
 	SAG                     `yaml:"sonic_sag,omitempty"`
 	SSHSourceranges         []string `yaml:"sonic_ssh_sourceranges,omitempty"`
 	VLANs                   []VLAN   `yaml:"sonic_vlans,omitempty"`

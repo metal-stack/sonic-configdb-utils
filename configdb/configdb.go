@@ -307,21 +307,23 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 
 		switch configPort.Speed {
 		case "100000":
-			if port.Speed == 100000 || port.Speed == 40000 {
+			switch port.Speed {
+			case 100000, 40000:
 				configPort.Speed = fmt.Sprintf("%d", port.Speed)
-			} else {
+			case 0:
+			default:
 				return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration only allows values 100000 or 40000", port.Speed, port.Name)
 			}
 		default:
-			if fmt.Sprintf("%d", port.Speed) != configPort.Speed {
-				return nil, nil, fmt.Errorf("invalid speed %d for port %s; check breakout configuration", port.Speed, port.Name)
+			if port.Speed != 0 {
+				return nil, nil, fmt.Errorf("invalid speed definition for port %s; speed can only be configured for ports with breakout mode 1x100G[40G]", port.Name)
 			}
 		}
 
-		if string(port.FECMode) != string(configPort.FEC) {
+		if port.FECMode != "" && string(port.FECMode) != string(configPort.FEC) {
 			configPort.FEC = FECMode(port.FECMode)
 		}
-		if fmt.Sprintf("%d", port.MTU) != configPort.MTU {
+		if port.MTU != 0 && fmt.Sprintf("%d", port.MTU) != configPort.MTU {
 			configPort.MTU = fmt.Sprintf("%d", port.MTU)
 		}
 		configPorts[port.Name] = configPort

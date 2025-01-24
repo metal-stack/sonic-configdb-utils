@@ -178,17 +178,17 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			wantErr: fmt.Errorf("no breakout configuration found for port Ethernet5"),
 		},
 		{
-			name: "port speed does not match breakout config",
+			name: "port speed should be omitted for breakouts other than 1x100G[40G]",
 			breakouts: map[string]string{
 				"Ethernet4": "4x25G",
 			},
 			ports: []values.Port{
 				{
-					Name:  "Ethernet5",
+					Name:  "Ethernet4",
 					Speed: 10000,
 				},
 			},
-			wantErr: fmt.Errorf("invalid speed 10000 for port Ethernet5; check breakout configuration"),
+			wantErr: fmt.Errorf("invalid speed definition for port Ethernet4; speed can only be configured for ports with breakout mode 1x100G[40G]"),
 		},
 		{
 			name: "only port speed 40G is allowed to override preconfigured speed",
@@ -202,6 +202,39 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				},
 			},
 			wantErr: fmt.Errorf("invalid speed 50000 for port Ethernet4; current breakout configuration only allows values 100000 or 40000"),
+		},
+		{
+			name: "port speed 0 is allowed",
+			breakouts: map[string]string{
+				"Ethernet4": "1x100G[40G]",
+			},
+			defaultFECMode: values.FECModeRS,
+			defaultMTU:     1500,
+			ports: []values.Port{
+				{
+					Name:  "Ethernet4",
+					Speed: 0,
+				},
+			},
+			wantBreakouts: map[string]BreakoutConfig{
+				"Ethernet4": {
+					BreakoutMode: BreakoutMode1x100G,
+				},
+			},
+			wantPorts: map[string]Port{
+				"Ethernet4": {
+					AdminStatus: AdminStatusUp,
+					Alias:       "Eth2(Port2)",
+					Autoneg:     AutonegModeOff,
+					FEC:         FECModeRS,
+					Index:       "2",
+					Lanes:       "5,6,7,8",
+					MTU:         "1500",
+					ParentPort:  "Ethernet4",
+					Speed:       "100000",
+				},
+			},
+			wantErr: nil,
 		},
 		{
 			name: "fec, mtu and speed can be overriden",
