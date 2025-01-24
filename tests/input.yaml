@@ -58,21 +58,13 @@ sonic_ports:
       - 10.4.3.2
     fec: rs
     mtu: 1500
-    speed: 25000
     vrf: VrfMpls
   - name: Ethernet1
-    fec: none
     mtu: 1500
-    speed: 25000
   - name: Ethernet4
-    fec: none
     mtu: 1500
-    speed: 100000
     vrf: VrfInternet
   - name: Ethernet120
-    fec: none
-    mtu: 9000
-    speed: 100000
 
 
 sonic_ports_default_fec: none
