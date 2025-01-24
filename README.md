@@ -10,3 +10,5 @@ Then run
 ```bash
 sonic-confidb-utils generate -i input.yaml -o config_db.json
 ```
+
+Check the [template-values.yaml](template-values.yaml) to see examples for all accepted variables.
