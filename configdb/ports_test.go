@@ -136,7 +136,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "31",
 					Lanes:       "121,122,123,124",
 					MTU:         "1500",
-					ParentPort:  "Ethernet120",
 					Speed:       "100000",
 				},
 			},
