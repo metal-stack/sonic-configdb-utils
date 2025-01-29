@@ -63,9 +63,6 @@ func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode valu
 		if defaultPortMTU != 0 {
 			port.MTU = fmt.Sprintf("%d", defaultPortMTU)
 		}
-		if breakoutMode != "1x100G[40G]" {
-			port.ParentPort = portName
-		}
 
 		nameSuffix := (portIndex-1)*4 + 4/number*i // works because i > 0 for number = 1 never occurs
 		name := fmt.Sprintf("Ethernet%d", nameSuffix)

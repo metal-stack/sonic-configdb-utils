@@ -154,7 +154,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "30",
 					Lanes:       "117,118",
 					MTU:         fmt.Sprintf("%d", defaultMTU),
-					ParentPort:  "Ethernet116",
 					Speed:       "50000",
 				},
 				"Ethernet118": {
@@ -165,7 +164,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "30",
 					Lanes:       "119,120",
 					MTU:         fmt.Sprintf("%d", defaultMTU),
-					ParentPort:  "Ethernet116",
 					Speed:       "50000",
 				},
 			},
@@ -184,7 +182,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "3",
 					Lanes:       "9",
 					MTU:         fmt.Sprintf("%d", defaultMTU),
-					ParentPort:  "Ethernet8",
 					Speed:       "10000",
 				},
 				"Ethernet9": {
@@ -195,7 +192,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "3",
 					Lanes:       "10",
 					MTU:         fmt.Sprintf("%d", defaultMTU),
-					ParentPort:  "Ethernet8",
 					Speed:       "10000",
 				},
 				"Ethernet10": {
@@ -206,7 +202,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "3",
 					Lanes:       "11",
 					MTU:         fmt.Sprintf("%d", defaultMTU),
-					ParentPort:  "Ethernet8",
 					Speed:       "10000",
 				},
 				"Ethernet11": {
@@ -217,7 +212,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					Index:       "3",
 					Lanes:       "12",
 					MTU:         fmt.Sprintf("%d", defaultMTU),
-					ParentPort:  "Ethernet8",
 					Speed:       "10000",
 				},
 			},

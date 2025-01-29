@@ -117,7 +117,6 @@
       "index": "1",
       "lanes": "1",
       "mtu": "1500",
-      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet1": {
@@ -128,7 +127,6 @@
       "index": "1",
       "lanes": "2",
       "mtu": "1500",
-      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet120": {
@@ -149,7 +147,6 @@
       "index": "1",
       "lanes": "3",
       "mtu": "9000",
-      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet3": {
@@ -160,7 +157,6 @@
       "index": "1",
       "lanes": "4",
       "mtu": "9000",
-      "parent_port": "Ethernet0",
       "speed": "25000"
     },
     "Ethernet4": {

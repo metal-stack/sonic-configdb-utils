@@ -161,7 +161,6 @@ type Port struct {
 	Index       string      `json:"index,omitempty"`
 	Lanes       string      `json:"lanes,omitempty"`
 	MTU         string      `json:"mtu,omitempty"`
-	ParentPort  string      `json:"parent_port,omitempty"`
 	Speed       string      `json:"speed,omitempty"`
 }
 
