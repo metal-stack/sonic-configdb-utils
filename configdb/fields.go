@@ -89,7 +89,7 @@ const (
 )
 
 type LLDP struct {
-	Global LLDPGlobal `json:"Global,omitempty"`
+	Global LLDPGlobal `json:"GLOBAL,omitempty"`
 }
 
 type LLDPGlobal struct {
