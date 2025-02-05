@@ -77,7 +77,7 @@
     }
   },
   "LLDP": {
-    "Global": {
+    "GLOBAL": {
       "hello_time": "10"
     }
   },
