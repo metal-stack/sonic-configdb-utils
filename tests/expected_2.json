@@ -72,8 +72,8 @@
     }
   },
   "LLDP": {
-    "GLOBAL": {
-      "hello_time": "10"
+    "Global": {
+      "hello_timer": "10"
     }
   },
   "LOOPBACK_INTERFACE": {

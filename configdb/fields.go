@@ -89,11 +89,11 @@ const (
 )
 
 type LLDP struct {
-	Global LLDPGlobal `json:"GLOBAL,omitempty"`
+	Global LLDPGlobal `json:"Global,omitempty"`
 }
 
 type LLDPGlobal struct {
-	HelloTime string `json:"hello_time,omitempty"`
+	HelloTime string `json:"hello_timer,omitempty"`
 }
 
 type MCLAGDomain struct {
