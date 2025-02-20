@@ -88,14 +88,6 @@ const (
 	LACPKeyModeAuto LACPKeyMode = "auto"
 )
 
-type LLDP struct {
-	Global LLDPGlobal `json:"Global,omitempty"`
-}
-
-type LLDPGlobal struct {
-	HelloTime string `json:"hello_timer,omitempty"`
-}
-
 type MCLAGDomain struct {
 	MCLAGSystemID string `json:"mclag_system_id,omitempty"`
 	PeerIP        string `json:"peer_ip,omitempty"`

@@ -15,7 +15,6 @@
 #     vrf: VrfMpls
 
 # sonic_hostname: leaf01
-# sonic_lldp_hello_timer: 10
 # sonic_loopback_address: 10.7.7.7
 
 # sonic_mclag:
@@ -24,7 +23,7 @@
 #     - 11
 #   peer_ip: 192.168.255.1
 #   peer_link: PortChannel01
-#   source_ip: 192.168.255.2  
+#   source_ip: 192.168.255.2
 #   system_mac: aa:aa:aa:aa:aa:aa
 
 # sonic_mgmtif_gateway: 10.7.10.1

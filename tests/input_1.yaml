@@ -18,7 +18,6 @@ sonic_interconnects:
     vrf: VrfInternet
 
 sonic_hostname: leaf01
-sonic_lldp_hello_timer: 10
 sonic_loopback_address: 10.7.7.7
 
 sonic_mclag:
@@ -65,7 +64,6 @@ sonic_ports:
     mtu: 1500
     vrf: VrfInternet
   - name: Ethernet120
-
 
 sonic_ports_default_fec: none
 sonic_ports_default_mtu: 9000

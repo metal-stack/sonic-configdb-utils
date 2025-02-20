@@ -11,7 +11,6 @@ sonic_docker_routing_config_mode: split
 sonic_frr_mgmt_framework_config: false
 
 sonic_hostname: leaf01
-sonic_lldp_hello_timer: 10
 sonic_loopback_address: 10.7.7.7
 
 sonic_mgmtif_gateway: 10.7.10.1
@@ -35,7 +34,6 @@ sonic_ports:
   - name: Ethernet4
     mtu: 1500
   - name: Ethernet120
-
 
 sonic_ports_default_fec: none
 sonic_ports_default_mtu: 9000

@@ -58,7 +58,6 @@ type Values struct {
 	FRRMgmtFrameworkConfig  bool                    `yaml:"sonic_frr_mgmt_framework_config,omitempty"`
 	Hostname                string                  `yaml:"sonic_hostname,omitempty"`
 	Interconnects           map[string]Interconnect `yaml:"sonic_interconnects,omitempty"`
-	LLDPHelloTimer          int                     `yaml:"sonic_lldp_hello_timer,omitempty"`
 	LoopbackAddress         string                  `yaml:"sonic_loopback_address,omitempty"`
 	MCLAG                   *MCLAG                  `yaml:"sonic_mclag,omitempty"`
 	MgmtIfGateway           string                  `yaml:"sonic_mgmtif_gateway,omitempty"`

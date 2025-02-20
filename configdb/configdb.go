@@ -13,9 +13,8 @@ type ConfigDB struct {
 	ACLTables          map[string]ACLTable       `json:"ACL_TABLE,omitempty"`
 	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG,omitempty"`
 	DeviceMetadata     `json:"DEVICE_METADATA,omitempty"`
-	Features           map[string]Feature   `json:"FEATURE,omitempty"`
-	Interfaces         map[string]Interface `json:"INTERFACE,omitempty"`
-	LLDP               `json:"LLDP,omitempty"`
+	Features           map[string]Feature        `json:"FEATURE,omitempty"`
+	Interfaces         map[string]Interface      `json:"INTERFACE,omitempty"`
 	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
 	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
@@ -65,11 +64,6 @@ func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
 			},
 		},
 		Interfaces: getInterfaces(input.Ports, input.BGPPorts),
-		LLDP: LLDP{
-			Global: LLDPGlobal{
-				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTimer),
-			},
-		},
 		LoopbackInterface: map[string]struct{}{
 			"Loopback0": {},
 			"Loopback0|" + input.LoopbackAddress + "/32": {},
