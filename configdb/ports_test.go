@@ -52,7 +52,7 @@ func Test_parseBreakout(t *testing.T) {
 			name:         "breakout mode must be valid",
 			portName:     "Ethernet0",
 			breakoutMode: "2x25G",
-			wantErr:      fmt.Errorf("breakout mode must be one of '1x100G[40G]', '2x50G', '4x25G', '4x10G'"),
+			wantErr:      fmt.Errorf("breakout mode must be one of '1x100G[40G]', '2x50G', '4x25G', '4x10G', '1x1G'"),
 		},
 		{
 			name:          "breakout 1x100G[40G]",
@@ -88,6 +88,15 @@ func Test_parseBreakout(t *testing.T) {
 			wantNumber:    4,
 			wantSpeed:     10000,
 			wantPortIndex: 5,
+			wantErr:       nil,
+		},
+		{
+			name:          "breakout 1x1G",
+			portName:      "Ethernet17",
+			breakoutMode:  "1x1G",
+			wantNumber:    1,
+			wantSpeed:     1000,
+			wantPortIndex: 17,
 			wantErr:       nil,
 		},
 	}

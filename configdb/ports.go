@@ -87,7 +87,7 @@ func parseBreakout(portName, breakoutMode string) (number, speed, portIndex int,
 	if err != nil || portNumber < 0 {
 		return 0, 0, 0, invalidPortName
 	}
-	if portNumber%4 != 0 {
+	if breakoutMode != "1x1G" && portNumber%4 != 0 {
 		return 0, 0, 0, fmt.Errorf("port number must be divisible by 4")
 	}
 
@@ -100,7 +100,9 @@ func parseBreakout(portName, breakoutMode string) (number, speed, portIndex int,
 		return 4, 25 * 1000, portNumber/4 + 1, nil
 	case "4x10G":
 		return 4, 10 * 1000, portNumber/4 + 1, nil
+	case "1x1G":
+		return 1, 1 * 1000, portNumber, nil
 	default:
-		return 0, 0, 0, fmt.Errorf("breakout mode must be one of '1x100G[40G]', '2x50G', '4x25G', '4x10G'")
+		return 0, 0, 0, fmt.Errorf("breakout mode must be one of '1x100G[40G]', '2x50G', '4x25G', '4x10G', '1x1G'")
 	}
 }
