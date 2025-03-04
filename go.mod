@@ -7,7 +7,7 @@ require (
 	github.com/metal-stack/metal-lib v0.19.0
 	github.com/metal-stack/v v1.0.3
 	github.com/spf13/cobra v1.8.1
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -25,5 +25,4 @@ require (
 	github.com/stretchr/testify v1.9.0 // indirect
 	go.mongodb.org/mongo-driver v1.17.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

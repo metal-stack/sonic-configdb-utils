@@ -2,9 +2,11 @@ package configdb
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 	"strconv"
 
+	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
@@ -37,8 +39,8 @@ type ConfigDB struct {
 	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values) (*ConfigDB, error) {
-	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU)
+func GenerateConfigDB(input *values.Values, platform *p.Platform) (*ConfigDB, error) {
+	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU, platform)
 	if err != nil {
 		return nil, err
 	}
@@ -296,18 +298,17 @@ func getPortChannelMembers(portchannels []values.PortChannel) map[string]struct{
 	return portchannelMembers
 }
 
-func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defaultFECMode values.FECMode, defaultMTU int) (map[string]Port, map[string]BreakoutConfig, error) {
+func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defaultFECMode values.FECMode, defaultMTU int, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
 
 	for portName, breakout := range breakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
 		if err != nil {
 			return nil, nil, err
 		}
-		for name, port := range breakoutPorts {
-			configPorts[name] = port
-		}
+		maps.Copy(configPorts, breakoutPorts)
+
 		configBreakouts[portName] = BreakoutConfig{
 			BreakoutMode: BreakoutMode(breakout),
 		}

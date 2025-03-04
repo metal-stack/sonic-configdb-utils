@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
+	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
@@ -123,6 +124,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 		breakouts      map[string]string
 		defaultFECMode values.FECMode
 		defaultMTU     int
+		platform       *p.Platform
 		wantPorts      map[string]Port
 		wantBreakouts  map[string]BreakoutConfig
 		wantErr        error
@@ -132,6 +134,17 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			ports: []values.Port{},
 			breakouts: map[string]string{
 				"Ethernet0": "1x100G[40G]",
+			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet0": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth1(Port1)"},
+						},
+						Index: "1,1,1,1",
+						Lanes: "1,2,3,4",
+					},
+				},
 			},
 			wantPorts: map[string]Port{
 				"Ethernet0": {
@@ -162,6 +175,18 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 					Name: "Ethernet0",
 				},
 			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet4": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth2(Port2)"},
+							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+						},
+						Index: "2,2,2,2",
+						Lanes: "5,6,7,8",
+					},
+				},
+			},
 			wantErr: fmt.Errorf("no breakout configuration found for port Ethernet0"),
 		},
 		{
@@ -172,6 +197,18 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			ports: []values.Port{
 				{
 					Name: "Ethernet5",
+				},
+			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet4": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth2(Port2)"},
+							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+						},
+						Index: "2,2,2,2",
+						Lanes: "5,6,7,8",
+					},
 				},
 			},
 			wantErr: fmt.Errorf("no breakout configuration found for port Ethernet5"),
@@ -187,6 +224,18 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 					Speed: 10000,
 				},
 			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet4": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth2(Port2)"},
+							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+						},
+						Index: "2,2,2,2",
+						Lanes: "5,6,7,8",
+					},
+				},
+			},
 			wantErr: fmt.Errorf("invalid speed definition for port Ethernet4; speed can only be configured for ports with breakout mode 1x100G[40G]"),
 		},
 		{
@@ -198,6 +247,18 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				{
 					Name:  "Ethernet4",
 					Speed: 50000,
+				},
+			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet4": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth2(Port2)"},
+							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+						},
+						Index: "2,2,2,2",
+						Lanes: "5,6,7,8",
+					},
 				},
 			},
 			wantErr: fmt.Errorf("invalid speed 50000 for port Ethernet4; current breakout configuration only allows values 100000 or 40000"),
@@ -213,6 +274,18 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				{
 					Name:  "Ethernet4",
 					Speed: 0,
+				},
+			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet4": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth2(Port2)"},
+							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+						},
+						Index: "2,2,2,2",
+						Lanes: "5,6,7,8",
+					},
 				},
 			},
 			wantBreakouts: map[string]BreakoutConfig{
@@ -247,6 +320,18 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 					Speed:   40000,
 				},
 			},
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet4": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth2(Port2)"},
+							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+						},
+						Index: "2,2,2,2",
+						Lanes: "5,6,7,8",
+					},
+				},
+			},
 			wantBreakouts: map[string]BreakoutConfig{
 				"Ethernet4": {
 					BreakoutMode: BreakoutMode1x100G,
@@ -268,7 +353,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPorts, gotBreakouts, err := getPortsAndBreakouts(tt.ports, tt.breakouts, tt.defaultFECMode, tt.defaultMTU)
+			gotPorts, gotBreakouts, err := getPortsAndBreakouts(tt.ports, tt.breakouts, tt.defaultFECMode, tt.defaultMTU, tt.platform)
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Errorf("getPortsAndBreakouts() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/metal-stack/sonic-configdb-utils/configdb"
+	"github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
 	"github.com/spf13/cobra"
 )
@@ -16,13 +17,31 @@ var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate a config_db.json",
 	Run: func(cmd *cobra.Command, args []string) {
+		platformFile, _ := cmd.Flags().GetString("platform-file")
+		if platformFile == "" {
+			fmt.Println("missing platform.json file; please provide a platform.json file via --platform-file flag")
+			os.Exit(1)
+		}
+
+		bytes, err := os.ReadFile(platformFile)
+		if err != nil {
+			fmt.Printf("failed to read platform.json file, %v\n", err)
+			os.Exit(1)
+		}
+
+		platform, err := platform.UnmarshalPlatformJSON(bytes)
+		if err != nil {
+			fmt.Printf("failed to parse platform.json, %v\n", err)
+			os.Exit(1)
+		}
+
 		inputFile, _ := cmd.Flags().GetString("input")
 		if inputFile == "" {
 			fmt.Println("missing input values; please provide an input file via --input flag")
 			os.Exit(1)
 		}
 
-		bytes, err := os.ReadFile(inputFile)
+		bytes, err = os.ReadFile(inputFile)
 		if err != nil {
 			fmt.Printf("failed to read input file, %v\n", err)
 			os.Exit(1)
@@ -34,7 +53,7 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		config, err := configdb.GenerateConfigDB(values)
+		config, err := configdb.GenerateConfigDB(values, platform)
 		if err != nil {
 			fmt.Printf("failed to generate config, %v\n", err)
 			os.Exit(1)
@@ -69,6 +88,7 @@ func init() {
 	rootCmd.AddCommand(generateCmd)
 
 	generateCmd.Flags().StringP("input", "i", "", "input file to generate the config_db.json from")
+	generateCmd.Flags().StringP("platform-file", "f", "", "path to a vendor-specific platform.json file")
 	generateCmd.Flags().StringP("output", "o", "", "output file")
 }
 

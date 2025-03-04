@@ -5,116 +5,42 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/metal-stack/metal-lib/pkg/testcommon"
+	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
-func Test_parseBreakout(t *testing.T) {
+func Test_incrementPortNameSuffix(t *testing.T) {
 	tests := []struct {
-		name          string
-		portName      string
-		breakoutMode  string
-		wantNumber    int
-		wantSpeed     int
-		wantPortIndex int
-		wantErr       error
+		name      string
+		portName  string
+		increment int
+		want      string
+		wantErr   bool
 	}{
 		{
-			name:         "port name cannot be empty",
-			breakoutMode: "4x24G",
-			wantErr:      fmt.Errorf("port name must not be empty"),
+			name:      "invalid prefix",
+			portName:  "eth1",
+			increment: 0,
+			want:      "",
+			wantErr:   true,
 		},
 		{
-			name:         "port name must start with 'Ethernet'",
-			portName:     "eth0",
-			breakoutMode: "4x24G",
-			wantErr:      fmt.Errorf("port name must start with 'Ethernet' and end with a positive integer"),
-		},
-		{
-			name:         "port name suffix must be an integer",
-			portName:     "EthernetX",
-			breakoutMode: "4x24G",
-			wantErr:      fmt.Errorf("port name must start with 'Ethernet' and end with a positive integer"),
-		},
-		{
-			name:         "port name suffix must be a positive integer",
-			portName:     "Ethernet-10",
-			breakoutMode: "4x24G",
-			wantErr:      fmt.Errorf("port name must start with 'Ethernet' and end with a positive integer"),
-		},
-		{
-			name:         "port number must be divisible by 4",
-			portName:     "Ethernet1",
-			breakoutMode: "4x24G",
-			wantErr:      fmt.Errorf("port number must be divisible by 4"),
-		},
-		{
-			name:         "breakout mode must be valid",
-			portName:     "Ethernet0",
-			breakoutMode: "2x25G",
-			wantErr:      fmt.Errorf("breakout mode must be one of '1x100G[40G]', '2x50G', '4x25G', '4x10G', '1x1G'"),
-		},
-		{
-			name:          "breakout 1x100G[40G]",
-			portName:      "Ethernet4",
-			breakoutMode:  "1x100G[40G]",
-			wantNumber:    1,
-			wantSpeed:     100000,
-			wantPortIndex: 2,
-			wantErr:       nil,
-		},
-		{
-			name:          "breakout 2x50G",
-			portName:      "Ethernet8",
-			breakoutMode:  "2x50G",
-			wantNumber:    2,
-			wantSpeed:     50000,
-			wantPortIndex: 3,
-			wantErr:       nil,
-		},
-		{
-			name:          "breakout 4x25G",
-			portName:      "Ethernet12",
-			breakoutMode:  "4x25G",
-			wantNumber:    4,
-			wantSpeed:     25000,
-			wantPortIndex: 4,
-			wantErr:       nil,
-		},
-		{
-			name:          "breakout 4x10G",
-			portName:      "Ethernet16",
-			breakoutMode:  "4x10G",
-			wantNumber:    4,
-			wantSpeed:     10000,
-			wantPortIndex: 5,
-			wantErr:       nil,
-		},
-		{
-			name:          "breakout 1x1G",
-			portName:      "Ethernet17",
-			breakoutMode:  "1x1G",
-			wantNumber:    1,
-			wantSpeed:     1000,
-			wantPortIndex: 17,
-			wantErr:       nil,
+			name:      "increment suffix",
+			portName:  "Ethernet56",
+			increment: 1,
+			want:      "Ethernet57",
+			wantErr:   false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotNumber, gotSpeed, gotPortIndex, err := parseBreakout(tt.portName, tt.breakoutMode)
-			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
-				t.Errorf("parseBreakout() error diff = %s", diff)
+			got, err := incrementPortNameSuffix(tt.portName, tt.increment)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("incrementPortNameSuffix() error = %v, wantErr %v", err, tt.wantErr)
+				return
 			}
-
-			if gotNumber != tt.wantNumber {
-				t.Errorf("parseBreakout() gotNumber = %v, want %v", gotNumber, tt.wantNumber)
-			}
-			if gotSpeed != tt.wantSpeed {
-				t.Errorf("parseBreakout() gotSpeed = %v, want %v", gotSpeed, tt.wantSpeed)
-			}
-			if gotPortIndex != tt.wantPortIndex {
-				t.Errorf("parseBreakout() gotPortIndex = %v, want %v", gotPortIndex, tt.wantPortIndex)
+			if got != tt.want {
+				t.Errorf("incrementPortNameSuffix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -127,15 +53,56 @@ func Test_getPortsFromBreakout(t *testing.T) {
 		breakoutMode       string
 		defaultPortFECMode values.FECMode
 		defaultMTU         int
+		platform           *p.Platform
 		want               map[string]Port
 		wantErr            bool
 	}{
+		{
+			name:         "add port with only one lane",
+			portName:     "Ethernet1",
+			breakoutMode: "1x1G",
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet1": {
+						BreakoutModes: map[string][]string{
+							"1x1G": {"Eth2(Port2)"},
+						},
+						Index: "2",
+						Lanes: "25",
+					},
+				},
+			},
+			want: map[string]Port{
+				"Ethernet1": {
+					AdminStatus: defaultAdminStatus,
+					Alias:       "Eth2(Port2)",
+					Autoneg:     defaultAutonegMode,
+					FEC:         defaultFECMode,
+					Index:       "2",
+					Lanes:       "25",
+					MTU:         fmt.Sprintf("%d", defaultMTU),
+					Speed:       "1000",
+				},
+			},
+			wantErr: false,
+		},
 		{
 			name:               "add one 1x100G[40G] port with different defaults",
 			portName:           "Ethernet120",
 			breakoutMode:       "1x100G[40G]",
 			defaultPortFECMode: values.FECModeRS,
 			defaultMTU:         1500,
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet120": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth31(Port31)"},
+						},
+						Index: "31,31,31,31",
+						Lanes: "121,122,123,124",
+					},
+				},
+			},
 			want: map[string]Port{
 				"Ethernet120": {
 					AdminStatus: defaultAdminStatus,
@@ -154,6 +121,17 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			name:         "add two 2x50G ports",
 			portName:     "Ethernet116",
 			breakoutMode: "2x50G",
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet116": {
+						BreakoutModes: map[string][]string{
+							"2x50G": {"Eth30/1(Port30)", "Eth30/2(Port30)"},
+						},
+						Index: "30,30,30,30",
+						Lanes: "117,118,119,120",
+					},
+				},
+			},
 			want: map[string]Port{
 				"Ethernet116": {
 					AdminStatus: defaultAdminStatus,
@@ -182,6 +160,17 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			name:         "add four 4x10G ports",
 			portName:     "Ethernet8",
 			breakoutMode: "4x10G",
+			platform: &p.Platform{
+				Interfaces: map[string]p.Interface{
+					"Ethernet8": {
+						BreakoutModes: map[string][]string{
+							"4x10G": {"Eth3/1(Port3)", "Eth3/2(Port3)", "Eth3/3(Port3)", "Eth3/4(Port3)"},
+						},
+						Index: "3,3,3,3",
+						Lanes: "9,10,11,12",
+					},
+				},
+			},
 			want: map[string]Port{
 				"Ethernet8": {
 					AdminStatus: defaultAdminStatus,
@@ -229,7 +218,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPortsFromBreakout(tt.portName, tt.breakoutMode, tt.defaultPortFECMode, tt.defaultMTU)
+			got, err := getPortsFromBreakout(tt.portName, tt.breakoutMode, tt.defaultPortFECMode, tt.defaultMTU, tt.platform)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPortsFromBreakout() error = %v, wantErr %v", err, tt.wantErr)
 				return
