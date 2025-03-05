@@ -63,12 +63,12 @@ func (p *Platform) ParseBreakout(portName, breakout string) (*BreakoutPorts, err
 
 	lanes, err := stringToIntSlice(intf.Lanes)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse lanes, %v", err)
+		return nil, fmt.Errorf("unable to parse lanes, %w", err)
 	}
 
 	index, err := stringToIntSlice(intf.Index)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse index, %v", err)
+		return nil, fmt.Errorf("unable to parse index, %w", err)
 	}
 
 	return &BreakoutPorts{
