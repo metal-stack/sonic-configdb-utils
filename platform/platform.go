@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 )
 
-type PortAliases []string
+type BreakoutConfig map[string]string
 
 type BreakoutPorts struct {
 	PortAliases []string
@@ -27,11 +28,27 @@ type Platform struct {
 	Interfaces map[string]Interface `json:"interfaces"`
 }
 
+type PortAliases []string
+
 type SFP struct {
 	Name string `json:"name"`
 }
 
 type SpeedOptions [2]int
+
+func (p *Platform) GetDefaultBreakoutConfig() BreakoutConfig {
+	breakoutConfig := make(BreakoutConfig)
+
+	for name, intf := range p.Interfaces {
+		if len(intf.BreakoutModes) > 0 {
+			keys := slices.Collect(maps.Keys(intf.BreakoutModes))
+			sort.Strings(keys)
+			breakoutConfig[name] = keys[0]
+		}
+	}
+
+	return breakoutConfig
+}
 
 func (p *Platform) ParseBreakout(portName, breakout string) (*BreakoutPorts, error) {
 	intf, ok := p.Interfaces[portName]

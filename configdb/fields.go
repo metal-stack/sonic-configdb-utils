@@ -29,16 +29,8 @@ const (
 )
 
 type BreakoutConfig struct {
-	BreakoutMode `json:"brkout_mode,omitempty"`
+	BreakoutMode string `json:"brkout_mode,omitempty"`
 }
-
-type BreakoutMode string
-
-const (
-	BreakoutMode1x100G BreakoutMode = "1x100G[40G]"
-	BreakoutMode4x25G  BreakoutMode = "4x25G"
-	BreakoutMode4x10G  BreakoutMode = "4x10G"
-)
 
 type DeviceMetadata struct {
 	Localhost Metadata `json:"localhost,omitempty"`
@@ -146,14 +138,15 @@ const (
 )
 
 type Port struct {
-	AdminStatus `json:"admin_status,omitempty"`
-	Alias       string      `json:"alias,omitempty"`
-	Autoneg     AutonegMode `json:"autoneg,omitempty"`
-	FEC         FECMode     `json:"fec,omitempty"`
-	Index       string      `json:"index,omitempty"`
-	Lanes       string      `json:"lanes,omitempty"`
-	MTU         string      `json:"mtu,omitempty"`
-	Speed       string      `json:"speed,omitempty"`
+	AdminStatus    `json:"admin_status,omitempty"`
+	Alias          string      `json:"alias,omitempty"`
+	Autoneg        AutonegMode `json:"autoneg,omitempty"`
+	FEC            FECMode     `json:"fec,omitempty"`
+	Index          string      `json:"index,omitempty"`
+	Lanes          string      `json:"lanes,omitempty"`
+	MTU            string      `json:"mtu,omitempty"`
+	parentBreakout string
+	Speed          string `json:"speed,omitempty"`
 }
 
 type PortChannel struct {

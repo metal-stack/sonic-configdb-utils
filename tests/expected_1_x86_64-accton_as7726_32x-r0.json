@@ -1,0 +1,651 @@
+{
+  "ACL_RULE": {
+    "ALLOW_NTP|DEFAULT_RULE": {
+      "ETHER_TYPE": "2048",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "1"
+    },
+    "ALLOW_NTP|RULE_1": {
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "99",
+      "SRC_IP": "0.0.0.0/0"
+    },
+    "ALLOW_SSH|DEFAULT_RULE": {
+      "ETHER_TYPE": "2048",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "1"
+    },
+    "ALLOW_SSH|RULE_1": {
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "91",
+      "SRC_IP": "10.1.23.1/30"
+    }
+  },
+  "ACL_TABLE": {
+    "ALLOW_NTP": {
+      "policy_desc": "Allow NTP",
+      "services": [
+        "NTP"
+      ],
+      "stage": "ingress",
+      "type": "CTRLPLANE"
+    },
+    "ALLOW_SSH": {
+      "policy_desc": "Allow SSH access",
+      "services": [
+        "SSH"
+      ],
+      "stage": "ingress",
+      "type": "CTRLPLANE"
+    }
+  },
+  "BREAKOUT_CFG": {
+    "Ethernet0": {
+      "brkout_mode": "4x25G"
+    },
+    "Ethernet100": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet104": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet108": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet112": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet116": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet12": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet120": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet124": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet16": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet20": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet24": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet28": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet32": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet36": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet4": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet40": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet44": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet48": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet52": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet56": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet60": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet64": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet68": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet72": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet76": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet8": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet80": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet84": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet88": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet92": {
+      "brkout_mode": "1x100G[40G]"
+    },
+    "Ethernet96": {
+      "brkout_mode": "1x100G[40G]"
+    }
+  },
+  "DEVICE_METADATA": {
+    "localhost": {
+      "docker_routing_config_mode": "split",
+      "frr_mgmt_framework_config": "false",
+      "hostname": "leaf01",
+      "type": "LeafRouter"
+    }
+  },
+  "FEATURE": {
+    "dhcp_relay": {
+      "auto_restart": "enabled",
+      "state": "enabled"
+    }
+  },
+  "INTERFACE": {
+    "Ethernet0": {
+      "vrf_name": "VrfMpls"
+    },
+    "Ethernet0|10.4.3.2": {},
+    "Ethernet120": {
+      "ipv6_use_link_local_only": "enable"
+    },
+    "Ethernet4": {
+      "vrf_name": "VrfInternet"
+    }
+  },
+  "LOOPBACK_INTERFACE": {
+    "Loopback0": {},
+    "Loopback0|10.7.7.7/32": {}
+  },
+  "MCLAG_DOMAIN": {
+    "1": {
+      "mclag_system_id": "aa:aa:aa:aa:aa:aa",
+      "peer_ip": "192.168.255.1",
+      "peer_link": "PortChannel01",
+      "source_ip": "192.168.255.2"
+    }
+  },
+  "MCLAG_INTERFACE": {
+    "1|PortChannel11": {
+      "if_type": "PortChannel"
+    },
+    "1|PortChannel22": {
+      "if_type": "PortChannel"
+    }
+  },
+  "MCLAG_UNIQUE_IP": {
+    "Vlan1000": {
+      "unique_ip": "enable"
+    }
+  },
+  "MGMT_INTERFACE": {
+    "eth0|10.7.10.2": {
+      "gwaddr": "10.7.10.1"
+    }
+  },
+  "MGMT_PORT": {
+    "eth0": {
+      "admin_status": "up",
+      "alias": "eth0",
+      "description": "Management Port"
+    }
+  },
+  "MGMT_VRF_CONFIG": {
+    "vrf_global": {
+      "mgmtVrfEnabled": "false"
+    }
+  },
+  "NTP": {
+    "global": {
+      "src_intf": "eth0"
+    }
+  },
+  "NTP_SERVER": {
+    "0.europe.pool.ntp.org": {},
+    "1.europe.pool.ntp.org": {},
+    "2.europe.pool.ntp.org": {},
+    "3.europe.pool.ntp.org": {}
+  },
+  "PORT": {
+    "Ethernet0": {
+      "admin_status": "up",
+      "alias": "Eth1/1(Port1)",
+      "autoneg": "off",
+      "fec": "rs",
+      "index": "1",
+      "lanes": "1",
+      "mtu": "1500",
+      "speed": "25000"
+    },
+    "Ethernet1": {
+      "admin_status": "up",
+      "alias": "Eth1/2(Port1)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "1",
+      "lanes": "2",
+      "mtu": "1500",
+      "speed": "25000"
+    },
+    "Ethernet100": {
+      "admin_status": "up",
+      "alias": "Eth26(Port26)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "26",
+      "lanes": "101,102,103,104",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet104": {
+      "admin_status": "up",
+      "alias": "Eth27(Port27)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "27",
+      "lanes": "105,106,107,108",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet108": {
+      "admin_status": "up",
+      "alias": "Eth28(Port28)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "28",
+      "lanes": "109,110,111,112",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet112": {
+      "admin_status": "up",
+      "alias": "Eth29(Port29)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "29",
+      "lanes": "113,114,115,116",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet116": {
+      "admin_status": "up",
+      "alias": "Eth30(Port30)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "30",
+      "lanes": "117,118,119,120",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet12": {
+      "admin_status": "up",
+      "alias": "Eth4(Port4)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "4",
+      "lanes": "13,14,15,16",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet120": {
+      "admin_status": "up",
+      "alias": "Eth31(Port31)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "31",
+      "lanes": "121,122,123,124",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet124": {
+      "admin_status": "up",
+      "alias": "Eth32(Port32)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "32",
+      "lanes": "125,126,127,128",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet16": {
+      "admin_status": "up",
+      "alias": "Eth5(Port5)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "5",
+      "lanes": "17,18,19,20",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet2": {
+      "admin_status": "up",
+      "alias": "Eth1/3(Port1)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "1",
+      "lanes": "3",
+      "mtu": "9000",
+      "speed": "25000"
+    },
+    "Ethernet20": {
+      "admin_status": "up",
+      "alias": "Eth6(Port6)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "6",
+      "lanes": "21,22,23,24",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet24": {
+      "admin_status": "up",
+      "alias": "Eth7(Port7)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "7",
+      "lanes": "25,26,27,28",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet28": {
+      "admin_status": "up",
+      "alias": "Eth8(Port8)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "8",
+      "lanes": "29,30,31,32",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet3": {
+      "admin_status": "up",
+      "alias": "Eth1/4(Port1)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "1",
+      "lanes": "4",
+      "mtu": "9000",
+      "speed": "25000"
+    },
+    "Ethernet32": {
+      "admin_status": "up",
+      "alias": "Eth9(Port9)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "9",
+      "lanes": "33,34,35,36",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet36": {
+      "admin_status": "up",
+      "alias": "Eth10(Port10)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "10",
+      "lanes": "37,38,39,40",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet4": {
+      "admin_status": "up",
+      "alias": "Eth2(Port2)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "2",
+      "lanes": "5,6,7,8",
+      "mtu": "1500",
+      "speed": "100000"
+    },
+    "Ethernet40": {
+      "admin_status": "up",
+      "alias": "Eth11(Port11)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "11",
+      "lanes": "41,42,43,44",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet44": {
+      "admin_status": "up",
+      "alias": "Eth12(Port12)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "12",
+      "lanes": "45,46,47,48",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet48": {
+      "admin_status": "up",
+      "alias": "Eth13(Port13)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "13",
+      "lanes": "49,50,51,52",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet52": {
+      "admin_status": "up",
+      "alias": "Eth14(Port14)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "14",
+      "lanes": "53,54,55,56",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet56": {
+      "admin_status": "up",
+      "alias": "Eth15(Port15)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "15",
+      "lanes": "57,58,59,60",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet60": {
+      "admin_status": "up",
+      "alias": "Eth16(Port16)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "16",
+      "lanes": "61,62,63,64",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet64": {
+      "admin_status": "up",
+      "alias": "Eth17(Port17)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "17",
+      "lanes": "65,66,67,68",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet68": {
+      "admin_status": "up",
+      "alias": "Eth18(Port18)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "18",
+      "lanes": "69,70,71,72",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet72": {
+      "admin_status": "up",
+      "alias": "Eth19(Port19)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "19",
+      "lanes": "73,74,75,76",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet76": {
+      "admin_status": "up",
+      "alias": "Eth20(Port20)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "20",
+      "lanes": "77,78,79,80",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet8": {
+      "admin_status": "up",
+      "alias": "Eth3(Port3)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "3",
+      "lanes": "9,10,11,12",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet80": {
+      "admin_status": "up",
+      "alias": "Eth21(Port21)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "21",
+      "lanes": "81,82,83,84",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet84": {
+      "admin_status": "up",
+      "alias": "Eth22(Port22)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "22",
+      "lanes": "85,86,87,88",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet88": {
+      "admin_status": "up",
+      "alias": "Eth23(Port23)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "23",
+      "lanes": "89,90,91,92",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet92": {
+      "admin_status": "up",
+      "alias": "Eth24(Port24)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "24",
+      "lanes": "93,94,95,96",
+      "mtu": "9000",
+      "speed": "100000"
+    },
+    "Ethernet96": {
+      "admin_status": "up",
+      "alias": "Eth25(Port25)",
+      "autoneg": "off",
+      "fec": "none",
+      "index": "25",
+      "lanes": "97,98,99,100",
+      "mtu": "9000",
+      "speed": "100000"
+    }
+  },
+  "PORTCHANNEL": {
+    "PortChannel01": {
+      "admin_status": "up",
+      "fallback": "true",
+      "fast_rate": "false",
+      "lacp_key": "auto",
+      "min_links": "1",
+      "mix_speed": "false",
+      "mtu": "1500"
+    },
+    "PortChannel11": {
+      "admin_status": "up",
+      "fallback": "true",
+      "fast_rate": "false",
+      "lacp_key": "auto",
+      "min_links": "1",
+      "mix_speed": "false",
+      "mtu": "9000"
+    }
+  },
+  "PORTCHANNEL_MEMBER": {
+    "PortChannel01|Ethernet4": {},
+    "PortChannel01|Ethernet5": {}
+  },
+  "SAG": {
+    "GLOBAL": {
+      "gateway_mac": "bb:bb:bb:bb:bb:bb"
+    }
+  },
+  "VLAN": {
+    "Vlan4000": {
+      "dhcp_servers": [
+        "10.9.8.7",
+        "10.9.8.6"
+      ],
+      "vlanid": "4000"
+    },
+    "Vlan4001": {
+      "vlanid": "4001"
+    }
+  },
+  "VLAN_INTERFACE": {
+    "Vlan4000": {
+      "static_anycast_gateway": "true",
+      "vrf_name": "Vrf45"
+    },
+    "Vlan4000|10.9.7.0": {},
+    "Vlan4001": {}
+  },
+  "VLAN_MEMBER": {
+    "Vlan4000|PortChannel01": {
+      "tagging_mode": "tagged"
+    },
+    "Vlan4000|PortChannel11": {
+      "tagging_mode": "untagged"
+    }
+  },
+  "VRF": {
+    "Vrf45": {},
+    "VrfInternet": {},
+    "VrfMpls": {
+      "vni": "104010"
+    }
+  },
+  "VXLAN_EVPN_NVO": {
+    "nvo": {
+      "source_vtep": "vtep"
+    }
+  },
+  "VXLAN_TUNNEL": {
+    "vtep": {
+      "src_ip": "10.7.7.7"
+    }
+  },
+  "VXLAN_TUNNEL_MAP": {
+    "vtep|map_103999_Vlan3999": {
+      "vlan": "Vlan3999",
+      "vni": "103999"
+    }
+  }
+}

@@ -39,7 +39,7 @@ build:
 
 .PHONY: test
 test:
-	go test ./...
+	go test ./... -count 1
 
 .PHONY: test-generate
 test-generate:

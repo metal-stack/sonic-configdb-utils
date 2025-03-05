@@ -148,46 +148,111 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			},
 			wantPorts: map[string]Port{
 				"Ethernet0": {
-					AdminStatus: defaultAdminStatus,
-					Alias:       "Eth1(Port1)",
-					Autoneg:     defaultAutonegMode,
-					FEC:         defaultFECMode,
-					Index:       "1",
-					Lanes:       "1,2,3,4",
-					MTU:         fmt.Sprintf("%d", defaultMTU),
-					Speed:       "100000",
+					AdminStatus:    defaultAdminStatus,
+					Alias:          "Eth1(Port1)",
+					Autoneg:        defaultAutonegMode,
+					FEC:            defaultFECMode,
+					Index:          "1",
+					Lanes:          "1,2,3,4",
+					MTU:            fmt.Sprintf("%d", defaultMTU),
+					parentBreakout: "1x100G[40G]",
+					Speed:          "100000",
 				},
 			},
 			wantBreakouts: map[string]BreakoutConfig{
 				"Ethernet0": {
-					BreakoutMode: BreakoutMode1x100G,
+					BreakoutMode: "1x100G[40G]",
 				},
 			},
 			wantErr: nil,
 		},
 		{
-			name: "port is missing breakout config",
-			breakouts: map[string]string{
-				"Ethernet4": "4x25G",
-			},
+			name: "only ports defined",
 			ports: []values.Port{
 				{
-					Name: "Ethernet0",
+					Name:  "Ethernet0",
+					Speed: 40000,
+				},
+				{
+					Name:  "Ethernet4",
+					Speed: 40000,
 				},
 			},
 			platform: &p.Platform{
 				Interfaces: map[string]p.Interface{
+					"Ethernet0": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth1(Port1)"},
+							"2x50G":       {"Eth1/1(Port1)", "Eth1/2(Port1)"},
+						},
+						Index: "1,1,1,1",
+						Lanes: "1,2,3,4",
+					},
 					"Ethernet4": {
 						BreakoutModes: map[string][]string{
 							"1x100G[40G]": {"Eth2(Port2)"},
-							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
+							"2x50G":       {"Eth2/1(Port2)", "Eth2/2(Port2)"},
 						},
 						Index: "2,2,2,2",
 						Lanes: "5,6,7,8",
 					},
+					"Ethernet8": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {"Eth3(Port3)"},
+							"2x50G":       {"Eth3/1(Port3)", "Eth3/2(Port3)"},
+						},
+						Index: "3,3,3,3",
+						Lanes: "9,10,11,12",
+					},
 				},
 			},
-			wantErr: fmt.Errorf("no breakout configuration found for port Ethernet0"),
+			wantPorts: map[string]Port{
+				"Ethernet0": {
+					AdminStatus:    AdminStatusUp,
+					Alias:          "Eth1(Port1)",
+					Autoneg:        AutonegModeOff,
+					FEC:            defaultFECMode,
+					Index:          "1",
+					Lanes:          "1,2,3,4",
+					MTU:            fmt.Sprintf("%d", defaultMTU),
+					parentBreakout: "1x100G[40G]",
+					Speed:          "40000",
+				},
+				"Ethernet4": {
+					AdminStatus:    AdminStatusUp,
+					Alias:          "Eth2(Port2)",
+					Autoneg:        AutonegModeOff,
+					FEC:            defaultFECMode,
+					Index:          "2",
+					Lanes:          "5,6,7,8",
+					MTU:            fmt.Sprintf("%d", defaultMTU),
+					parentBreakout: "1x100G[40G]",
+					Speed:          "40000",
+				},
+				"Ethernet8": {
+					AdminStatus:    AdminStatusUp,
+					Alias:          "Eth3(Port3)",
+					Autoneg:        AutonegModeOff,
+					FEC:            defaultFECMode,
+					Index:          "3",
+					Lanes:          "9,10,11,12",
+					MTU:            fmt.Sprintf("%d", defaultMTU),
+					parentBreakout: "1x100G[40G]",
+					Speed:          "100000",
+				},
+			},
+			wantBreakouts: map[string]BreakoutConfig{
+				"Ethernet0": {
+					BreakoutMode: "1x100G[40G]",
+				},
+				"Ethernet4": {
+					BreakoutMode: "1x100G[40G]",
+				},
+				"Ethernet8": {
+					BreakoutMode: "1x100G[40G]",
+				},
+			},
+			wantErr: nil,
 		},
 		{
 			name: "child-port is not present if breakout config 'absorbs' it",
@@ -211,57 +276,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 					},
 				},
 			},
-			wantErr: fmt.Errorf("no breakout configuration found for port Ethernet5"),
-		},
-		{
-			name: "port speed should be omitted for breakouts other than 1x100G[40G]",
-			breakouts: map[string]string{
-				"Ethernet4": "4x25G",
-			},
-			ports: []values.Port{
-				{
-					Name:  "Ethernet4",
-					Speed: 10000,
-				},
-			},
-			platform: &p.Platform{
-				Interfaces: map[string]p.Interface{
-					"Ethernet4": {
-						BreakoutModes: map[string][]string{
-							"1x100G[40G]": {"Eth2(Port2)"},
-							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
-						},
-						Index: "2,2,2,2",
-						Lanes: "5,6,7,8",
-					},
-				},
-			},
-			wantErr: fmt.Errorf("invalid speed definition for port Ethernet4; speed can only be configured for ports with breakout mode 1x100G[40G]"),
-		},
-		{
-			name: "only port speed 40G is allowed to override preconfigured speed",
-			breakouts: map[string]string{
-				"Ethernet4": "1x100G[40G]",
-			},
-			ports: []values.Port{
-				{
-					Name:  "Ethernet4",
-					Speed: 50000,
-				},
-			},
-			platform: &p.Platform{
-				Interfaces: map[string]p.Interface{
-					"Ethernet4": {
-						BreakoutModes: map[string][]string{
-							"1x100G[40G]": {"Eth2(Port2)"},
-							"4x25G":       {"Eth2/1(Port2)", "Eth2/2(Port2)", "Eth2/3(Port2)", "Eth2/4(Port2)"},
-						},
-						Index: "2,2,2,2",
-						Lanes: "5,6,7,8",
-					},
-				},
-			},
-			wantErr: fmt.Errorf("invalid speed 50000 for port Ethernet4; current breakout configuration only allows values 100000 or 40000"),
+			wantErr: fmt.Errorf("invalid port name Ethernet5; if you think it should be available please check your breakout configuration"),
 		},
 		{
 			name: "port speed 0 is allowed",
@@ -290,19 +305,20 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			},
 			wantBreakouts: map[string]BreakoutConfig{
 				"Ethernet4": {
-					BreakoutMode: BreakoutMode1x100G,
+					BreakoutMode: "1x100G[40G]",
 				},
 			},
 			wantPorts: map[string]Port{
 				"Ethernet4": {
-					AdminStatus: AdminStatusUp,
-					Alias:       "Eth2(Port2)",
-					Autoneg:     AutonegModeOff,
-					FEC:         FECModeRS,
-					Index:       "2",
-					Lanes:       "5,6,7,8",
-					MTU:         "1500",
-					Speed:       "100000",
+					AdminStatus:    AdminStatusUp,
+					Alias:          "Eth2(Port2)",
+					Autoneg:        AutonegModeOff,
+					FEC:            FECModeRS,
+					Index:          "2",
+					Lanes:          "5,6,7,8",
+					MTU:            "1500",
+					parentBreakout: "1x100G[40G]",
+					Speed:          "100000",
 				},
 			},
 			wantErr: nil,
@@ -334,19 +350,20 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			},
 			wantBreakouts: map[string]BreakoutConfig{
 				"Ethernet4": {
-					BreakoutMode: BreakoutMode1x100G,
+					BreakoutMode: "1x100G[40G]",
 				},
 			},
 			wantPorts: map[string]Port{
 				"Ethernet4": {
-					AdminStatus: AdminStatusUp,
-					Alias:       "Eth2(Port2)",
-					Autoneg:     AutonegModeOff,
-					FEC:         FECModeRS,
-					Index:       "2",
-					Lanes:       "5,6,7,8",
-					MTU:         "1500",
-					Speed:       "40000",
+					AdminStatus:    AdminStatusUp,
+					Alias:          "Eth2(Port2)",
+					Autoneg:        AutonegModeOff,
+					FEC:            FECModeRS,
+					Index:          "2",
+					Lanes:          "5,6,7,8",
+					MTU:            "1500",
+					parentBreakout: "1x100G[40G]",
+					Speed:          "40000",
 				},
 			},
 		},
@@ -358,7 +375,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				t.Errorf("getPortsAndBreakouts() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(tt.wantPorts, gotPorts); diff != "" {
+			if diff := cmp.Diff(tt.wantPorts, gotPorts, testcommon.IgnoreUnexported()); diff != "" {
 				t.Errorf("getPortsAndBreakouts() diff = %v", diff)
 			}
 			if diff := cmp.Diff(tt.wantBreakouts, gotBreakouts); diff != "" {

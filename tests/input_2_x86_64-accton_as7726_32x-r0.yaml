@@ -4,31 +4,12 @@ sonic_bgp_ports:
 
 sonic_breakouts:
   Ethernet0: 4x25G
-  Ethernet4: 1x100G[40G]
-  Ethernet120: 1x100G[40G]
 
 sonic_docker_routing_config_mode: split
 sonic_frr_mgmt_framework_config: false
 
-sonic_interconnects:
-  mpls:
-    vni: 104010
-    vrf: VrfMpls
-  internet:
-    vrf: VrfInternet
-
 sonic_hostname: leaf01
 sonic_loopback_address: 10.7.7.7
-
-sonic_mclag:
-  keepalive_vlan: 1000
-  member_port_channels:
-    - 11
-    - 22
-  peer_ip: 192.168.255.1
-  peer_link: PortChannel01
-  source_ip: 192.168.255.2
-  system_mac: aa:aa:aa:aa:aa:aa
 
 sonic_mgmtif_gateway: 10.7.10.1
 sonic_mgmtif_ip: 10.7.10.2
@@ -40,36 +21,20 @@ sonic_ntpservers:
   - 2.europe.pool.ntp.org
   - 3.europe.pool.ntp.org
 
-sonic_portchannels:
-  - number: "01"
-    mtu: 1500
-    fallback: true
-    members:
-      - Ethernet4
-      - Ethernet5
-  - number: "11"
-
-sonic_portchannels_default_mtu: 9000
-
 sonic_ports:
   - name: Ethernet0
     ips:
       - 10.4.3.2
     fec: rs
     mtu: 1500
-    vrf: VrfMpls
   - name: Ethernet1
     mtu: 1500
   - name: Ethernet4
     mtu: 1500
-    vrf: VrfInternet
   - name: Ethernet120
 
 sonic_ports_default_fec: none
 sonic_ports_default_mtu: 9000
-
-sonic_sag:
-  mac: bb:bb:bb:bb:bb:bb
 
 sonic_ssh_sourceranges:
   - 10.1.23.1/30
@@ -80,12 +45,6 @@ sonic_vlans:
       - 10.9.8.7
       - 10.9.8.6
     ip: 10.9.7.0
-    sag: true
-    tagged_ports:
-      - PortChannel01
-    untagged_ports:
-      - PortChannel11
-    vrf: Vrf45
   - id: 4001
 
 sonic_vlan_members: true

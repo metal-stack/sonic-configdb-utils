@@ -16,28 +16,6 @@ const (
 	defaultMTU         = 9000
 )
 
-func getPortAlias(portIndex, number, offset int) string {
-	if number <= 1 {
-		return fmt.Sprintf("Eth%d(Port%d)", portIndex, portIndex)
-	}
-	return fmt.Sprintf("Eth%d/%d(Port%d)", portIndex, offset+1, portIndex)
-}
-
-func getLanesForPort(portIndex, number, offset int) string {
-	firstLaneIndex := (portIndex-1)*4 + 1
-
-	switch number {
-	case 1:
-		return fmt.Sprintf("%d,%d,%d,%d", firstLaneIndex, firstLaneIndex+1, firstLaneIndex+2, firstLaneIndex+3)
-	case 2:
-		return fmt.Sprintf("%d,%d", firstLaneIndex+2*offset, firstLaneIndex+2*offset+1)
-	case 4:
-		return fmt.Sprintf("%d", firstLaneIndex+offset)
-	default:
-		return ""
-	}
-}
-
 func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode values.FECMode, defaultPortMTU int, platform *p.Platform) (map[string]Port, error) {
 	ports := make(map[string]Port)
 
@@ -71,14 +49,15 @@ func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode valu
 		}
 
 		port := Port{
-			AdminStatus: defaultAdminStatus,
-			Alias:       alias,
-			Autoneg:     defaultAutonegMode,
-			FEC:         defaultFECMode,
-			Index:       fmt.Sprintf("%d", breakoutPorts.Index[i]),
-			Lanes:       lanesString,
-			MTU:         fmt.Sprintf("%d", defaultMTU),
-			Speed:       fmt.Sprintf("%d", speedOptions[0]),
+			AdminStatus:    defaultAdminStatus,
+			Alias:          alias,
+			Autoneg:        defaultAutonegMode,
+			FEC:            defaultFECMode,
+			Index:          fmt.Sprintf("%d", breakoutPorts.Index[i]),
+			Lanes:          lanesString,
+			MTU:            fmt.Sprintf("%d", defaultMTU),
+			parentBreakout: breakoutMode,
+			Speed:          fmt.Sprintf("%d", speedOptions[0]),
 		}
 
 		if defaultPortFECMode != "" {

@@ -8,6 +8,70 @@ import (
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 )
 
+func TestPlatform_GetDefaultBreakoutConfig(t *testing.T) {
+	tests := []struct {
+		name string
+		p    *Platform
+		want BreakoutConfig
+	}{
+		{
+			name: "unrealistic case where some interface does not have any breakout modes",
+			p: &Platform{
+				Interfaces: map[string]Interface{
+					"Ethernet20": {},
+				},
+			},
+			want: BreakoutConfig{},
+		},
+		{
+			name: "fill in default breakout for all interfaces",
+			p: &Platform{
+				Interfaces: map[string]Interface{
+					"Ethernet1": {
+						BreakoutModes: map[string][]string{
+							"1x1G": {},
+						},
+					},
+					"Ethernet10": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {},
+							"2x50G":       {},
+						},
+					},
+					"Ethernet20": {
+						BreakoutModes: map[string][]string{
+							"2x50G":       {},
+							"1x100G[40G]": {},
+						},
+					},
+					"Ethernet120": {
+						BreakoutModes: map[string][]string{
+							"1x100G[40G]": {},
+							"2x50G":       {},
+							"4x25G":       {},
+							"4x10G":       {},
+						},
+					},
+				},
+			},
+			want: BreakoutConfig{
+				"Ethernet1":   "1x1G",
+				"Ethernet10":  "1x100G[40G]",
+				"Ethernet20":  "1x100G[40G]",
+				"Ethernet120": "1x100G[40G]",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.p.GetDefaultBreakoutConfig()
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("Platform.GetDefaultBreakoutConfig() diff = %v", diff)
+			}
+		})
+	}
+}
+
 func TestPlatform_ParseBreakout(t *testing.T) {
 	tests := []struct {
 		name     string

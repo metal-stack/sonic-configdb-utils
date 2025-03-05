@@ -302,6 +302,19 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
 
+	defaultBreakouts := platform.GetDefaultBreakoutConfig()
+	for portName, breakout := range defaultBreakouts {
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
+		if err != nil {
+			return nil, nil, err
+		}
+		maps.Copy(configPorts, breakoutPorts)
+
+		configBreakouts[portName] = BreakoutConfig{
+			BreakoutMode: breakout,
+		}
+	}
+
 	for portName, breakout := range breakouts {
 		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
 		if err != nil {
@@ -310,29 +323,25 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 		maps.Copy(configPorts, breakoutPorts)
 
 		configBreakouts[portName] = BreakoutConfig{
-			BreakoutMode: BreakoutMode(breakout),
+			BreakoutMode: breakout,
 		}
 	}
 
 	for _, port := range ports {
 		configPort, ok := configPorts[port.Name]
 		if !ok {
-			return nil, nil, fmt.Errorf("no breakout configuration found for port %s", port.Name)
+			return nil, nil, fmt.Errorf("invalid port name %s; if you think it should be available please check your breakout configuration", port.Name)
 		}
 
-		switch configPort.Speed {
-		case "100000":
-			switch port.Speed {
-			case 100000, 40000:
-				configPort.Speed = fmt.Sprintf("%d", port.Speed)
-			case 0:
-			default:
-				return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration only allows values 100000 or 40000", port.Speed, port.Name)
-			}
-		default:
-			if port.Speed != 0 {
-				return nil, nil, fmt.Errorf("invalid speed definition for port %s; speed can only be configured for ports with breakout mode 1x100G[40G]", port.Name)
-			}
+		// error is ignored because the breakout gets parsed before and any error would have made the function return before reaching this line
+		speedOptions, _ := p.ParseSpeedOptions(configPort.parentBreakout)
+
+		if port.Speed != 0 && !slices.Contains(speedOptions[:], port.Speed) {
+			return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration %s only allows speed options %v", port.Speed, port.Name, configPort.parentBreakout, speedOptions)
+		}
+
+		if port.Speed != 0 {
+			configPort.Speed = fmt.Sprintf("%d", port.Speed)
 		}
 
 		if port.FECMode != "" && string(port.FECMode) != string(configPort.FEC) {

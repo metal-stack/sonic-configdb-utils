@@ -1,15 +1,23 @@
 #!/bin/bash
 
-for i in 1 2
-do
-  go run main.go generate -i tests/input_$i.yaml -o tests/result.json -f device/accton/x86_64-accton_as7726_32x-r0/platform.json
+function test() {
+  input=$1
+  platform_file=$2
+  expected=$3
+  output=tests/result.json
 
-  if [[ $(diff tests/expected_$i.json tests/result.json) ]]; then
-    echo TEST $i FAILED
-    diff --color=always tests/expected_$i.json tests/result.json
-    rm tests/result.json
+  go run main.go generate -i $input -o $output -f $platform_file
+
+  if [[ $(diff $expected $output) ]]; then
+    echo TEST for $input FAILED
+    diff --color=always $expected $output
+    rm $output
     exit 1
   fi
 
-  rm tests/result.json
-done
+  rm $output
+}
+
+test tests/input_1_x86_64-accton_as7726_32x-r0.yaml device/accton/x86_64-accton_as7726_32x-r0/platform.json tests/expected_1_x86_64-accton_as7726_32x-r0.json
+test tests/input_2_x86_64-accton_as7726_32x-r0.yaml device/accton/x86_64-accton_as7726_32x-r0/platform.json tests/expected_2_x86_64-accton_as7726_32x-r0.json
+test tests/input_x86_64-accton_as4630_54te-r0.yaml device/accton/x86_64-accton_as4630_54te-r0/platform.json tests/expected_x86_64-accton_as4630_54te-r0.json
