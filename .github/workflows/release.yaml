@@ -1,0 +1,15 @@
+name: "Usage of release-action GitHub Action"
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "bin/*"
