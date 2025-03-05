@@ -1,4 +1,4 @@
-name: "Usage of release-action GitHub Action"
+name: Release
 
 on:
   push:
