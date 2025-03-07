@@ -4,7 +4,7 @@ Commandline tool for generating a `config_db.json` file for SONiC.
 
 ## Usage
 
-Create an `input.yaml` file with config variables as defined in the [sonic](https://github.com/metal-stack/metal-roles/tree/master/partition/roles/sonic) role.
+Create an `input.yaml` file with config variables.
 Then run
 
 ```bash
