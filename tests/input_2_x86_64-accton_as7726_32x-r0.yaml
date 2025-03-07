@@ -1,27 +1,27 @@
-sonic_bgp_ports:
+bgp_ports:
   - Ethernet120
   - Ethernet124
 
-sonic_breakouts:
+breakouts:
   Ethernet0: 4x25G
 
-sonic_docker_routing_config_mode: split
-sonic_frr_mgmt_framework_config: false
+docker_routing_config_mode: split
+frr_mgmt_framework_config: false
 
-sonic_hostname: leaf01
-sonic_loopback_address: 10.7.7.7
+hostname: leaf01
+loopback_address: 10.7.7.7
 
-sonic_mgmtif_gateway: 10.7.10.1
-sonic_mgmtif_ip: 10.7.10.2
-sonic_mgmt_vrf: false
+mgmtif_gateway: 10.7.10.1
+mgmtif_ip: 10.7.10.2
+mgmt_vrf: false
 
-sonic_ntpservers:
+ntpservers:
   - 0.europe.pool.ntp.org
   - 1.europe.pool.ntp.org
   - 2.europe.pool.ntp.org
   - 3.europe.pool.ntp.org
 
-sonic_ports:
+ports:
   - name: Ethernet0
     ips:
       - 10.4.3.2
@@ -33,13 +33,13 @@ sonic_ports:
     mtu: 1500
   - name: Ethernet120
 
-sonic_ports_default_fec: none
-sonic_ports_default_mtu: 9000
+ports_default_fec: none
+ports_default_mtu: 9000
 
-sonic_ssh_sourceranges:
+ssh_sourceranges:
   - 10.1.23.1/30
 
-sonic_vlans:
+vlans:
   - id: 4000
     dhcp_servers:
       - 10.9.8.7
@@ -47,8 +47,8 @@ sonic_vlans:
     ip: 10.9.7.0
   - id: 4001
 
-sonic_vlan_members: true
+vlan_members: true
 
-sonic_vteps:
+vteps:
   - vni: 103999
     vlan: Vlan3999

@@ -1,23 +1,23 @@
-# sonic_bgp_ports:
+# bgp_ports:
 #   - Ethernet120
 #   - Ethernet124
 
-# sonic_breakouts:
+# breakouts:
 #   Ethernet0: 4x25G
 #   Ethernet120: 1x100G[40G]
 
-# sonic_docker_routing_config_mode: split
-# sonic_frr_mgmt_framework_config: false
+# docker_routing_config_mode: split
+# frr_mgmt_framework_config: false
 
-# sonic_interconnects:
+# interconnects:
 #   mpls:
 #     vni: 104010
 #     vrf: VrfMpls
 
-# sonic_hostname: leaf01
-# sonic_loopback_address: 10.7.7.7
+# hostname: leaf01
+# loopback_address: 10.7.7.7
 
-# sonic_mclag:
+# mclag:
 #   keepalive_vlan: 1000
 #   member_port_channels:
 #     - 11
@@ -26,23 +26,23 @@
 #   source_ip: 192.168.255.2
 #   system_mac: aa:aa:aa:aa:aa:aa
 
-# sonic_mgmtif_gateway: 10.7.10.1
-# sonic_mgmtif_ip: 10.7.10.2
-# sonic_mgmt_vrf: false
+# mgmtif_gateway: 10.7.10.1
+# mgmtif_ip: 10.7.10.2
+# mgmt_vrf: false
 
-# sonic_ntpservers:
+# ntpservers:
 #   - 0.europe.pool.ntp.org
 
-# sonic_portchannels:
+# portchannels:
 #   - number: "01"
 #     mtu: 1500
 #     fallback: true
 #     members:
 #       - Ethernet4
 
-# sonic_portchannels_default_mtu: 9000
+# portchannels_default_mtu: 9000
 
-# sonic_ports:
+# ports:
 #   - name: Ethernet0
 #     ips:
 #       - 10.4.3.2
@@ -51,16 +51,16 @@
 #     speed: 25000
 #     vrf: VrfMpls
 
-# sonic_ports_default_fec: none
-# sonic_ports_default_mtu: 9000
+# ports_default_fec: none
+# ports_default_mtu: 9000
 
-# sonic_sag:
+# sag:
 #   mac: bb:bb:bb:bb:bb:bb
 
-# sonic_ssh_sourceranges:
+# ssh_sourceranges:
 #   - 10.1.23.1/30
 
-# sonic_vlans:
+# vlans:
 #   - id: 4000
 #     dhcp_servers:
 #       - 10.9.8.7
@@ -72,8 +72,8 @@
 #       - PortChannel11
 #     vrf: Vrf45
 
-# sonic_vlan_members: true
+# vlan_members: true
 
-# sonic_vteps:
+# vteps:
 #   - vni: 103999
 #     vlan: Vlan3999

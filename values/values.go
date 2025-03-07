@@ -52,28 +52,28 @@ type SAG struct {
 }
 
 type Values struct {
-	BGPPorts                []string          `yaml:"sonic_bgp_ports,omitempty"`
-	Breakouts               map[string]string `yaml:"sonic_breakouts,omitempty"`
-	DockerRoutingConfigMode `yaml:"sonic_docker_routing_config_mode,omitempty"`
-	FRRMgmtFrameworkConfig  bool                    `yaml:"sonic_frr_mgmt_framework_config,omitempty"`
-	Hostname                string                  `yaml:"sonic_hostname,omitempty"`
-	Interconnects           map[string]Interconnect `yaml:"sonic_interconnects,omitempty"`
-	LoopbackAddress         string                  `yaml:"sonic_loopback_address,omitempty"`
-	MCLAG                   *MCLAG                  `yaml:"sonic_mclag,omitempty"`
-	MgmtIfGateway           string                  `yaml:"sonic_mgmtif_gateway,omitempty"`
-	MgmtIfIP                string                  `yaml:"sonic_mgmtif_ip,omitempty"`
-	MgmtVRF                 bool                    `yaml:"sonic_mgmt_vrf,omitempty"`
-	NTPServers              []string                `yaml:"sonic_ntpservers,omitempty"`
-	PortChannels            []PortChannel           `yaml:"sonic_portchannels,omitempty"`
-	PortChannelsDefaultMTU  int                     `yaml:"sonic_portchannels_default_mtu,omitempty"`
-	Ports                   []Port                  `yaml:"sonic_ports,omitempty"`
-	PortsDefaultFEC         FECMode                 `yaml:"sonic_ports_default_fec,omitempty"`
-	PortsDefaultMTU         int                     `yaml:"sonic_ports_default_mtu,omitempty"`
-	SAG                     `yaml:"sonic_sag,omitempty"`
-	SSHSourceranges         []string `yaml:"sonic_ssh_sourceranges,omitempty"`
-	VLANMembers             bool     `yaml:"sonic_vlan_members,omitempty"`
-	VLANs                   []VLAN   `yaml:"sonic_vlans,omitempty"`
-	VTEPs                   []VTEP   `yaml:"sonic_vteps,omitempty"`
+	BGPPorts                []string          `yaml:"bgp_ports,omitempty"`
+	Breakouts               map[string]string `yaml:"breakouts,omitempty"`
+	DockerRoutingConfigMode `yaml:"docker_routing_config_mode,omitempty"`
+	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config,omitempty"`
+	Hostname                string                  `yaml:"hostname,omitempty"`
+	Interconnects           map[string]Interconnect `yaml:"interconnects,omitempty"`
+	LoopbackAddress         string                  `yaml:"loopback_address,omitempty"`
+	MCLAG                   *MCLAG                  `yaml:"mclag,omitempty"`
+	MgmtIfGateway           string                  `yaml:"mgmtif_gateway,omitempty"`
+	MgmtIfIP                string                  `yaml:"mgmtif_ip,omitempty"`
+	MgmtVRF                 bool                    `yaml:"mgmt_vrf,omitempty"`
+	NTPServers              []string                `yaml:"ntpservers,omitempty"`
+	PortChannels            []PortChannel           `yaml:"portchannels,omitempty"`
+	PortChannelsDefaultMTU  int                     `yaml:"portchannels_default_mtu,omitempty"`
+	Ports                   []Port                  `yaml:"ports,omitempty"`
+	PortsDefaultFEC         FECMode                 `yaml:"ports_default_fec,omitempty"`
+	PortsDefaultMTU         int                     `yaml:"ports_default_mtu,omitempty"`
+	SAG                     `yaml:"sag,omitempty"`
+	SSHSourceranges         []string `yaml:"ssh_sourceranges,omitempty"`
+	VLANMembers             bool     `yaml:"vlan_members,omitempty"`
+	VLANs                   []VLAN   `yaml:"vlans,omitempty"`
+	VTEPs                   []VTEP   `yaml:"vteps,omitempty"`
 }
 
 type VLAN struct {
