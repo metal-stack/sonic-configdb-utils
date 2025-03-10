@@ -1,7 +1,5 @@
-GOOS ?= linux
-GOARCH ?= amd64
 TAGS := -tags 'netgo'
-BINARY := sonic-confidb-utils-$(GOOS)-$(GOARCH)
+BINARY := sonic-confidb-utils
 
 SHA := $(shell git rev-parse --short=8 HEAD)
 GITVERSION := $(shell git describe --long --all)
