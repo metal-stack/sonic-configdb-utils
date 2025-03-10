@@ -32,3 +32,7 @@ test:
 .PHONY: test-generate
 test-generate:
 	./tests/test.sh
+
+.PHONY: lint
+lint:
+	golangci-lint run --build-tags client -p bugs -p unused

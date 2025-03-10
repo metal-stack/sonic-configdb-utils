@@ -72,7 +72,7 @@ var generateCmd = &cobra.Command{
 		outputFileName, _ := cmd.Flags().GetString("output-file-name")
 		outputFile := fmt.Sprintf("%s/%s", configDir, outputFileName)
 
-		err = os.WriteFile(outputFile, configBytes, 0644)
+		err = os.WriteFile(outputFile, configBytes, 0644) //nolint:gosec
 		if err != nil {
 			fmt.Printf("failed to write file, %v", err)
 			os.Exit(1)
