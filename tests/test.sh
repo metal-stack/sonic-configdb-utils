@@ -1,23 +1,20 @@
 #!/bin/bash
 
 function test() {
-  input=$1
-  platform_file=$2
-  expected=$3
-  output=tests/result.json
+  config_dir=$1
 
-  go run main.go generate -i $input -o $output -f $platform_file
+  go run main.go generate -i $config_dir/sonic-config.yaml --sonic-config-dir $config_dir --device-dir $config_dir/../device
 
-  if [[ $(diff $expected $output) ]]; then
-    echo TEST for $input FAILED
+  if [[ $(diff $config_dir/expected.json $config_dir/config_db.json) ]]; then
+    echo TEST in $config_dir FAILED
     diff --color=always $expected $output
     rm $output
     exit 1
   fi
 
-  rm $output
+  rm $config_dir/config_db.json
 }
 
-test tests/input_1_x86_64-accton_as7726_32x-r0.yaml device/accton/x86_64-accton_as7726_32x-r0/platform.json tests/expected_1_x86_64-accton_as7726_32x-r0.json
-test tests/input_2_x86_64-accton_as7726_32x-r0.yaml device/accton/x86_64-accton_as7726_32x-r0/platform.json tests/expected_2_x86_64-accton_as7726_32x-r0.json
-test tests/input_x86_64-accton_as4630_54te-r0.yaml device/accton/x86_64-accton_as4630_54te-r0/platform.json tests/expected_x86_64-accton_as4630_54te-r0.json
+test $(pwd)/tests/1
+test $(pwd)/tests/2
+test $(pwd)/tests/3
