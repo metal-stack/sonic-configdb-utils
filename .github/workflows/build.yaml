@@ -29,6 +29,9 @@ jobs:
       - name: Test
         run: make test test-generate
 
+  build:
+    runs-on: ubuntu-latest
+    steps:
       - name: Build
         run: |
           GOOS=linux GOARCH=amd64 make build
