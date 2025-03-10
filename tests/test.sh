@@ -1,18 +1,18 @@
 #!/bin/bash
 
 function test() {
-  config_dir=$1
+  test_dir=$1
 
-  go run main.go generate -i $config_dir/sonic-config.yaml --sonic-config-dir $config_dir --device-dir $config_dir/../device
+  go run main.go generate -i $test_dir/sonic-config.yaml -o $test_dir/config_db.json -p $test_dir/platform.json
 
-  if [[ $(diff $config_dir/expected.json $config_dir/config_db.json) ]]; then
-    echo TEST in $config_dir FAILED
+  if [[ $(diff $test_dir/expected.json $test_dir/config_db.json) ]]; then
+    echo TEST in $test_dir FAILED
     diff --color=always $expected $output
     rm $output
     exit 1
   fi
 
-  rm $config_dir/config_db.json
+  rm $test_dir/config_db.json
 }
 
 test $(pwd)/tests/1
