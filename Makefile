@@ -1,5 +1,5 @@
 TAGS := -tags 'netgo'
-BINARY := sonic-confidb-utils
+BINARY := sonic-configdb-utils
 
 SHA := $(shell git rev-parse --short=8 HEAD)
 GITVERSION := $(shell git describe --long --all)

@@ -6,6 +6,6 @@ RUN make build
 
 FROM alpine:3.21
 
-COPY --from=builder /work/bin/* /
+COPY --from=builder /work/bin/sonic-configdb-utils /
 
-ENTRYPOINT ["/sonic-configdb-utils generate"]
+ENTRYPOINT ["/sonic-configdb-utils"]
