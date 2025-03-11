@@ -5,7 +5,7 @@ RUN apk add make git
 RUN make build
 
 FROM alpine:3.21
+WORKDIR /sonic
+COPY --from=builder /work/bin/sonic-configdb-utils /usr/bin
 
-COPY --from=builder /work/bin/sonic-configdb-utils /
-
-ENTRYPOINT ["/sonic-configdb-utils"]
+ENTRYPOINT ["/usr/bin/sonic-configdb-utils"]

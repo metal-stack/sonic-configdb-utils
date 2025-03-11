@@ -30,9 +30,13 @@ test:
 	go test ./... -count 1
 
 .PHONY: test-generate
-test-generate:
+test-generate: docker-build
 	./tests/test.sh
 
 .PHONY: lint
 lint:
 	golangci-lint run --build-tags client -p bugs -p unused
+
+.PHONY: docker-build
+docker-build:
+	docker build -t sonic-configdb-utils:local .
