@@ -19,6 +19,5 @@ Check the [template-values.yaml](template-values.yaml) file to see examples for 
 
 ### Limitations
 
-Open source SONiC does not support configuring LLDP.
-To enable configuring the LLDP `hello_time` a patch was added to our build.
-However, for the LLDP config to become effective the `lldp` container needs to be restarted, e.g. with `systemctl restart lldp` or `config reload -y`.
+When configuring LLDP `hello_time`, a simple `config load` is not enough.
+The lldp container needs to be restarted for the change to become effective, either with `systemctl restart lldp` or with `config reload`.
