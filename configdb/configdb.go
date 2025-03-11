@@ -14,17 +14,18 @@ type ConfigDB struct {
 	ACLRules           map[string]ACLRule        `json:"ACL_RULE,omitempty"`
 	ACLTables          map[string]ACLTable       `json:"ACL_TABLE,omitempty"`
 	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG,omitempty"`
-	DeviceMetadata     `json:"DEVICE_METADATA,omitempty"`
-	Features           map[string]Feature        `json:"FEATURE,omitempty"`
-	Interfaces         map[string]Interface      `json:"INTERFACE,omitempty"`
+	DeviceMetadata     `json:"DEVICE_METADATA"`
+	Features           map[string]Feature   `json:"FEATURE,omitempty"`
+	Interfaces         map[string]Interface `json:"INTERFACE,omitempty"`
+	LLDP               `json:"LLDP"`
 	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
 	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
 	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP,omitempty"`
 	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE,omitempty"`
 	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT,omitempty"`
-	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG,omitempty"`
-	NTP                `json:"NTP,omitempty"`
+	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG"`
+	NTP                `json:"NTP"`
 	NTPServers         map[string]struct{}      `json:"NTP_SERVER,omitempty"`
 	Ports              map[string]Port          `json:"PORT,omitempty"`
 	PortChannels       map[string]PortChannel   `json:"PORTCHANNEL,omitempty"`
@@ -34,7 +35,7 @@ type ConfigDB struct {
 	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE,omitempty"`
 	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER,omitempty"`
 	VRFs               map[string]VRF           `json:"VRF,omitempty"`
-	VXLANEVPN          `json:"VXLAN_EVPN_NVO,omitempty"`
+	VXLANEVPN          `json:"VXLAN_EVPN_NVO"`
 	VXLANTunnels       map[string]VXLANTunnel `json:"VXLAN_TUNNEL,omitempty"`
 	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
@@ -66,6 +67,11 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform) (*ConfigDB, er
 			},
 		},
 		Interfaces: getInterfaces(input.Ports, input.BGPPorts),
+		LLDP: LLDP{
+			Global: LLDPGlobal{
+				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTime),
+			},
+		},
 		LoopbackInterface: map[string]struct{}{
 			"Loopback0": {},
 			"Loopback0|" + input.LoopbackAddress + "/32": {},

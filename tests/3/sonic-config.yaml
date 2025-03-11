@@ -17,6 +17,7 @@ interconnects:
     vrf: VrfInternet
 
 hostname: leaf01
+lldp_hello_time: 10
 loopback_address: 10.7.7.7
 
 mclag:

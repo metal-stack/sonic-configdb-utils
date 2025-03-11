@@ -58,6 +58,7 @@ type Values struct {
 	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config,omitempty"`
 	Hostname                string                  `yaml:"hostname,omitempty"`
 	Interconnects           map[string]Interconnect `yaml:"interconnects,omitempty"`
+	LLDPHelloTime           int                     `yaml:"lldp_hello_time,omitempty"`
 	LoopbackAddress         string                  `yaml:"loopback_address,omitempty"`
 	MCLAG                   *MCLAG                  `yaml:"mclag,omitempty"`
 	MgmtIfGateway           string                  `yaml:"mgmtif_gateway,omitempty"`

@@ -7,8 +7,8 @@ function test() {
 
   if [[ $(diff $test_dir/expected.json $test_dir/config_db.json) ]]; then
     echo TEST in $test_dir FAILED
-    diff --color=always $expected $output
-    rm $output
+    diff --color=always $test_dir/expected.json $test_dir/config_db.json
+    rm $test_dir/config_db.json
     exit 1
   fi
 

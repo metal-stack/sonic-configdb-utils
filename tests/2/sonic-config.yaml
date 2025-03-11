@@ -9,6 +9,7 @@ docker_routing_config_mode: split
 frr_mgmt_framework_config: false
 
 hostname: leaf01
+lldp_hello_time: 10
 loopback_address: 10.7.7.7
 
 mgmtif_gateway: 10.7.10.1

@@ -158,6 +158,11 @@
       "ipv6_use_link_local_only": "enable"
     }
   },
+  "LLDP": {
+    "GLOBAL": {
+      "hello_time": "10"
+    }
+  },
   "LOOPBACK_INTERFACE": {
     "Loopback0": {},
     "Loopback0|10.7.7.7/32": {}
