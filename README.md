@@ -13,4 +13,4 @@ sonic-confidb-utils generate
 
 Check the [template-values.yaml](template-values.yaml) file to see examples for all accepted variables.
 
-Supported SONiC Version: 202411.0
+Supported SONiC Version: https://github.com/metal-stack/sonic-build
