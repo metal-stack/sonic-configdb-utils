@@ -64,6 +64,7 @@ type Values struct {
 	MgmtIfGateway           string                  `yaml:"mgmtif_gateway,omitempty"`
 	MgmtIfIP                string                  `yaml:"mgmtif_ip,omitempty"`
 	MgmtVRF                 bool                    `yaml:"mgmt_vrf,omitempty"`
+	Nameservers             []string                `yaml:"nameservers,omitempty"`
 	NTPServers              []string                `yaml:"ntpservers,omitempty"`
 	PortChannels            []PortChannel           `yaml:"portchannels,omitempty"`
 	PortChannelsDefaultMTU  int                     `yaml:"portchannels_default_mtu,omitempty"`

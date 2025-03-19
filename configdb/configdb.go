@@ -16,8 +16,9 @@ type ConfigDB struct {
 	ACLTables          map[string]ACLTable       `json:"ACL_TABLE,omitempty"`
 	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG,omitempty"`
 	DeviceMetadata     `json:"DEVICE_METADATA"`
-	Features           map[string]Feature   `json:"FEATURE,omitempty"`
-	Interfaces         map[string]Interface `json:"INTERFACE,omitempty"`
+	DNSNameservers     map[string]DNSNameserver `json:"DNS_NAMESERVER,omitempty"`
+	Features           map[string]Feature       `json:"FEATURE,omitempty"`
+	Interfaces         map[string]Interface     `json:"INTERFACE,omitempty"`
 	LLDP               `json:"LLDP"`
 	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
@@ -59,6 +60,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		ACLTables:      tables,
 		Breakouts:      breakouts,
 		DeviceMetadata: *deviceMetadata,
+		DNSNameservers: getDNSNameservers(input.Nameservers),
 		Features: map[string]Feature{
 			"dhcp_relay": {
 				AutoRestart: FeatureModeEnabled,
@@ -205,6 +207,14 @@ func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*D
 			RouterType:              "LeafRouter",
 		},
 	}, nil
+}
+
+func getDNSNameservers(nameservers []string) map[string]DNSNameserver {
+	dnsNameservers := make(map[string]DNSNameserver)
+	for _, n := range nameservers {
+		dnsNameservers[n] = DNSNameserver{}
+	}
+	return dnsNameservers
 }
 
 func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {

@@ -214,6 +214,10 @@
       "type": "LeafRouter"
     }
   },
+  "DNS_NAMESERVER": {
+    "1.1.1.1": {},
+    "8.8.8.8": {}
+  },
   "FEATURE": {
     "dhcp_relay": {
       "auto_restart": "enabled",

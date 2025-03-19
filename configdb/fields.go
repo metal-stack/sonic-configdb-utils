@@ -36,6 +36,8 @@ type DeviceMetadata struct {
 	Localhost Metadata `json:"localhost"`
 }
 
+type DNSNameserver struct{}
+
 type DockerRoutingConfigMode string
 
 const (

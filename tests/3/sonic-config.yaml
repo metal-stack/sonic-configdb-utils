@@ -34,6 +34,10 @@ mgmtif_gateway: 10.7.10.1
 mgmtif_ip: 10.7.10.2
 mgmt_vrf: false
 
+nameservers:
+  - 1.1.1.1
+  - 8.8.8.8
+
 ntpservers:
   - 0.europe.pool.ntp.org
   - 1.europe.pool.ntp.org
