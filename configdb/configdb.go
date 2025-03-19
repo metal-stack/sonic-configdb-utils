@@ -1,6 +1,7 @@
 package configdb
 
 import (
+	"encoding/json"
 	"fmt"
 	"maps"
 	"slices"
@@ -40,8 +41,13 @@ type ConfigDB struct {
 	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
 	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU, platform)
+	if err != nil {
+		return nil, err
+	}
+
+	deviceMetadata, err := getDeviceMetadata(input, currentDeviceMetadata)
 	if err != nil {
 		return nil, err
 	}
@@ -49,17 +55,10 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform) (*ConfigDB, er
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 
 	configdb := ConfigDB{
-		ACLRules:  rules,
-		ACLTables: tables,
-		Breakouts: breakouts,
-		DeviceMetadata: DeviceMetadata{
-			Localhost: Metadata{
-				DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
-				FRRMgmtFrameworkConfig:  strconv.FormatBool(input.FRRMgmtFrameworkConfig),
-				Hostname:                input.Hostname,
-				RouterType:              "LeafRouter",
-			},
-		},
+		ACLRules:       rules,
+		ACLTables:      tables,
+		Breakouts:      breakouts,
+		DeviceMetadata: *deviceMetadata,
 		Features: map[string]Feature{
 			"dhcp_relay": {
 				AutoRestart: FeatureModeEnabled,
@@ -121,6 +120,16 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform) (*ConfigDB, er
 	return &configdb, nil
 }
 
+func UnmarshalConfigDB(in []byte) (*ConfigDB, error) {
+	var configDB ConfigDB
+	err := json.Unmarshal(in, &configDB)
+	if err != nil {
+		return nil, err
+	}
+
+	return &configDB, nil
+}
+
 func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string]ACLTable) {
 	if len(sourceRanges) == 0 {
 		return nil, nil
@@ -168,6 +177,34 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	}
 
 	return rules, tables
+}
+
+func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*DeviceMetadata, error) {
+	hint := "remove current config_db.json and run `config-setup factory` to generate an initial config_db.json with all the necessary information"
+
+	if currentMetadata.Localhost.Platform == "" {
+		return nil, fmt.Errorf("missing platform from current device metadata\n%s", hint)
+	}
+
+	if currentMetadata.Localhost.HWSKU == "" {
+		return nil, fmt.Errorf("missing hwsku from current device metadata\n%s", hint)
+	}
+
+	if currentMetadata.Localhost.MAC == "" {
+		return nil, fmt.Errorf("missing mac from current device metadata\n%s", hint)
+	}
+
+	return &DeviceMetadata{
+		Localhost: Metadata{
+			DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
+			FRRMgmtFrameworkConfig:  strconv.FormatBool(input.FRRMgmtFrameworkConfig),
+			Hostname:                input.Hostname,
+			HWSKU:                   currentMetadata.Localhost.HWSKU,
+			MAC:                     currentMetadata.Localhost.MAC,
+			Platform:                currentMetadata.Localhost.Platform,
+			RouterType:              "LeafRouter",
+		},
+	}, nil
 }
 
 func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {

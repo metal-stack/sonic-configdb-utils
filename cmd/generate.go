@@ -41,7 +41,20 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		configDB, err := configdb.GenerateConfigDB(values, platform)
+		configDBFile, _ := cmd.Flags().GetString("output")
+		configDBBytes, err := os.ReadFile(configDBFile)
+		if err != nil {
+			fmt.Printf("failed to read current config file, %v\n", err)
+			os.Exit(1)
+		}
+
+		currentConfig, err := configdb.UnmarshalConfigDB(configDBBytes)
+		if err != nil {
+			fmt.Printf("failed to parse current config file, %v\n", err)
+			os.Exit(1)
+		}
+
+		configDB, err := configdb.GenerateConfigDB(values, platform, currentConfig.DeviceMetadata)
 		if err != nil {
 			fmt.Printf("failed to generate config, %v\n", err)
 			os.Exit(1)
@@ -53,8 +66,7 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		outputFile, _ := cmd.Flags().GetString("output")
-		err = os.WriteFile(outputFile, configBytes, 0644) //nolint:gosec
+		err = os.WriteFile(configDBFile, configBytes, 0644) //nolint:gosec
 		if err != nil {
 			fmt.Printf("failed to write file, %v", err)
 			os.Exit(1)

@@ -33,7 +33,7 @@ type BreakoutConfig struct {
 }
 
 type DeviceMetadata struct {
-	Localhost Metadata `json:"localhost,omitempty"`
+	Localhost Metadata `json:"localhost"`
 }
 
 type DockerRoutingConfigMode string
@@ -113,6 +113,9 @@ type Metadata struct {
 	DockerRoutingConfigMode `json:"docker_routing_config_mode,omitempty"`
 	FRRMgmtFrameworkConfig  string `json:"frr_mgmt_framework_config,omitempty"`
 	Hostname                string `json:"hostname,omitempty"`
+	HWSKU                   string `json:"hwsku,omitempty"`
+	MAC                     string `json:"mac,omitempty"`
+	Platform                string `json:"platform,omitempty"`
 	RouterType              `json:"type,omitempty"`
 }
 
@@ -127,15 +130,15 @@ type MgmtPort struct {
 }
 
 type MgmtVRFConfig struct {
-	VRFGlobal `json:"vrf_global,omitempty"`
+	VRFGlobal `json:"vrf_global"`
 }
 
 type NTP struct {
-	NTPGlobal `json:"global,omitempty"`
+	NTPGlobal `json:"global"`
 }
 
 type NTPGlobal struct {
-	SrcIntf string `json:"src_intf,omitempty"`
+	SrcIntf string `json:"src_intf"`
 }
 
 type PacketAction string
@@ -176,7 +179,7 @@ const (
 )
 
 type SAG struct {
-	SAGGlobal `json:"GLOBAL,omitempty"`
+	SAGGlobal `json:"GLOBAL"`
 }
 
 type SAGGlobal struct {
@@ -213,7 +216,7 @@ type VRFGlobal struct {
 }
 
 type VXLANEVPN struct {
-	VXLANEVPNNVO `json:"nvo,omitempty"`
+	VXLANEVPNNVO `json:"nvo"`
 }
 
 type VXLANEVPNNVO struct {

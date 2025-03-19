@@ -93,9 +93,9 @@ type VTEP struct {
 	VLAN    string `yaml:"vlan,omitempty"`
 }
 
-func UnmarshalValues(input []byte) (*Values, error) {
-	values := Values{}
-	err := yaml.Unmarshal(input, &values)
+func UnmarshalValues(in []byte) (*Values, error) {
+	var values Values
+	err := yaml.Unmarshal(in, &values)
 	if err != nil {
 		return nil, err
 	}

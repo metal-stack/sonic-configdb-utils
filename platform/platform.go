@@ -122,9 +122,9 @@ func ParseSpeedOptions(breakoutMode string) (SpeedOptions, error) {
 	return SpeedOptions{speed * 1000, altSpeed * 1000}, nil
 }
 
-func UnmarshalPlatformJSON(input []byte) (*Platform, error) {
-	platform := Platform{}
-	err := json.Unmarshal(input, &platform)
+func UnmarshalPlatformJSON(in []byte) (*Platform, error) {
+	var platform Platform
+	err := json.Unmarshal(in, &platform)
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +135,7 @@ func UnmarshalPlatformJSON(input []byte) (*Platform, error) {
 func stringToIntSlice(input string) ([]int, error) {
 	ints := make([]int, 0)
 
-	numbers := strings.Split(input, ",")
-	for _, n := range numbers {
+	for n := range strings.SplitSeq(input, ",") {
 		number, err := strconv.Atoi(n)
 		if err != nil {
 			return []int{}, err
