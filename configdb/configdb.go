@@ -183,15 +183,15 @@ func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*D
 	hint := "remove current config_db.json and run `config-setup factory` to generate an initial config_db.json with all the necessary information"
 
 	if currentMetadata.Localhost.Platform == "" {
-		return nil, fmt.Errorf("missing platform from current device metadata\n%s", hint)
+		return nil, fmt.Errorf("missing platform from current device metadata\nhint: %s", hint)
 	}
 
 	if currentMetadata.Localhost.HWSKU == "" {
-		return nil, fmt.Errorf("missing hwsku from current device metadata\n%s", hint)
+		return nil, fmt.Errorf("missing hwsku from current device metadata\nhint: %s", hint)
 	}
 
 	if currentMetadata.Localhost.MAC == "" {
-		return nil, fmt.Errorf("missing mac from current device metadata\n%s", hint)
+		return nil, fmt.Errorf("missing mac from current device metadata\nhint: %s", hint)
 	}
 
 	return &DeviceMetadata{
