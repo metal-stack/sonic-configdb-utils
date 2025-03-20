@@ -60,4 +60,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ 'latest' if env.BRANCH_NAME == 'main' else env.BRANCH_NAME }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ (env.BRANCH_NAME == 'main' && 'latest') || env.BRANCH_NAME }}
