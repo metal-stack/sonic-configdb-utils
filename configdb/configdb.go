@@ -55,19 +55,22 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 
+	features := make(map[string]Feature)
+	if input.DHCPRelayEnabled {
+		features["dhcp_relay"] = Feature{
+			AutoRestart: FeatureModeEnabled,
+			State:       FeatureModeEnabled,
+		}
+	}
+
 	configdb := ConfigDB{
 		ACLRules:       rules,
 		ACLTables:      tables,
 		Breakouts:      breakouts,
 		DeviceMetadata: *deviceMetadata,
 		DNSNameservers: getDNSNameservers(input.Nameservers),
-		Features: map[string]Feature{
-			"dhcp_relay": {
-				AutoRestart: FeatureModeEnabled,
-				State:       FeatureModeEnabled,
-			},
-		},
-		Interfaces: getInterfaces(input.Ports, input.BGPPorts),
+		Features:       features,
+		Interfaces:     getInterfaces(input.Ports, input.BGPPorts),
 		LLDP: LLDP{
 			Global: LLDPGlobal{
 				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTime),

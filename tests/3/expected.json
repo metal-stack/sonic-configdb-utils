@@ -218,12 +218,6 @@
     "1.1.1.1": {},
     "8.8.8.8": {}
   },
-  "FEATURE": {
-    "dhcp_relay": {
-      "auto_restart": "enabled",
-      "state": "enabled"
-    }
-  },
   "INTERFACE": {
     "Ethernet0": {
       "vrf_name": "VrfMpls"

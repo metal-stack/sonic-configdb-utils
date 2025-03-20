@@ -13,11 +13,9 @@ sonic-confidb-utils generate
 
 Check the [template-values.yaml](template-values.yaml) file to see examples for all accepted variables.
 
-## Supported version and limitations
+## Limitations
 
-`sonic-configdb-utils` was only tested with our own [build](https://github.com/metal-stack/sonic-build) of SONiC.
+### LLDP
 
-### Limitations
-
-When configuring LLDP `hello_time`, a simple `config load` is not enough.
-The lldp container needs to be restarted for the change to become effective, either with `systemctl restart lldp` or with `config reload`.
+When configuring LLDP `hello_time`, a simple `config load` may not be enough.
+Depending on what SONiC version you are running, the lldp container might need to be restarted for the change to become effective, either with `systemctl restart lldp` or with `config reload`.

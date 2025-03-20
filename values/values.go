@@ -54,6 +54,7 @@ type SAG struct {
 type Values struct {
 	BGPPorts                []string          `yaml:"bgp_ports,omitempty"`
 	Breakouts               map[string]string `yaml:"breakouts,omitempty"`
+	DHCPRelayEnabled        bool              `yaml:"dhcp_relay_enabled"`
 	DockerRoutingConfigMode `yaml:"docker_routing_config_mode,omitempty"`
 	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config,omitempty"`
 	Hostname                string                  `yaml:"hostname,omitempty"`

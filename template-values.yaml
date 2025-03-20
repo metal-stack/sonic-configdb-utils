@@ -6,6 +6,7 @@
 #   Ethernet0: 4x25G
 #   Ethernet120: 1x100G[40G]
 
+# dhcp_relay_enabled: true
 # docker_routing_config_mode: split
 # frr_mgmt_framework_config: false
 
@@ -30,6 +31,10 @@
 # mgmtif_gateway: 10.7.10.1
 # mgmtif_ip: 10.7.10.2
 # mgmt_vrf: false
+
+# nameservers:
+#   - 1.1.1.1
+#   - 8.8.8.8
 
 # ntpservers:
 #   - 0.europe.pool.ntp.org
