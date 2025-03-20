@@ -9,6 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   test:
@@ -57,9 +58,9 @@ jobs:
 
       - name: Make tag
         run: |
-          [ "${GITHUB_EVENT_NAME}" == 'pull_request' ] && echo "tag=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV || true
+          [ "${GITHUB_EVENT_NAME}" == 'push' && "${BRANCH_NAME}" == 'main' ] && echo "tag=latest" >> $GITHUB_ENV || true
+          [ "${GITHUB_EVENT_NAME}" == 'pull_request' || "${GITHUB_EVENT_NAME}" == 'push' ] && echo "tag=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV || true
           [ "${GITHUB_EVENT_NAME}" == 'release' ] && echo "tag=${GITHUB_REF##*/}" >> $GITHUB_ENV || true
-          [ "${GITHUB_EVENT_NAME}" == 'push' ] && echo "tag=latest" >> $GITHUB_ENV || true
 
       - name: Build and push image
         uses: docker/build-push-action@v6
