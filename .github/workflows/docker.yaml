@@ -56,15 +56,9 @@ jobs:
         with:
           args: --build-tags client -p bugs -p unused --timeout=3m
 
-      - name: Make tag
-        run: |
-          [ "${GITHUB_EVENT_NAME}" == 'push' && "${BRANCH_NAME}" == 'main' ] && echo "tag=latest" >> $GITHUB_ENV || true
-          [ "${GITHUB_EVENT_NAME}" == 'pull_request' || "${GITHUB_EVENT_NAME}" == 'push' ] && echo "tag=${GITHUB_HEAD_REF##*/}" >> $GITHUB_ENV || true
-          [ "${GITHUB_EVENT_NAME}" == 'release' ] && echo "tag=${GITHUB_REF##*/}" >> $GITHUB_ENV || true
-
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.tag }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.BRANCH_NAME }}
