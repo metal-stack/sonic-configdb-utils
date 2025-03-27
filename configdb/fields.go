@@ -41,9 +41,10 @@ type DNSNameserver struct{}
 type DockerRoutingConfigMode string
 
 const (
-	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "separated"
-	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "split"
-	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "unified"
+	DockerRoutingConfigModeSeparated    DockerRoutingConfigMode = "separated"
+	DockerRoutingConfigModeSplit        DockerRoutingConfigMode = "split"
+	DockerRoutingConfigModeSplitUnified DockerRoutingConfigMode = "split-unified"
+	DockerRoutingConfigModeUnified      DockerRoutingConfigMode = "unified"
 )
 
 type Feature struct {
