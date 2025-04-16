@@ -54,14 +54,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 	}
 
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
-
-	features := make(map[string]Feature)
-	if input.DHCPRelayEnabled {
-		features["dhcp_relay"] = Feature{
-			AutoRestart: FeatureModeEnabled,
-			State:       FeatureModeEnabled,
-		}
-	}
+	features := getFeatures(input.Features)
 
 	configdb := ConfigDB{
 		ACLRules:       rules,
@@ -218,6 +211,27 @@ func getDNSNameservers(nameservers []string) map[string]DNSNameserver {
 		dnsNameservers[n] = DNSNameserver{}
 	}
 	return dnsNameservers
+}
+
+func getFeatures(features map[string]values.Feature) map[string]Feature {
+	configFeatures := make(map[string]Feature)
+
+	for name, feature := range features {
+		autoRestart := FeatureModeDisabled
+		state := FeatureModeDisabled
+		if feature.AutoRestart {
+			autoRestart = FeatureModeEnabled
+		}
+		if feature.Enabled {
+			state = FeatureModeEnabled
+		}
+		configFeatures[name] = Feature{
+			AutoRestart: autoRestart,
+			State:       state,
+		}
+	}
+
+	return configFeatures
 }
 
 func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {
