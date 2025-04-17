@@ -5,8 +5,13 @@ bgp_ports:
 breakouts:
   Ethernet0: 4x25G
 
-dhcp_relay_enabled: true
 docker_routing_config_mode: split
+
+features:
+  dhcp_relay:
+    auto_restart: true
+    enabled: true
+
 frr_mgmt_framework_config: false
 
 interconnects:
