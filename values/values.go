@@ -67,7 +67,7 @@ type Values struct {
 	Interconnects           map[string]Interconnect `yaml:"interconnects"`
 	LLDPHelloTime           int                     `yaml:"lldp_hello_time"`
 	LoopbackAddress         string                  `yaml:"loopback_address"`
-	MCLAG                   *MCLAG                  `yaml:"mclag"`
+	MCLAG                   MCLAG                   `yaml:"mclag"`
 	MgmtIfGateway           string                  `yaml:"mgmtif_gateway"`
 	MgmtIfIP                string                  `yaml:"mgmtif_ip"`
 	MgmtVRF                 bool                    `yaml:"mgmt_vrf"`
