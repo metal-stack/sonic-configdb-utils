@@ -18,7 +18,7 @@ var generateCmd = &cobra.Command{
 		sonicEnvFile, _ := cmd.Flags().GetString("env-file")
 		env, err := p.GetEnvironment(sonicEnvFile)
 		if err != nil {
-			return fmt.Errorf("failed to get environment information:%v", err)
+			return fmt.Errorf("failed to get environment information:%w", err)
 		}
 
 		platformIdentifier := env.Platform
@@ -27,39 +27,39 @@ var generateCmd = &cobra.Command{
 
 		platformBytes, err := os.ReadFile(platformFile)
 		if err != nil {
-			return fmt.Errorf("failed to read platform.json file: %v\n", err)
+			return fmt.Errorf("failed to read platform.json file:%w", err)
 		}
 
 		platform, err := p.UnmarshalPlatformJSON(platformBytes)
 		if err != nil {
-			return fmt.Errorf("failed to parse platform.json: %v\n", err)
+			return fmt.Errorf("failed to parse platform.json:%w", err)
 		}
 
 		inputFile, _ := cmd.Flags().GetString("input")
 		inputBytes, err := os.ReadFile(inputFile)
 		if err != nil {
-			return fmt.Errorf("failed to read input file, %v\n", err)
+			return fmt.Errorf("failed to read input file:%w", err)
 		}
 
 		values, err := values.UnmarshalValues(inputBytes)
 		if err != nil {
-			return fmt.Errorf("failed to parse input file, %v\n", err)
+			return fmt.Errorf("failed to parse input file:%w", err)
 		}
 
 		configDB, err := configdb.GenerateConfigDB(values, platform, env)
 		if err != nil {
-			return fmt.Errorf("failed to generate config, %v\n", err)
+			return fmt.Errorf("failed to generate config:%w", err)
 		}
 
 		configDBBytes, err := json.MarshalIndent(configDB, "", "  ")
 		if err != nil {
-			return fmt.Errorf("failed to serialize json, %v\n", err)
+			return fmt.Errorf("failed to serialize json:%w", err)
 		}
 
 		output, _ := cmd.Flags().GetString("output")
 		err = os.WriteFile(output, configDBBytes, 0644) //nolint:gosec
 		if err != nil {
-			return fmt.Errorf("failed to write file, %v", err)
+			return fmt.Errorf("failed to write file:%w", err)
 		}
 
 		return nil
