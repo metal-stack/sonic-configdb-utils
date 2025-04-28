@@ -44,7 +44,7 @@ func GetEnvironment(envFile string) (*Environment, error) {
 
 	addrBytes, err := os.ReadFile("/sys/class/net/eth0/address")
 	if err != nil {
-		return nil, fmt.Errorf("failed to get mac address:%v", err)
+		return nil, fmt.Errorf("failed to get mac address:%w", err)
 	}
 	mac = strings.TrimSpace(string(addrBytes))
 

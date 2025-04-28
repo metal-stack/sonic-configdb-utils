@@ -35,7 +35,7 @@ test-generate: docker-build
 
 .PHONY: lint
 lint:
-	golangci-lint run
+	golangci-lint run -p bugs -p unused
 
 .PHONY: docker-build
 docker-build:
