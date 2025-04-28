@@ -11,11 +11,109 @@ Then run
 sonic-confidb-utils generate
 ```
 
-Check the [template-values.yaml](template-values.yaml) file to see examples for all accepted variables.
+## Configuration Parameters
 
-## Limitations
+**bgp_ports**
 
-### LLDP
+Example:
 
-When configuring LLDP `hello_time`, a simple `config load` may not be enough.
-Depending on what SONiC version you are running, the lldp container might need to be restarted for the change to become effective, either with `systemctl restart lldp` or with `config reload`.
+```yaml
+bgp_ports:
+  - Ethernet120
+  - Ethernet124
+```
+
+Result:
+
+```json
+{
+  "INTERFACE": {
+    "Ethernet120": {
+      "ipv6_use_link_local_only": "enable"
+    },
+    "Ethernet124": {
+      "ipv6_use_link_local_only": "enable"
+    }
+  }
+}
+```
+
+**breakouts**
+
+Example:
+
+```yaml
+breakouts:
+  Ethernet0: 4x25G
+  Ethernet120: 1x100G[40G]
+```
+
+Result:
+
+```json
+{
+  "BREAKOUT_CFG": {
+    "Ethernet0": {
+      "brkout_mode": "4x25G"
+    },
+    "Ethernet120": {
+      "brkout_mode": "100G[40G]"
+    }
+  }
+}
+```
+
+For each breakout also the correspondig ports entries are added.
+
+**docker_routing_config_mode**
+
+Can be one of `separated`, `split`, `split-unified`, `unified`.
+
+Example:
+
+```yaml
+docker_routing_config_mode: split
+```
+
+Result:
+
+```json
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "docker_routing_config_mode": "split"
+    }
+  }
+}
+```
+
+**frr_mgmt_framework_config**
+
+Example:
+
+```yaml
+frr_mgmt_framework_config: false
+```
+
+Result:
+
+```json
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "frr_mgmt_framework_config": "false"
+    }
+  }
+}
+```
+
+**interconnects**
+
+Example:
+
+```yaml
+interconnects:
+  mpls:
+    vni: 104010
+    vrf: VrfMpls
+```
