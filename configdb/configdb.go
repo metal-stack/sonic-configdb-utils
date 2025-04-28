@@ -42,13 +42,13 @@ type ConfigDB struct {
 	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p.Environment) (*ConfigDB, error) {
 	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU, platform)
 	if err != nil {
 		return nil, err
 	}
 
-	deviceMetadata, err := getDeviceMetadata(input, currentDeviceMetadata)
+	deviceMetadata, err := getDeviceMetadata(input, environment)
 	if err != nil {
 		return nil, err
 	}
@@ -177,18 +177,18 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	return rules, tables
 }
 
-func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*DeviceMetadata, error) {
+func getDeviceMetadata(input *values.Values, environment *p.Environment) (*DeviceMetadata, error) {
 	hint := "remove current config_db.json and run `config-setup factory` to generate an initial config_db.json with all the necessary information"
 
-	if currentMetadata.Localhost.Platform == "" {
+	if environment.Platform == "" {
 		return nil, fmt.Errorf("missing platform from current device metadata\nhint: %s", hint)
 	}
 
-	if currentMetadata.Localhost.HWSKU == "" {
+	if environment.HWSKU == "" {
 		return nil, fmt.Errorf("missing hwsku from current device metadata\nhint: %s", hint)
 	}
 
-	if currentMetadata.Localhost.MAC == "" {
+	if environment.MAC == "" {
 		return nil, fmt.Errorf("missing mac from current device metadata\nhint: %s", hint)
 	}
 
@@ -197,9 +197,9 @@ func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*D
 			DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
 			FRRMgmtFrameworkConfig:  strconv.FormatBool(input.FRRMgmtFrameworkConfig),
 			Hostname:                input.Hostname,
-			HWSKU:                   currentMetadata.Localhost.HWSKU,
-			MAC:                     currentMetadata.Localhost.MAC,
-			Platform:                currentMetadata.Localhost.Platform,
+			HWSKU:                   environment.HWSKU,
+			MAC:                     environment.MAC,
+			Platform:                environment.Platform,
 			RouterType:              "LeafRouter",
 		},
 	}, nil
