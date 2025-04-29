@@ -12,10 +12,11 @@ import (
 
 func Test_getInterfaces(t *testing.T) {
 	tests := []struct {
-		name     string
-		ports    []values.Port
-		bgpPorts []string
-		want     map[string]Interface
+		name          string
+		ports         []values.Port
+		bgpPorts      []string
+		interconnects map[string]values.Interconnect
+		want          map[string]Interface
 	}{
 		{
 			name:  "empty ports",
@@ -106,10 +107,44 @@ func Test_getInterfaces(t *testing.T) {
 				"Ethernet0|10.1.1.1": {},
 			},
 		},
+		{
+			name: "interconnect without unnumbered interfaces",
+			interconnects: map[string]values.Interconnect{
+				"internet": {
+					UnnumberedInterfaces: []string{},
+					VNI:                  "104000",
+					VRF:                  "VrfInternet",
+				},
+			},
+			want: map[string]Interface{},
+		},
+		{
+			name: "interconnect with unnumbered interfaces",
+			interconnects: map[string]values.Interconnect{
+				"internet": {
+					UnnumberedInterfaces: []string{
+						"Ethernet0",
+						"Ethernet1",
+					},
+					VNI: "104000",
+					VRF: "VrfInternet",
+				},
+			},
+			want: map[string]Interface{
+				"Ethernet0": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+					VRFName:              "VrfInternet",
+				},
+				"Ethernet1": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+					VRFName:              "VrfInternet",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getInterfaces(tt.ports, tt.bgpPorts)
+			got := getInterfaces(tt.ports, tt.bgpPorts, tt.interconnects)
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("getInterfaces() %v", diff)
 			}

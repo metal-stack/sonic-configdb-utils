@@ -63,7 +63,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		DeviceMetadata: *deviceMetadata,
 		DNSNameservers: getDNSNameservers(input.Nameservers),
 		Features:       features,
-		Interfaces:     getInterfaces(input.Ports, input.BGPPorts),
+		Interfaces:     getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
 		LLDP: LLDP{
 			Global: LLDPGlobal{
 				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTime),
@@ -234,7 +234,7 @@ func getFeatures(features map[string]values.Feature) map[string]Feature {
 	return configFeatures
 }
 
-func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {
+func getInterfaces(ports []values.Port, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
 	for _, port := range ports {
@@ -254,6 +254,15 @@ func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface 
 		for _, ip := range port.IPs {
 			intf = Interface{}
 			interfaces[port.Name+"|"+ip] = intf
+		}
+	}
+
+	for _, interconnect := range interconnects {
+		for _, intf := range interconnect.UnnumberedInterfaces {
+			interfaces[intf] = Interface{
+				IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+				VRFName:              interconnect.VRF,
+			}
 		}
 	}
 

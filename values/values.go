@@ -24,8 +24,9 @@ const (
 )
 
 type Interconnect struct {
-	VNI string `yaml:"vni"`
-	VRF string `yaml:"vrf"`
+	UnnumberedInterfaces []string `yaml:"unnumbered_interfaces"`
+	VNI                  string   `yaml:"vni"`
+	VRF                  string   `yaml:"vrf"`
 }
 
 type MCLAG struct {
