@@ -87,6 +87,40 @@ Result:
 }
 ```
 
+**features**
+
+Enabling a feature makes SONiC check the status of the corresponding container.
+If a feature is enabled and the container stops running `container_checker` will complain and `show system-health summary` will show
+
+```
+Status: Not OK
+  Reasons: Container 'your-feature' is not running
+```
+
+Furthermore, enabling `auto_restart` on a service will tell SONiC to automatically restart the container if it stops unexpectedly.
+
+Example:
+
+```yaml
+features:
+  metal-core.service:
+    enabled: true
+    auto_restart: true
+```
+
+Result:
+
+```json
+{
+  "FEATURE": {
+    "metal-core.service": {
+      "auto_restart": "enabled",
+      "state": "enabled"
+    }
+  }
+}
+```
+
 **frr_mgmt_framework_config**
 
 Example:
@@ -116,4 +150,425 @@ interconnects:
   mpls:
     vni: 104010
     vrf: VrfMpls
+    unnumbered_interfaces:
+      - Ethernet0
+      - Ethernet1
+```
+
+Result:
+
+```json
+{
+  "INTERFACE": {
+    "Ethernet0": {
+      "ipv6_use_link_local_only": "enable",
+      "vrf_name": "VrfMpls"
+    },
+    "Ethernet1": {
+      "ipv6_use_link_local_only": "enable",
+      "vrf_name": "VrfMpls"
+    }
+  }
+}
+```
+
+**lldp_hello_time**
+
+Example:
+
+```yaml
+lldp_hello_time: 10
+```
+
+Result:
+
+```json
+{
+  "LLDP": {
+    "GLOBAL": {
+      "hello_time": "10"
+    }
+  }
+}
+```
+
+**looback_address**
+
+Example:
+
+```yaml
+loopback_address: 10.7.7.7
+```
+
+Result:
+
+```json
+{
+  "LOOPBACK_INTERFACE": {
+    "Loopback0": {},
+    "Loopback0|10.7.7.7/32": {}
+  }
+}
+```
+
+and
+
+```json
+{
+  "VXLAN_TUNNEL": {
+    "vtep": {
+      "src_ip": "10.7.7.7"
+    }
+  }
+}
+```
+
+**mclag**
+
+Example:
+
+```yaml
+mclag:
+  keepalive_vlan: 1000
+  member_port_channels:
+    - 11
+    - 22
+  peer_ip: 192.168.255.1
+  peer_link: PortChannel01
+  source_ip: 192.168.255.2
+  system_mac: aa:aa:aa:aa:aa:aa
+```
+
+Result:
+
+```json
+{
+  "MCLAG_DOMAIN": {
+    "1": {
+      "mclag_system_id": "aa:aa:aa:aa:aa:aa",
+      "peer_ip": "192.168.255.1",
+      "peer_link": "PortChannel01",
+      "source_ip": "192.168.255.2"
+    }
+  },
+  "MCLAG_INTERFACE": {
+    "1|PortChannel11": {
+      "if_type": "PortChannel"
+    },
+    "1|PortChannel22": {
+      "if_type": "PortChannel"
+    }
+  },
+  "MCLAG_UNIQUE_IP": {
+    "Vlan1000": {
+      "unique_ip": "enable"
+    }
+  }
+}
+```
+
+**mgmtif_gateway** and **mgmtif_ip**
+
+Example:
+
+```yaml
+mgmtif_gateway: 10.7.10.1
+mgmtif_ip: 10.7.10.2
+```
+
+Result:
+
+```json
+{
+  "MGMT_INTERFACE": {
+    "eth0|10.7.10.2": {
+      "gwaddr": "10.7.10.1"
+    }
+  }
+}
+```
+
+**mgmt_vrf**
+
+Example:
+
+```yaml
+mgmt_vrf: false
+```
+
+Result:
+
+```json
+{
+  "MGMT_VRF_CONFIG": {
+    "vrf_global": {
+      "mgmtVrfEnabled": "false"
+    }
+  }
+}
+```
+
+**nameservers**
+
+Example:
+
+```yaml
+nameservers:
+  - 1.1.1.1
+  - 8.8.8.8
+```
+
+Result:
+
+```json
+{
+  "DNS_NAMESERVER": {
+    "1.1.1.1": {},
+    "8.8.8.8": {}
+  }
+}
+```
+
+**ntpservers**
+
+Example:
+
+```yaml
+ntpservers:
+  - 0.europe.pool.ntp.org
+  - 1.europe.pool.ntp.org
+  - 2.europe.pool.ntp.org
+  - 3.europe.pool.ntp.org
+```
+
+Result:
+
+```json
+{
+  "NTP_SERVER": {
+    "0.europe.pool.ntp.org": {},
+    "1.europe.pool.ntp.org": {},
+    "2.europe.pool.ntp.org": {},
+    "3.europe.pool.ntp.org": {}
+  }
+}
+```
+
+**portchannels** and **portchannels_default_mtu**
+
+Example:
+
+```yaml
+portchannels:
+  - number: "01"
+    mtu: 1500
+    fallback: true
+    members:
+      - Ethernet4
+      - Ethernet5
+
+portchannels_default_mtu: 9000
+```
+
+Result:
+
+```json
+{
+  "PORTCHANNEL": {
+    "PortChannel01": {
+      "admin_status": "up",
+      "fallback": "true",
+      "fast_rate": "false",
+      "lacp_key": "auto",
+      "min_links": "1",
+      "mix_speed": "false",
+      "mtu": "1500"
+    }
+  },
+  "PORTCHANNEL_MEMBER": {
+    "PortChannel01|Ethernet4": {},
+    "PortChannel01|Ethernet5": {}
+  }
+}
+```
+
+**ports**, **port_default_fec** and **port_default_mtu**
+
+Example:
+
+```yaml
+breakouts:
+  Ethernet0: 4x25G
+
+ports:
+  - name: Ethernet0
+    ips:
+      - 10.4.3.2
+    fec: rs
+    mtu: 1500
+    vrf: VrfMpls
+
+ports_default_fec: none
+ports_default_mtu: 9000
+```
+
+Result:
+
+```json
+{
+  "PORT": {
+    "Ethernet0": {
+      "admin_status": "up",
+      "alias": "Eth1/1(Port1)",
+      "autoneg": "off",
+      "fec": "rs",
+      "index": "1",
+      "lanes": "1",
+      "mtu": "1500",
+      "speed": "25000"
+    }
+  }
+}
+```
+
+and
+
+```json
+{
+  "INTERFACE": {
+    "Ethernet0": {
+      "vrf_name": "VrfMpls"
+    },
+    "Ethernet0|10.4.3.2": {}
+  }
+}
+```
+
+The speed of a port is determined by its breakout configuration.
+If no breakout configuration for a port is passed its default breakout is assumed.
+If a breakout configuration allows more than one speed options, e.g. `1x100G[40G]`, the first speed option is used as a default (`100G` in the example case).
+A `speed` option can be passed to the port config to specify an alternative speed, e.g.
+
+```yaml
+ports:
+  - name: Ethernet120
+    speed: 40000
+```
+
+For each port that is not explicitly configured in `breakouts` and `ports` an entry with defaults will be added to the `"PORT"` dictionary.
+
+**sag**
+
+Example:
+
+```yaml
+sag:
+  mac: bb:bb:bb:bb:bb:bb
+```
+
+Result:
+
+```json
+{
+  "SAG": {
+    "GLOBAL": {
+      "gateway_mac": "bb:bb:bb:bb:bb:bb"
+    }
+  }
+}
+```
+
+**ssh_sourceranges**
+
+Example:
+
+```yaml
+ssh_sourceranges:
+  - 10.1.23.1/30
+```
+
+Result:
+
+```json
+{
+  "ACL_RULE": {
+    "ALLOW_SSH|RULE_1": {
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "91",
+      "SRC_IP": "10.1.23.1/30"
+    }
+  }
+}
+```
+
+**vlans** and **vlan_members**
+
+Example:
+
+```yaml
+vlans:
+  - id: 4000
+    dhcp_servers:
+      - 10.9.8.7
+      - 10.9.8.6
+    ip: 10.9.7.0
+    sag: true
+    tagged_ports:
+      - PortChannel01
+    untagged_ports:
+      - PortChannel11
+    vrf: Vrf45
+
+vlan_members: true
+```
+
+Result:
+
+```json
+{
+  "VLAN": {
+    "Vlan4000": {
+      "dhcp_servers": ["10.9.8.7", "10.9.8.6"],
+      "vlanid": "4000"
+    }
+  },
+  "VLAN_INTERFACE": {
+    "Vlan4000": {
+      "static_anycast_gateway": "true",
+      "vrf_name": "Vrf45"
+    },
+    "Vlan4000|10.9.7.0": {}
+  },
+  "VLAN_MEMBER": {
+    "Vlan4000|PortChannel01": {
+      "tagging_mode": "tagged"
+    },
+    "Vlan4000|PortChannel11": {
+      "tagging_mode": "untagged"
+    }
+  }
+}
+```
+
+**vteps**
+
+Example:
+
+```yaml
+vteps:
+  - vni: 103999
+    vlan: Vlan3999
+```
+
+Result:
+
+```json
+{
+  "VXLAN_TUNNEL_MAP": {
+    "vtep|map_103999_Vlan3999": {
+      "vlan": "Vlan3999",
+      "vni": "103999"
+    }
+  }
+}
 ```
