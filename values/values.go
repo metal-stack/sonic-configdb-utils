@@ -37,13 +37,18 @@ type MCLAG struct {
 	SystemMAC          string   `yaml:"system_mac"`
 }
 
+type MgmtInterface struct {
+	GatewayAddress string `yaml:"gateway_address"`
+	IP             string `yaml:"ip"`
+}
+
 type Port struct {
 	IPs     []string `yaml:"ips"`
-	FECMode `yaml:"fec"`
-	MTU     int    `yaml:"mtu"`
-	Name    string `yaml:"name"`
-	Speed   int    `yaml:"speed"`
-	VRF     string `yaml:"vrf"`
+	FECMode FECMode  `yaml:"fec"`
+	MTU     int      `yaml:"mtu"`
+	Name    string   `yaml:"name"`
+	Speed   int      `yaml:"speed"`
+	VRF     string   `yaml:"vrf"`
 }
 
 type PortChannel struct {
@@ -58,9 +63,9 @@ type SAG struct {
 }
 
 type Values struct {
-	BGPPorts                []string          `yaml:"bgp_ports"`
-	Breakouts               map[string]string `yaml:"breakouts"`
-	DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
+	BGPPorts                []string                `yaml:"bgp_ports"`
+	Breakouts               map[string]string       `yaml:"breakouts"`
+	DockerRoutingConfigMode DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
 	Features                map[string]Feature      `yaml:"features"`
 	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config"`
 	Hostname                string                  `yaml:"hostname"`
@@ -68,8 +73,7 @@ type Values struct {
 	LLDPHelloTime           int                     `yaml:"lldp_hello_time"`
 	LoopbackAddress         string                  `yaml:"loopback_address"`
 	MCLAG                   MCLAG                   `yaml:"mclag"`
-	MgmtIfGateway           string                  `yaml:"mgmtif_gateway"`
-	MgmtIfIP                string                  `yaml:"mgmtif_ip"`
+	MgmtInterface           MgmtInterface           `yaml:"mgmt_interface"`
 	MgmtVRF                 bool                    `yaml:"mgmt_vrf"`
 	Nameservers             []string                `yaml:"nameservers"`
 	NTPServers              []string                `yaml:"ntpservers"`

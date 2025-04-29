@@ -15,31 +15,31 @@ type ConfigDB struct {
 	ACLRules           map[string]ACLRule        `json:"ACL_RULE,omitempty"`
 	ACLTables          map[string]ACLTable       `json:"ACL_TABLE,omitempty"`
 	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG,omitempty"`
-	DeviceMetadata     `json:"DEVICE_METADATA"`
-	DNSNameservers     map[string]DNSNameserver `json:"DNS_NAMESERVER,omitempty"`
-	Features           map[string]Feature       `json:"FEATURE,omitempty"`
-	Interfaces         map[string]Interface     `json:"INTERFACE,omitempty"`
-	LLDP               `json:"LLDP"`
+	DeviceMetadata     DeviceMetadata            `json:"DEVICE_METADATA"`
+	DNSNameservers     map[string]DNSNameserver  `json:"DNS_NAMESERVER,omitempty"`
+	Features           map[string]Feature        `json:"FEATURE,omitempty"`
+	Interfaces         map[string]Interface      `json:"INTERFACE,omitempty"`
+	LLDP               LLDP                      `json:"LLDP"`
 	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
 	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
 	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP,omitempty"`
 	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE,omitempty"`
 	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT,omitempty"`
-	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG"`
-	NTP                `json:"NTP"`
-	NTPServers         map[string]struct{}      `json:"NTP_SERVER,omitempty"`
-	Ports              map[string]Port          `json:"PORT,omitempty"`
-	PortChannels       map[string]PortChannel   `json:"PORTCHANNEL,omitempty"`
-	PortChannelMembers map[string]struct{}      `json:"PORTCHANNEL_MEMBER,omitempty"`
-	SAG                *SAG                     `json:"SAG,omitempty"`
-	VLANs              map[string]VLAN          `json:"VLAN,omitempty"`
-	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE,omitempty"`
-	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER,omitempty"`
-	VRFs               map[string]VRF           `json:"VRF,omitempty"`
-	VXLANEVPN          `json:"VXLAN_EVPN_NVO"`
-	VXLANTunnels       map[string]VXLANTunnel `json:"VXLAN_TUNNEL,omitempty"`
-	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
+	MgmtVRFConfig      MgmtVRFConfig             `json:"MGMT_VRF_CONFIG"`
+	NTP                NTP                       `json:"NTP"`
+	NTPServers         map[string]struct{}       `json:"NTP_SERVER,omitempty"`
+	Ports              map[string]Port           `json:"PORT,omitempty"`
+	PortChannels       map[string]PortChannel    `json:"PORTCHANNEL,omitempty"`
+	PortChannelMembers map[string]struct{}       `json:"PORTCHANNEL_MEMBER,omitempty"`
+	SAG                *SAG                      `json:"SAG,omitempty"`
+	VLANs              map[string]VLAN           `json:"VLAN,omitempty"`
+	VLANInterfaces     map[string]VLANInterface  `json:"VLAN_INTERFACE,omitempty"`
+	VLANMembers        map[string]VLANMember     `json:"VLAN_MEMBER,omitempty"`
+	VRFs               map[string]VRF            `json:"VRF,omitempty"`
+	VXLANEVPN          VXLANEVPN                 `json:"VXLAN_EVPN_NVO"`
+	VXLANTunnels       map[string]VXLANTunnel    `json:"VXLAN_TUNNEL,omitempty"`
+	VXLANTunnelMap     VXLANTunnelMap            `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
 func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
@@ -76,7 +76,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		MCLAGDomains:    getMCLAGDomains(input.MCLAG),
 		MCLAGInterfaces: getMCLAGInterfaces(input.MCLAG),
 		MCLAGUniqueIPs:  getMCLAGUniqueIPs(input.MCLAG),
-		MgmtInterfaces:  getMgmtInterfaces(input.MgmtIfIP, input.MgmtIfGateway),
+		MgmtInterfaces:  getMgmtInterfaces(input.MgmtInterface),
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -303,19 +303,19 @@ func getMCLAGUniqueIPs(mclag values.MCLAG) map[string]MCLAGUniqueIP {
 	}
 }
 
-func getMgmtInterfaces(mgmtIfIP, mgmtIfGateway string) map[string]MgmtInterface {
-	if mgmtIfIP == "" {
+func getMgmtInterfaces(mgmtif values.MgmtInterface) map[string]MgmtInterface {
+	if mgmtif.IP == "" {
 		return nil
 	}
 
 	mgmtInterfaces := make(map[string]MgmtInterface)
 
 	eth0 := MgmtInterface{}
-	if mgmtIfGateway != "" {
-		eth0.GWAddr = mgmtIfGateway
+	if mgmtif.GatewayAddress != "" {
+		eth0.GWAddr = mgmtif.GatewayAddress
 	}
 
-	mgmtInterfaces["eth0|"+mgmtIfIP] = eth0
+	mgmtInterfaces["eth0|"+mgmtif.IP] = eth0
 
 	return mgmtInterfaces
 }

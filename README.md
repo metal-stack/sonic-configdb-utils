@@ -267,13 +267,14 @@ Result:
 }
 ```
 
-**mgmtif_gateway** and **mgmtif_ip**
+**mgmt_interface**
 
 Example:
 
 ```yaml
-mgmtif_gateway: 10.7.10.1
-mgmtif_ip: 10.7.10.2
+mgmt_interface:
+  gateway_address: 10.7.10.1
+  ip: 10.7.10.2
 ```
 
 Result:
