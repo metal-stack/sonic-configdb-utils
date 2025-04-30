@@ -54,14 +54,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 	}
 
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
-
-	features := make(map[string]Feature)
-	if input.DHCPRelayEnabled {
-		features["dhcp_relay"] = Feature{
-			AutoRestart: FeatureModeEnabled,
-			State:       FeatureModeEnabled,
-		}
-	}
+	features := getFeatures(input.Features)
 
 	configdb := ConfigDB{
 		ACLRules:       rules,
@@ -220,6 +213,27 @@ func getDNSNameservers(nameservers []string) map[string]DNSNameserver {
 	return dnsNameservers
 }
 
+func getFeatures(features map[string]values.Feature) map[string]Feature {
+	configFeatures := make(map[string]Feature)
+
+	for name, feature := range features {
+		autoRestart := FeatureModeDisabled
+		state := FeatureModeDisabled
+		if feature.AutoRestart {
+			autoRestart = FeatureModeEnabled
+		}
+		if feature.Enabled {
+			state = FeatureModeEnabled
+		}
+		configFeatures[name] = Feature{
+			AutoRestart: autoRestart,
+			State:       state,
+		}
+	}
+
+	return configFeatures
+}
+
 func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
@@ -246,8 +260,8 @@ func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface 
 	return interfaces
 }
 
-func getMCLAGDomains(mclag *values.MCLAG) map[string]MCLAGDomain {
-	if mclag == nil {
+func getMCLAGDomains(mclag values.MCLAG) map[string]MCLAGDomain {
+	if mclag.KeepaliveVLAN == "" {
 		return nil
 	}
 
@@ -261,8 +275,8 @@ func getMCLAGDomains(mclag *values.MCLAG) map[string]MCLAGDomain {
 	}
 }
 
-func getMCLAGInterfaces(mclag *values.MCLAG) map[string]MCLAGInterface {
-	if mclag == nil {
+func getMCLAGInterfaces(mclag values.MCLAG) map[string]MCLAGInterface {
+	if mclag.KeepaliveVLAN == "" {
 		return nil
 	}
 
@@ -277,8 +291,8 @@ func getMCLAGInterfaces(mclag *values.MCLAG) map[string]MCLAGInterface {
 	return mclagInterfaces
 }
 
-func getMCLAGUniqueIPs(mclag *values.MCLAG) map[string]MCLAGUniqueIP {
-	if mclag == nil {
+func getMCLAGUniqueIPs(mclag values.MCLAG) map[string]MCLAGUniqueIP {
+	if mclag.KeepaliveVLAN == "" {
 		return nil
 	}
 

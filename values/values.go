@@ -5,10 +5,16 @@ import "gopkg.in/yaml.v3"
 type DockerRoutingConfigMode string
 
 const (
-	DockerRoutingConfigModeSeparated DockerRoutingConfigMode = "separated"
-	DockerRoutingConfigModeSplit     DockerRoutingConfigMode = "split"
-	DockerRoutingConfigModeUnified   DockerRoutingConfigMode = "unified"
+	DockerRoutingConfigModeSeparated    DockerRoutingConfigMode = "separated"
+	DockerRoutingConfigModeSplit        DockerRoutingConfigMode = "split"
+	DockerRoutingConfigModeSplitUnified DockerRoutingConfigMode = "split-unified"
+	DockerRoutingConfigModeUnified      DockerRoutingConfigMode = "unified"
 )
+
+type Feature struct {
+	AutoRestart bool `yaml:"auto_restart"`
+	Enabled     bool `yaml:"enabled"`
+}
 
 type FECMode string
 
@@ -18,81 +24,81 @@ const (
 )
 
 type Interconnect struct {
-	VNI string `yaml:"vni,omitempty"`
-	VRF string `yaml:"vrf,omitempty"`
+	VNI string `yaml:"vni"`
+	VRF string `yaml:"vrf"`
 }
 
 type MCLAG struct {
-	KeepaliveVLAN      string   `yaml:"keepalive_vlan,omitempty"`
-	MemberPortChannels []string `yaml:"member_port_channels,omitempty"`
-	PeerIP             string   `yaml:"peer_ip,omitempty"`
-	PeerLink           string   `yaml:"peer_link,omitempty"`
-	SourceIP           string   `yaml:"source_ip,omitempty"`
-	SystemMAC          string   `yaml:"system_mac,omitempty"`
+	KeepaliveVLAN      string   `yaml:"keepalive_vlan"`
+	MemberPortChannels []string `yaml:"member_port_channels"`
+	PeerIP             string   `yaml:"peer_ip"`
+	PeerLink           string   `yaml:"peer_link"`
+	SourceIP           string   `yaml:"source_ip"`
+	SystemMAC          string   `yaml:"system_mac"`
 }
 
 type Port struct {
-	IPs     []string `yaml:"ips,omitempty"`
-	FECMode `yaml:"fec,omitempty"`
-	MTU     int    `yaml:"mtu,omitempty"`
-	Name    string `yaml:"name,omitempty"`
-	Speed   int    `yaml:"speed,omitempty"`
-	VRF     string `yaml:"vrf,omitempty"`
+	IPs     []string `yaml:"ips"`
+	FECMode `yaml:"fec"`
+	MTU     int    `yaml:"mtu"`
+	Name    string `yaml:"name"`
+	Speed   int    `yaml:"speed"`
+	VRF     string `yaml:"vrf"`
 }
 
 type PortChannel struct {
-	Number   string   `yaml:"number,omitempty"`
-	MTU      int      `yaml:"mtu,omitempty"`
-	Fallback bool     `yaml:"fallback,omitempty"`
-	Members  []string `yaml:"members,omitempty"`
+	Number   string   `yaml:"number"`
+	MTU      int      `yaml:"mtu"`
+	Fallback bool     `yaml:"fallback"`
+	Members  []string `yaml:"members"`
 }
 
 type SAG struct {
-	MAC string `yaml:"mac,omitempty"`
+	MAC string `yaml:"mac"`
 }
 
 type Values struct {
-	BGPPorts                []string          `yaml:"bgp_ports,omitempty"`
-	Breakouts               map[string]string `yaml:"breakouts,omitempty"`
-	DHCPRelayEnabled        bool              `yaml:"dhcp_relay_enabled"`
-	DockerRoutingConfigMode `yaml:"docker_routing_config_mode,omitempty"`
-	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config,omitempty"`
-	Hostname                string                  `yaml:"hostname,omitempty"`
-	Interconnects           map[string]Interconnect `yaml:"interconnects,omitempty"`
-	LLDPHelloTime           int                     `yaml:"lldp_hello_time,omitempty"`
-	LoopbackAddress         string                  `yaml:"loopback_address,omitempty"`
-	MCLAG                   *MCLAG                  `yaml:"mclag,omitempty"`
-	MgmtIfGateway           string                  `yaml:"mgmtif_gateway,omitempty"`
-	MgmtIfIP                string                  `yaml:"mgmtif_ip,omitempty"`
-	MgmtVRF                 bool                    `yaml:"mgmt_vrf,omitempty"`
-	Nameservers             []string                `yaml:"nameservers,omitempty"`
-	NTPServers              []string                `yaml:"ntpservers,omitempty"`
-	PortChannels            []PortChannel           `yaml:"portchannels,omitempty"`
-	PortChannelsDefaultMTU  int                     `yaml:"portchannels_default_mtu,omitempty"`
-	Ports                   []Port                  `yaml:"ports,omitempty"`
-	PortsDefaultFEC         FECMode                 `yaml:"ports_default_fec,omitempty"`
-	PortsDefaultMTU         int                     `yaml:"ports_default_mtu,omitempty"`
-	SAG                     `yaml:"sag,omitempty"`
-	SSHSourceranges         []string `yaml:"ssh_sourceranges,omitempty"`
-	VLANMembers             bool     `yaml:"vlan_members,omitempty"`
-	VLANs                   []VLAN   `yaml:"vlans,omitempty"`
-	VTEPs                   []VTEP   `yaml:"vteps,omitempty"`
+	BGPPorts                []string          `yaml:"bgp_ports"`
+	Breakouts               map[string]string `yaml:"breakouts"`
+	DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
+	Features                map[string]Feature      `yaml:"features"`
+	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config"`
+	Hostname                string                  `yaml:"hostname"`
+	Interconnects           map[string]Interconnect `yaml:"interconnects"`
+	LLDPHelloTime           int                     `yaml:"lldp_hello_time"`
+	LoopbackAddress         string                  `yaml:"loopback_address"`
+	MCLAG                   MCLAG                   `yaml:"mclag"`
+	MgmtIfGateway           string                  `yaml:"mgmtif_gateway"`
+	MgmtIfIP                string                  `yaml:"mgmtif_ip"`
+	MgmtVRF                 bool                    `yaml:"mgmt_vrf"`
+	Nameservers             []string                `yaml:"nameservers"`
+	NTPServers              []string                `yaml:"ntpservers"`
+	PortChannels            []PortChannel           `yaml:"portchannels"`
+	PortChannelsDefaultMTU  int                     `yaml:"portchannels_default_mtu"`
+	Ports                   []Port                  `yaml:"ports"`
+	PortsDefaultFEC         FECMode                 `yaml:"ports_default_fec"`
+	PortsDefaultMTU         int                     `yaml:"ports_default_mtu"`
+	SAG                     `yaml:"sag"`
+	SSHSourceranges         []string `yaml:"ssh_sourceranges"`
+	VLANMembers             bool     `yaml:"vlan_members"`
+	VLANs                   []VLAN   `yaml:"vlans"`
+	VTEPs                   []VTEP   `yaml:"vteps"`
 }
 
 type VLAN struct {
-	DHCPServers   []string `yaml:"dhcp_servers,omitempty"`
-	ID            string   `yaml:"id,omitempty"`
-	IP            string   `yaml:"ip,omitempty"`
-	SAG           bool     `yaml:"sag,omitempty"`
-	TaggedPorts   []string `yaml:"tagged_ports,omitempty"`
-	UntaggedPorts []string `yaml:"untagged_ports,omitempty"`
-	VRF           string   `yaml:"vrf,omitempty"`
+	DHCPServers   []string `yaml:"dhcp_servers"`
+	ID            string   `yaml:"id"`
+	IP            string   `yaml:"ip"`
+	SAG           bool     `yaml:"sag"`
+	TaggedPorts   []string `yaml:"tagged_ports"`
+	UntaggedPorts []string `yaml:"untagged_ports"`
+	VRF           string   `yaml:"vrf"`
 }
 
 type VTEP struct {
-	Comment string `yaml:"comment,omitempty"`
-	VNI     string `yaml:"vni,omitempty"`
-	VLAN    string `yaml:"vlan,omitempty"`
+	Comment string `yaml:"comment"`
+	VNI     string `yaml:"vni"`
+	VLAN    string `yaml:"vlan"`
 }
 
 func UnmarshalValues(in []byte) (*Values, error) {
