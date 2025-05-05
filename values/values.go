@@ -43,6 +43,12 @@ type MgmtInterface struct {
 	IP             string `yaml:"ip"`
 }
 
+type NTP struct {
+	SrcInterface string   `yaml:"src_interface"`
+	Servers      []string `yaml:"servers"`
+	VRF          string   `yaml:"vrf"`
+}
+
 type Port struct {
 	IPs     []string `yaml:"ips"`
 	FECMode FECMode  `yaml:"fec"`
@@ -88,7 +94,7 @@ type Values struct {
 	MgmtInterface           MgmtInterface           `yaml:"mgmt_interface"`
 	MgmtVRF                 bool                    `yaml:"mgmt_vrf"`
 	Nameservers             []string                `yaml:"nameservers"`
-	NTPServers              []string                `yaml:"ntpservers"`
+	NTP                     NTP                     `yaml:"ntp"`
 	PortChannels            PortChannels            `yaml:"portchannels"`
 	Ports                   Ports                   `yaml:"ports"`
 	SAG                     SAG                     `yaml:"sag"`
