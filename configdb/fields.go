@@ -142,6 +142,7 @@ type NTP struct {
 
 type NTPGlobal struct {
 	SrcIntf string `json:"src_intf"`
+	VRF     string `json:"vrf,omitempty"`
 }
 
 type PacketAction string

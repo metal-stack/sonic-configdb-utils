@@ -89,12 +89,8 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 				MgmtVRFEnabled: strconv.FormatBool(input.MgmtVRF),
 			},
 		},
-		NTP: NTP{
-			NTPGlobal: NTPGlobal{
-				SrcIntf: "eth0",
-			},
-		},
-		NTPServers:         getNTPServers(input.NTPServers),
+		NTP:                getNTP(input.NTP),
+		NTPServers:         getNTPServers(input.NTP.Servers),
 		Ports:              ports,
 		PortChannels:       getPortChannels(input.PortChannels),
 		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
@@ -327,6 +323,20 @@ func getMgmtInterfaces(mgmtif values.MgmtInterface) map[string]MgmtInterface {
 	mgmtInterfaces["eth0|"+mgmtif.IP] = eth0
 
 	return mgmtInterfaces
+}
+
+func getNTP(ntp values.NTP) NTP {
+	srcif := "eth0"
+	if ntp.SrcInterface != "" {
+		srcif = ntp.SrcInterface
+	}
+
+	return NTP{
+		NTPGlobal: NTPGlobal{
+			SrcIntf: srcif,
+			VRF:     ntp.VRF,
+		},
+	}
 }
 
 func getNTPServers(servers []string) map[string]struct{} {
