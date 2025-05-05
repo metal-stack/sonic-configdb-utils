@@ -393,7 +393,7 @@ Result:
 }
 ```
 
-**ports**, **port_default_fec** and **port_default_mtu**
+**ports**
 
 Example:
 
@@ -402,15 +402,15 @@ breakouts:
   Ethernet0: 4x25G
 
 ports:
-  - name: Ethernet0
-    ips:
-      - 10.4.3.2
-    fec: rs
-    mtu: 1500
-    vrf: VrfMpls
-
-ports_default_fec: none
-ports_default_mtu: 9000
+  default_fec: none
+  default_mtu: 9000
+  list:
+    - name: Ethernet0
+      ips:
+        - 10.4.3.2
+      fec: rs
+      mtu: 1500
+      vrf: VrfMpls
 ```
 
 Result:

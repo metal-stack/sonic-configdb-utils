@@ -13,30 +13,36 @@ import (
 func Test_getInterfaces(t *testing.T) {
 	tests := []struct {
 		name          string
-		ports         []values.Port
+		ports         values.Ports
 		bgpPorts      []string
 		interconnects map[string]values.Interconnect
 		want          map[string]Interface
 	}{
 		{
-			name:  "empty ports",
-			ports: []values.Port{},
-			want:  map[string]Interface{},
+			name: "empty ports",
+			ports: values.Ports{
+				List: []values.Port{},
+			},
+			want: map[string]Interface{},
 		},
 		{
 			name: "port not in bgp ports, with no vrf and no ips",
-			ports: []values.Port{
-				{
-					Name: "Ethernet0",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+					},
 				},
 			},
 			want: map[string]Interface{},
 		},
 		{
 			name: "port in bgp ports",
-			ports: []values.Port{
-				{
-					Name: "Ethernet0",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+					},
 				},
 			},
 			bgpPorts: []string{"Ethernet0"},
@@ -48,10 +54,12 @@ func Test_getInterfaces(t *testing.T) {
 		},
 		{
 			name: "port with vrf",
-			ports: []values.Port{
-				{
-					Name: "Ethernet0",
-					VRF:  "Vrf40",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+						VRF:  "Vrf40",
+					},
 				},
 			},
 			want: map[string]Interface{
@@ -62,10 +70,12 @@ func Test_getInterfaces(t *testing.T) {
 		},
 		{
 			name: "port in bgp ports with vrf",
-			ports: []values.Port{
-				{
-					Name: "Ethernet0",
-					VRF:  "Vrf40",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+						VRF:  "Vrf40",
+					},
 				},
 			},
 			bgpPorts: []string{"Ethernet0"},
@@ -78,10 +88,12 @@ func Test_getInterfaces(t *testing.T) {
 		},
 		{
 			name: "port not in bgp ports without vrf but with and ips",
-			ports: []values.Port{
-				{
-					Name: "Ethernet0",
-					IPs:  []string{"10.1.1.1"},
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+						IPs:  []string{"10.1.1.1"},
+					},
 				},
 			},
 			want: map[string]Interface{
@@ -91,11 +103,13 @@ func Test_getInterfaces(t *testing.T) {
 		},
 		{
 			name: "port in bgp ports with vrf and ips",
-			ports: []values.Port{
-				{
-					Name: "Ethernet0",
-					VRF:  "Vrf40",
-					IPs:  []string{"10.1.1.1"},
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+						VRF:  "Vrf40",
+						IPs:  []string{"10.1.1.1"},
+					},
 				},
 			},
 			bgpPorts: []string{"Ethernet0"},
@@ -154,19 +168,19 @@ func Test_getInterfaces(t *testing.T) {
 
 func Test_getPortsAndBreakouts(t *testing.T) {
 	tests := []struct {
-		name           string
-		ports          []values.Port
-		breakouts      map[string]string
-		defaultFECMode values.FECMode
-		defaultMTU     int
-		platform       *p.Platform
-		wantPorts      map[string]Port
-		wantBreakouts  map[string]BreakoutConfig
-		wantErr        error
+		name          string
+		ports         values.Ports
+		breakouts     map[string]string
+		platform      *p.Platform
+		wantPorts     map[string]Port
+		wantBreakouts map[string]BreakoutConfig
+		wantErr       error
 	}{
 		{
-			name:  "only breakouts defined",
-			ports: []values.Port{},
+			name: "only breakouts defined",
+			ports: values.Ports{
+				List: []values.Port{},
+			},
 			breakouts: map[string]string{
 				"Ethernet0": "1x100G[40G]",
 			},
@@ -203,14 +217,16 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 		},
 		{
 			name: "only ports defined",
-			ports: []values.Port{
-				{
-					Name:  "Ethernet0",
-					Speed: 40000,
-				},
-				{
-					Name:  "Ethernet4",
-					Speed: 40000,
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name:  "Ethernet0",
+						Speed: 40000,
+					},
+					{
+						Name:  "Ethernet4",
+						Speed: 40000,
+					},
 				},
 			},
 			platform: &p.Platform{
@@ -294,9 +310,11 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			breakouts: map[string]string{
 				"Ethernet4": "1x100G[40G]",
 			},
-			ports: []values.Port{
-				{
-					Name: "Ethernet5",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet5",
+					},
 				},
 			},
 			platform: &p.Platform{
@@ -318,14 +336,15 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			breakouts: map[string]string{
 				"Ethernet4": "1x100G[40G]",
 			},
-			defaultFECMode: values.FECModeRS,
-			defaultMTU:     1500,
-			ports: []values.Port{
-				{
-					Name:  "Ethernet4",
-					Speed: 0,
-				},
-			},
+			ports: values.Ports{
+				DefaultFEC: values.FECModeRS,
+				DefaultMTU: 1500,
+				List: []values.Port{
+					{
+						Name:  "Ethernet4",
+						Speed: 0,
+					},
+				}},
 			platform: &p.Platform{
 				Interfaces: map[string]p.Interface{
 					"Ethernet4": {
@@ -363,12 +382,14 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			breakouts: map[string]string{
 				"Ethernet4": "1x100G[40G]",
 			},
-			ports: []values.Port{
-				{
-					FECMode: values.FECModeRS,
-					MTU:     1500,
-					Name:    "Ethernet4",
-					Speed:   40000,
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						FECMode: values.FECModeRS,
+						MTU:     1500,
+						Name:    "Ethernet4",
+						Speed:   40000,
+					},
 				},
 			},
 			platform: &p.Platform{
@@ -405,7 +426,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPorts, gotBreakouts, err := getPortsAndBreakouts(tt.ports, tt.breakouts, tt.defaultFECMode, tt.defaultMTU, tt.platform)
+			gotPorts, gotBreakouts, err := getPortsAndBreakouts(tt.ports, tt.breakouts, tt.platform)
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Errorf("getPortsAndBreakouts() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -424,7 +445,7 @@ func Test_getVRFs(t *testing.T) {
 	tests := []struct {
 		name          string
 		interconnects map[string]values.Interconnect
-		ports         []values.Port
+		ports         values.Ports
 		vlans         []values.VLAN
 		want          map[string]VRF
 	}{
@@ -436,7 +457,9 @@ func Test_getVRFs(t *testing.T) {
 					VRF: "Vrf40",
 				},
 			},
-			ports: []values.Port{},
+			ports: values.Ports{
+				List: []values.Port{},
+			},
 			vlans: []values.VLAN{},
 			want: map[string]VRF{
 				"Vrf40": {
@@ -452,9 +475,11 @@ func Test_getVRFs(t *testing.T) {
 					VRF: "Vrf40",
 				},
 			},
-			ports: []values.Port{
-				{
-					VRF: "Vrf40",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						VRF: "Vrf40",
+					},
 				},
 			},
 			vlans: []values.VLAN{
@@ -476,9 +501,11 @@ func Test_getVRFs(t *testing.T) {
 					VRF: "Vrf40",
 				},
 			},
-			ports: []values.Port{
-				{
-					VRF: "Vrf41",
+			ports: values.Ports{
+				List: []values.Port{
+					{
+						VRF: "Vrf41",
+					},
 				},
 			},
 			vlans: []values.VLAN{

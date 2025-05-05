@@ -52,6 +52,12 @@ type Port struct {
 	VRF     string   `yaml:"vrf"`
 }
 
+type Ports struct {
+	DefaultFEC FECMode `yaml:"default_fec"`
+	DefaultMTU int     `yaml:"default_mtu"`
+	List       []Port  `yaml:"list"`
+}
+
 type PortChannel struct {
 	Number   string   `yaml:"number"`
 	MTU      int      `yaml:"mtu"`
@@ -84,14 +90,12 @@ type Values struct {
 	Nameservers             []string                `yaml:"nameservers"`
 	NTPServers              []string                `yaml:"ntpservers"`
 	PortChannels            PortChannels            `yaml:"portchannels"`
-	Ports                   []Port                  `yaml:"ports"`
-	PortsDefaultFEC         FECMode                 `yaml:"ports_default_fec"`
-	PortsDefaultMTU         int                     `yaml:"ports_default_mtu"`
-	SAG                     `yaml:"sag"`
-	SSHSourceranges         []string `yaml:"ssh_sourceranges"`
-	VLANMembers             bool     `yaml:"vlan_members"`
-	VLANs                   []VLAN   `yaml:"vlans"`
-	VTEPs                   []VTEP   `yaml:"vteps"`
+	Ports                   Ports                   `yaml:"ports"`
+	SAG                     SAG                     `yaml:"sag"`
+	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
+	VLANMembers             bool                    `yaml:"vlan_members"`
+	VLANs                   []VLAN                  `yaml:"vlans"`
+	VTEPs                   []VTEP                  `yaml:"vteps"`
 }
 
 type VLAN struct {

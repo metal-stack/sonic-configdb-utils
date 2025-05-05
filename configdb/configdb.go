@@ -43,7 +43,7 @@ type ConfigDB struct {
 }
 
 func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
-	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU, platform)
+	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
 	if err != nil {
 		return nil, err
 	}
@@ -234,10 +234,10 @@ func getFeatures(features map[string]values.Feature) map[string]Feature {
 	return configFeatures
 }
 
-func getInterfaces(ports []values.Port, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
+func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
-	for _, port := range ports {
+	for _, port := range ports.List {
 		if len(port.IPs) == 0 && port.VRF == "" && !slices.Contains(bgpPorts, port.Name) {
 			continue
 		}
@@ -377,13 +377,13 @@ func getPortChannelMembers(portchannels []values.PortChannel) map[string]struct{
 	return portchannelMembers
 }
 
-func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defaultFECMode values.FECMode, defaultMTU int, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
+func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
 
 	defaultBreakouts := platform.GetDefaultBreakoutConfig()
 	for portName, breakout := range defaultBreakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, ports.DefaultFEC, ports.DefaultMTU, platform)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -395,7 +395,7 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 	}
 
 	for portName, breakout := range breakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, ports.DefaultFEC, ports.DefaultMTU, platform)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -406,7 +406,7 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 		}
 	}
 
-	for _, port := range ports {
+	for _, port := range ports.List {
 		configPort, ok := configPorts[port.Name]
 		if !ok {
 			return nil, nil, fmt.Errorf("invalid port name %s; if you think it should be available please check your breakout configuration", port.Name)
@@ -508,7 +508,7 @@ func getVLANMembers(vlans []values.VLAN, addVlanMembers bool) map[string]VLANMem
 	return vlanMembers
 }
 
-func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, vlans []values.VLAN) map[string]VRF {
+func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, vlans []values.VLAN) map[string]VRF {
 	vrfs := make(map[string]VRF)
 
 	for _, interconnect := range interconnects {
@@ -517,7 +517,7 @@ func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, 
 		}
 	}
 
-	for _, port := range ports {
+	for _, port := range ports.List {
 		if port.VRF == "" {
 			continue
 		}

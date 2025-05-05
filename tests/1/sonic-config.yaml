@@ -63,21 +63,21 @@ portchannels:
     - number: "11"
 
 ports:
-  - name: Ethernet0
-    ips:
-      - 10.4.3.2
-    fec: rs
-    mtu: 1500
-    vrf: VrfMpls
-  - name: Ethernet1
-    mtu: 1500
-  - name: Ethernet4
-    mtu: 1500
-    vrf: VrfInternet
-  - name: Ethernet120
-
-ports_default_fec: none
-ports_default_mtu: 9000
+  default_fec: none
+  default_mtu: 9000
+  list:
+    - name: Ethernet0
+      ips:
+        - 10.4.3.2
+      fec: rs
+      mtu: 1500
+      vrf: VrfMpls
+    - name: Ethernet1
+      mtu: 1500
+    - name: Ethernet4
+      mtu: 1500
+      vrf: VrfInternet
+    - name: Ethernet120
 
 sag:
   mac: bb:bb:bb:bb:bb:bb
