@@ -14,8 +14,11 @@ lldp_hello_time: 10
 loopback_address: 10.7.7.7
 
 mclag: {}
-mgmtif_gateway: 10.7.10.1
-mgmtif_ip: 10.7.10.2
+
+mgmt_interface:
+  gateway_address: 10.7.10.1
+  ip: 10.7.10.2
+
 mgmt_vrf: false
 
 nameservers:
@@ -29,19 +32,20 @@ ntpservers:
   - 3.europe.pool.ntp.org
 
 ports:
-  - name: Ethernet0
-    ips:
-      - 10.4.3.2
-    fec: rs
-    mtu: 1500
-  - name: Ethernet1
-    mtu: 1500
-  - name: Ethernet4
-    mtu: 1500
-  - name: Ethernet120
+  default_fec: none
+  default_mtu: 9000
+  list:
+    - name: Ethernet0
+      ips:
+        - 10.4.3.2
+      fec: rs
+      mtu: 1500
+    - name: Ethernet1
+      mtu: 1500
+    - name: Ethernet4
+      mtu: 1500
+    - name: Ethernet120
 
-ports_default_fec: none
-ports_default_mtu: 9000
 sag: {}
 
 ssh_sourceranges:
