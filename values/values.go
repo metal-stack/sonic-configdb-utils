@@ -59,6 +59,11 @@ type PortChannel struct {
 	Members  []string `yaml:"members"`
 }
 
+type PortChannels struct {
+	DefaultMTU int           `yaml:"default_mtu"`
+	List       []PortChannel `yaml:"list"`
+}
+
 type SAG struct {
 	MAC string `yaml:"mac"`
 }
@@ -78,8 +83,7 @@ type Values struct {
 	MgmtVRF                 bool                    `yaml:"mgmt_vrf"`
 	Nameservers             []string                `yaml:"nameservers"`
 	NTPServers              []string                `yaml:"ntpservers"`
-	PortChannels            []PortChannel           `yaml:"portchannels"`
-	PortChannelsDefaultMTU  int                     `yaml:"portchannels_default_mtu"`
+	PortChannels            PortChannels            `yaml:"portchannels"`
 	Ports                   []Port                  `yaml:"ports"`
 	PortsDefaultFEC         FECMode                 `yaml:"ports_default_fec"`
 	PortsDefaultMTU         int                     `yaml:"ports_default_mtu"`

@@ -96,8 +96,8 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		},
 		NTPServers:         getNTPServers(input.NTPServers),
 		Ports:              ports,
-		PortChannels:       getPortChannels(input.PortChannels, input.PortChannelsDefaultMTU),
-		PortChannelMembers: getPortChannelMembers(input.PortChannels),
+		PortChannels:       getPortChannels(input.PortChannels),
+		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
 		SAG:                getSAG(input.SAG),
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
@@ -339,13 +339,13 @@ func getNTPServers(servers []string) map[string]struct{} {
 	return ntpServers
 }
 
-func getPortChannels(portChannels []values.PortChannel, defaultPortChannelMTU int) map[string]PortChannel {
+func getPortChannels(portChannels values.PortChannels) map[string]PortChannel {
 	configPortChannels := make(map[string]PortChannel)
 
-	for _, pc := range portChannels {
+	for _, pc := range portChannels.List {
 		mtu := defaultMTU
-		if defaultPortChannelMTU != 0 {
-			mtu = defaultPortChannelMTU
+		if portChannels.DefaultMTU != 0 {
+			mtu = portChannels.DefaultMTU
 		}
 		if pc.MTU != 0 {
 			mtu = pc.MTU

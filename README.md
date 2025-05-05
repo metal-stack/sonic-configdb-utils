@@ -355,20 +355,20 @@ Result:
 }
 ```
 
-**portchannels** and **portchannels_default_mtu**
+**portchannels**
 
 Example:
 
 ```yaml
 portchannels:
-  - number: "01"
-    mtu: 1500
-    fallback: true
-    members:
-      - Ethernet4
-      - Ethernet5
-
-portchannels_default_mtu: 9000
+  default_mtu: 9000
+  list:
+    - number: "01"
+      mtu: 1500
+      fallback: true
+      members:
+        - Ethernet4
+        - Ethernet5
 ```
 
 Result:
