@@ -15,35 +15,35 @@ type ConfigDB struct {
 	ACLRules           map[string]ACLRule        `json:"ACL_RULE,omitempty"`
 	ACLTables          map[string]ACLTable       `json:"ACL_TABLE,omitempty"`
 	Breakouts          map[string]BreakoutConfig `json:"BREAKOUT_CFG,omitempty"`
-	DeviceMetadata     `json:"DEVICE_METADATA"`
-	DNSNameservers     map[string]DNSNameserver `json:"DNS_NAMESERVER,omitempty"`
-	Features           map[string]Feature       `json:"FEATURE,omitempty"`
-	Interfaces         map[string]Interface     `json:"INTERFACE,omitempty"`
-	LLDP               `json:"LLDP"`
+	DeviceMetadata     DeviceMetadata            `json:"DEVICE_METADATA"`
+	DNSNameservers     map[string]DNSNameserver  `json:"DNS_NAMESERVER,omitempty"`
+	Features           map[string]Feature        `json:"FEATURE,omitempty"`
+	Interfaces         map[string]Interface      `json:"INTERFACE,omitempty"`
+	LLDP               LLDP                      `json:"LLDP"`
 	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
 	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
 	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP,omitempty"`
 	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE,omitempty"`
 	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT,omitempty"`
-	MgmtVRFConfig      `json:"MGMT_VRF_CONFIG"`
-	NTP                `json:"NTP"`
-	NTPServers         map[string]struct{}      `json:"NTP_SERVER,omitempty"`
-	Ports              map[string]Port          `json:"PORT,omitempty"`
-	PortChannels       map[string]PortChannel   `json:"PORTCHANNEL,omitempty"`
-	PortChannelMembers map[string]struct{}      `json:"PORTCHANNEL_MEMBER,omitempty"`
-	SAG                *SAG                     `json:"SAG,omitempty"`
-	VLANs              map[string]VLAN          `json:"VLAN,omitempty"`
-	VLANInterfaces     map[string]VLANInterface `json:"VLAN_INTERFACE,omitempty"`
-	VLANMembers        map[string]VLANMember    `json:"VLAN_MEMBER,omitempty"`
-	VRFs               map[string]VRF           `json:"VRF,omitempty"`
-	VXLANEVPN          `json:"VXLAN_EVPN_NVO"`
-	VXLANTunnels       map[string]VXLANTunnel `json:"VXLAN_TUNNEL,omitempty"`
-	VXLANTunnelMap     `json:"VXLAN_TUNNEL_MAP,omitempty"`
+	MgmtVRFConfig      MgmtVRFConfig             `json:"MGMT_VRF_CONFIG"`
+	NTP                NTP                       `json:"NTP"`
+	NTPServers         map[string]struct{}       `json:"NTP_SERVER,omitempty"`
+	Ports              map[string]Port           `json:"PORT,omitempty"`
+	PortChannels       map[string]PortChannel    `json:"PORTCHANNEL,omitempty"`
+	PortChannelMembers map[string]struct{}       `json:"PORTCHANNEL_MEMBER,omitempty"`
+	SAG                *SAG                      `json:"SAG,omitempty"`
+	VLANs              map[string]VLAN           `json:"VLAN,omitempty"`
+	VLANInterfaces     map[string]VLANInterface  `json:"VLAN_INTERFACE,omitempty"`
+	VLANMembers        map[string]VLANMember     `json:"VLAN_MEMBER,omitempty"`
+	VRFs               map[string]VRF            `json:"VRF,omitempty"`
+	VXLANEVPN          VXLANEVPN                 `json:"VXLAN_EVPN_NVO"`
+	VXLANTunnels       map[string]VXLANTunnel    `json:"VXLAN_TUNNEL,omitempty"`
+	VXLANTunnelMap     VXLANTunnelMap            `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
 func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
-	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, input.PortsDefaultFEC, input.PortsDefaultMTU, platform)
+	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		DeviceMetadata: *deviceMetadata,
 		DNSNameservers: getDNSNameservers(input.Nameservers),
 		Features:       features,
-		Interfaces:     getInterfaces(input.Ports, input.BGPPorts),
+		Interfaces:     getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
 		LLDP: LLDP{
 			Global: LLDPGlobal{
 				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTime),
@@ -76,7 +76,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		MCLAGDomains:    getMCLAGDomains(input.MCLAG),
 		MCLAGInterfaces: getMCLAGInterfaces(input.MCLAG),
 		MCLAGUniqueIPs:  getMCLAGUniqueIPs(input.MCLAG),
-		MgmtInterfaces:  getMgmtInterfaces(input.MgmtIfIP, input.MgmtIfGateway),
+		MgmtInterfaces:  getMgmtInterfaces(input.MgmtInterface),
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -96,8 +96,8 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		},
 		NTPServers:         getNTPServers(input.NTPServers),
 		Ports:              ports,
-		PortChannels:       getPortChannels(input.PortChannels, input.PortChannelsDefaultMTU),
-		PortChannelMembers: getPortChannelMembers(input.PortChannels),
+		PortChannels:       getPortChannels(input.PortChannels),
+		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
 		SAG:                getSAG(input.SAG),
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
@@ -234,10 +234,10 @@ func getFeatures(features map[string]values.Feature) map[string]Feature {
 	return configFeatures
 }
 
-func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface {
+func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
-	for _, port := range ports {
+	for _, port := range ports.List {
 		if len(port.IPs) == 0 && port.VRF == "" && !slices.Contains(bgpPorts, port.Name) {
 			continue
 		}
@@ -254,6 +254,15 @@ func getInterfaces(ports []values.Port, bgpPorts []string) map[string]Interface 
 		for _, ip := range port.IPs {
 			intf = Interface{}
 			interfaces[port.Name+"|"+ip] = intf
+		}
+	}
+
+	for _, interconnect := range interconnects {
+		for _, intf := range interconnect.UnnumberedInterfaces {
+			interfaces[intf] = Interface{
+				IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+				VRFName:              interconnect.VRF,
+			}
 		}
 	}
 
@@ -303,19 +312,19 @@ func getMCLAGUniqueIPs(mclag values.MCLAG) map[string]MCLAGUniqueIP {
 	}
 }
 
-func getMgmtInterfaces(mgmtIfIP, mgmtIfGateway string) map[string]MgmtInterface {
-	if mgmtIfIP == "" {
+func getMgmtInterfaces(mgmtif values.MgmtInterface) map[string]MgmtInterface {
+	if mgmtif.IP == "" {
 		return nil
 	}
 
 	mgmtInterfaces := make(map[string]MgmtInterface)
 
 	eth0 := MgmtInterface{}
-	if mgmtIfGateway != "" {
-		eth0.GWAddr = mgmtIfGateway
+	if mgmtif.GatewayAddress != "" {
+		eth0.GWAddr = mgmtif.GatewayAddress
 	}
 
-	mgmtInterfaces["eth0|"+mgmtIfIP] = eth0
+	mgmtInterfaces["eth0|"+mgmtif.IP] = eth0
 
 	return mgmtInterfaces
 }
@@ -330,13 +339,13 @@ func getNTPServers(servers []string) map[string]struct{} {
 	return ntpServers
 }
 
-func getPortChannels(portChannels []values.PortChannel, defaultPortChannelMTU int) map[string]PortChannel {
+func getPortChannels(portChannels values.PortChannels) map[string]PortChannel {
 	configPortChannels := make(map[string]PortChannel)
 
-	for _, pc := range portChannels {
+	for _, pc := range portChannels.List {
 		mtu := defaultMTU
-		if defaultPortChannelMTU != 0 {
-			mtu = defaultPortChannelMTU
+		if portChannels.DefaultMTU != 0 {
+			mtu = portChannels.DefaultMTU
 		}
 		if pc.MTU != 0 {
 			mtu = pc.MTU
@@ -368,13 +377,13 @@ func getPortChannelMembers(portchannels []values.PortChannel) map[string]struct{
 	return portchannelMembers
 }
 
-func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defaultFECMode values.FECMode, defaultMTU int, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
+func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
 
 	defaultBreakouts := platform.GetDefaultBreakoutConfig()
 	for portName, breakout := range defaultBreakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, ports.DefaultFEC, ports.DefaultMTU, platform)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -386,7 +395,7 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 	}
 
 	for portName, breakout := range breakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaultFECMode, defaultMTU, platform)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, ports.DefaultFEC, ports.DefaultMTU, platform)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -397,7 +406,7 @@ func getPortsAndBreakouts(ports []values.Port, breakouts map[string]string, defa
 		}
 	}
 
-	for _, port := range ports {
+	for _, port := range ports.List {
 		configPort, ok := configPorts[port.Name]
 		if !ok {
 			return nil, nil, fmt.Errorf("invalid port name %s; if you think it should be available please check your breakout configuration", port.Name)
@@ -499,7 +508,7 @@ func getVLANMembers(vlans []values.VLAN, addVlanMembers bool) map[string]VLANMem
 	return vlanMembers
 }
 
-func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, vlans []values.VLAN) map[string]VRF {
+func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, vlans []values.VLAN) map[string]VRF {
 	vrfs := make(map[string]VRF)
 
 	for _, interconnect := range interconnects {
@@ -508,7 +517,7 @@ func getVRFs(interconnects map[string]values.Interconnect, ports []values.Port, 
 		}
 	}
 
-	for _, port := range ports {
+	for _, port := range ports.List {
 		if port.VRF == "" {
 			continue
 		}
