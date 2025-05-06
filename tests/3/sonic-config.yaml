@@ -3,7 +3,7 @@ bgp_ports:
   - Ethernet56
 
 breakouts:
-  Ethernet52: 4x25G[10G]
+  Ethernet52: 4x25G[10G,1G]
   Ethernet56: 2x50G
 
 docker_routing_config_mode: split
@@ -69,6 +69,8 @@ ports:
       mtu: 1500
       vrf: VrfInternet
     - name: Ethernet52
+      speed: 1000
+    - name: Ethernet53
       speed: 10000
 
 sag:

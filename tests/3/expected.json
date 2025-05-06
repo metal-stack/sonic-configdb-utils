@@ -170,22 +170,22 @@
       "brkout_mode": "1x1G"
     },
     "Ethernet48": {
-      "brkout_mode": "1x25G[10G]"
+      "brkout_mode": "1x25G[10G,1G]"
     },
     "Ethernet49": {
-      "brkout_mode": "1x25G[10G]"
+      "brkout_mode": "1x25G[10G,1G]"
     },
     "Ethernet5": {
       "brkout_mode": "1x1G"
     },
     "Ethernet50": {
-      "brkout_mode": "1x25G[10G]"
+      "brkout_mode": "1x25G[10G,1G]"
     },
     "Ethernet51": {
-      "brkout_mode": "1x25G[10G]"
+      "brkout_mode": "1x25G[10G,1G]"
     },
     "Ethernet52": {
-      "brkout_mode": "4x25G[10G]"
+      "brkout_mode": "4x25G[10G,1G]"
     },
     "Ethernet56": {
       "brkout_mode": "2x50G"
@@ -772,7 +772,7 @@
       "index": "53",
       "lanes": "73",
       "mtu": "9000",
-      "speed": "10000"
+      "speed": "1000"
     },
     "Ethernet53": {
       "admin_status": "up",
@@ -782,7 +782,7 @@
       "index": "53",
       "lanes": "74",
       "mtu": "9000",
-      "speed": "25000"
+      "speed": "10000"
     },
     "Ethernet54": {
       "admin_status": "up",
