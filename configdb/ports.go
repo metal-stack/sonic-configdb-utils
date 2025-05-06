@@ -12,7 +12,6 @@ import (
 const (
 	defaultAdminStatus = AdminStatusUp
 	defaultAutonegMode = AutonegModeOff
-	defaultFECMode     = FECModeNone
 	defaultMTU         = 9000
 )
 
@@ -52,7 +51,6 @@ func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode valu
 			AdminStatus:    defaultAdminStatus,
 			Alias:          alias,
 			Autoneg:        defaultAutonegMode,
-			FEC:            defaultFECMode,
 			Index:          fmt.Sprintf("%d", breakoutPorts.Index[i]),
 			Lanes:          lanesString,
 			MTU:            fmt.Sprintf("%d", defaultMTU),

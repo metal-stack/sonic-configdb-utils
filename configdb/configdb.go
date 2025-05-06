@@ -428,11 +428,9 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 		if port.Speed != 0 && !slices.Contains(speedOptions[:], port.Speed) {
 			return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration %s only allows speed options %v", port.Speed, port.Name, configPort.parentBreakout, speedOptions)
 		}
-
 		if port.Speed != 0 {
 			configPort.Speed = fmt.Sprintf("%d", port.Speed)
 		}
-
 		if port.FECMode != "" && string(port.FECMode) != string(configPort.FEC) {
 			configPort.FEC = FECMode(port.FECMode)
 		}
