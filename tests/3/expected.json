@@ -260,11 +260,6 @@
       "unique_ip": "enable"
     }
   },
-  "MGMT_INTERFACE": {
-    "eth0|10.7.10.2": {
-      "gwaddr": "10.7.10.1"
-    }
-  },
   "MGMT_PORT": {
     "eth0": {
       "admin_status": "up",

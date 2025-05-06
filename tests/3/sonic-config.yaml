@@ -30,10 +30,6 @@ mclag:
   source_ip: 192.168.255.2
   system_mac: aa:aa:aa:aa:aa:aa
 
-mgmt_interface:
-  gateway_address: 10.7.10.1
-  ip: 10.7.10.2
-
 mgmt_vrf: false
 
 nameservers:

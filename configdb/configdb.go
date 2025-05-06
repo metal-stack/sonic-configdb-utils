@@ -24,7 +24,7 @@ type ConfigDB struct {
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
 	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
 	MCLAGUniqueIPs     map[string]MCLAGUniqueIP  `json:"MCLAG_UNIQUE_IP,omitempty"`
-	MgmtInterfaces     map[string]MgmtInterface  `json:"MGMT_INTERFACE,omitempty"`
+	MgmtInterface      map[string]MgmtInterface  `json:"MGMT_INTERFACE,omitempty"`
 	MgmtPorts          map[string]MgmtPort       `json:"MGMT_PORT,omitempty"`
 	MgmtVRFConfig      MgmtVRFConfig             `json:"MGMT_VRF_CONFIG"`
 	NTP                NTP                       `json:"NTP"`
@@ -76,7 +76,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		MCLAGDomains:    getMCLAGDomains(input.MCLAG),
 		MCLAGInterfaces: getMCLAGInterfaces(input.MCLAG),
 		MCLAGUniqueIPs:  getMCLAGUniqueIPs(input.MCLAG),
-		MgmtInterfaces:  getMgmtInterfaces(input.MgmtInterface),
+		MgmtInterface:   getMgmtInterface(input.MgmtInterface),
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -308,7 +308,7 @@ func getMCLAGUniqueIPs(mclag values.MCLAG) map[string]MCLAGUniqueIP {
 	}
 }
 
-func getMgmtInterfaces(mgmtif values.MgmtInterface) map[string]MgmtInterface {
+func getMgmtInterface(mgmtif values.MgmtInterface) map[string]MgmtInterface {
 	if mgmtif.IP == "" {
 		return nil
 	}

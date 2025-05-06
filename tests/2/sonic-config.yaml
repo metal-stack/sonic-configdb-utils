@@ -16,7 +16,6 @@ loopback_address: 10.7.7.7
 mclag: {}
 
 mgmt_interface:
-  gateway_address: 10.7.10.1
   ip: 10.7.10.2
 
 mgmt_vrf: false
@@ -48,9 +47,6 @@ ports:
     - name: Ethernet120
 
 sag: {}
-
-ssh_sourceranges:
-  - 10.1.23.1/30
 
 vlans:
   - id: 4000
