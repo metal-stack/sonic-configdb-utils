@@ -522,21 +522,5 @@
     "Vlan4000": {},
     "Vlan4000|10.9.7.0": {},
     "Vlan4001": {}
-  },
-  "VXLAN_EVPN_NVO": {
-    "nvo": {
-      "source_vtep": "vtep"
-    }
-  },
-  "VXLAN_TUNNEL": {
-    "vtep": {
-      "src_ip": "10.7.7.7"
-    }
-  },
-  "VXLAN_TUNNEL_MAP": {
-    "vtep|map_103999_Vlan3999": {
-      "vlan": "Vlan3999",
-      "vni": "103999"
-    }
   }
 }
