@@ -211,18 +211,6 @@ Result:
 }
 ```
 
-and
-
-```json
-{
-  "VXLAN_TUNNEL": {
-    "vtep": {
-      "src_ip": "10.7.7.7"
-    }
-  }
-}
-```
-
 ### mclag
 
 Example:
@@ -447,9 +435,9 @@ and
 ```
 
 The speed of a port is determined by its breakout configuration.
-If no breakout configuration for a port is passed its default breakout is assumed.
-If a breakout configuration allows more than one speed options, e.g. `1x100G[40G]`, the first speed option is used as a default (`100G` in the example case).
-A `speed` option can be passed to the port config to specify an alternative speed, e.g.
+If no breakout configuration for a port is provided its default breakout is assumed.
+If a breakout configuration allows more than one speed options, e.g. `1x100G[40G]`, the first speed option is used as a default (`100G` in the example).
+A `speed` option can be added to the port config to specify an alternative speed, e.g.
 
 ```yaml
 ports:
