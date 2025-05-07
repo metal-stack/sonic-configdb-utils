@@ -404,6 +404,7 @@ breakouts:
 ports:
   default_fec: none
   default_mtu: 9000
+  default_autoneg: on
   list:
     - name: Ethernet0
       ips:
@@ -421,7 +422,7 @@ Result:
     "Ethernet0": {
       "admin_status": "up",
       "alias": "Eth1/1(Port1)",
-      "autoneg": "off",
+      "autoneg": "on",
       "fec": "rs",
       "index": "1",
       "lanes": "1",
@@ -556,6 +557,8 @@ Result:
 Example:
 
 ```yaml
+loopback_address: 10.7.7.7
+
 vteps:
   - vni: 103999
     vlan: Vlan3999
@@ -565,6 +568,16 @@ Result:
 
 ```json
 {
+  "VXLAN_EVPN_NVO": {
+    "nvo": {
+      "source_vtep": "vtep"
+    }
+  },
+  "VXLAN_TUNNEL": {
+    "vtep": {
+      "src_ip": "10.7.7.7"
+    }
+  },
   "VXLAN_TUNNEL_MAP": {
     "vtep|map_103999_Vlan3999": {
       "vlan": "Vlan3999",
