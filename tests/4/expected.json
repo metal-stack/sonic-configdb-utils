@@ -130,25 +130,25 @@
       "brkout_mode": "1x1G"
     },
     "Ethernet48": {
-      "brkout_mode": "1x25G[10G,1G]"
+      "brkout_mode": "1x10G[1G]"
     },
     "Ethernet49": {
-      "brkout_mode": "1x25G[10G,1G]"
+      "brkout_mode": "1x10G[1G]"
     },
     "Ethernet5": {
       "brkout_mode": "1x1G"
     },
     "Ethernet50": {
-      "brkout_mode": "1x25G[10G,1G]"
+      "brkout_mode": "1x10G[1G]"
     },
     "Ethernet51": {
-      "brkout_mode": "1x25G[10G,1G]"
+      "brkout_mode": "1x10G[1G]"
     },
     "Ethernet52": {
-      "brkout_mode": "1x100G[40G]"
+      "brkout_mode": "1x10G[1G]"
     },
-    "Ethernet56": {
-      "brkout_mode": "1x100G[40G]"
+    "Ethernet53": {
+      "brkout_mode": "1x10G[1G]"
     },
     "Ethernet6": {
       "brkout_mode": "1x1G"
@@ -166,30 +166,25 @@
   "DEVICE_METADATA": {
     "localhost": {
       "docker_routing_config_mode": "split",
-      "frr_mgmt_framework_config": "true",
-      "hostname": "mgmtspine",
-      "hwsku": "Accton-AS4630-54TE",
+      "frr_mgmt_framework_config": "false",
+      "hostname": "leaf01",
+      "hwsku": "Accton-AS4625-54T",
       "mac": "aa:aa:aa:aa:aa:aa",
-      "platform": "x86_64-accton_as4630_54te-r0",
+      "platform": "x86_64-accton_as4625_54t-r0",
       "type": "LeafRouter"
     }
   },
-  "INTERFACE": {
-    "Ethernet0": {
-      "ipv6_use_link_local_only": "enable"
-    },
-    "Ethernet1": {
-      "ipv6_use_link_local_only": "enable"
-    },
-    "Ethernet12": {},
-    "Ethernet12|10.100.0.2/30": {},
-    "Ethernet13": {
-      "vrf_name": "VrfInternet"
+  "DNS_NAMESERVER": {
+    "10.0.0.10": {}
+  },
+  "LLDP": {
+    "GLOBAL": {
+      "hello_time": "10"
     }
   },
   "LOOPBACK_INTERFACE": {
     "Loopback0": {},
-    "Loopback0|10.0.0.2/32": {}
+    "Loopback0|10.0.0.11/32": {}
   },
   "MGMT_PORT": {
     "eth0": {
@@ -205,7 +200,8 @@
   },
   "NTP": {
     "global": {
-      "src_intf": "eth0"
+      "src_intf": "Loopback0",
+      "vrf": "default"
     }
   },
   "NTP_SERVER": {
@@ -216,387 +212,387 @@
     "Ethernet0": {
       "admin_status": "up",
       "alias": "Eth1(Port1)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "1",
-      "lanes": "26",
+      "lanes": "25",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet1": {
       "admin_status": "up",
       "alias": "Eth2(Port2)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "2",
-      "lanes": "25",
+      "lanes": "26",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet10": {
       "admin_status": "up",
       "alias": "Eth11(Port11)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "11",
-      "lanes": "40",
+      "lanes": "35",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet11": {
       "admin_status": "up",
       "alias": "Eth12(Port12)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "12",
-      "lanes": "39",
+      "lanes": "36",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet12": {
       "admin_status": "up",
       "alias": "Eth13(Port13)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "13",
-      "lanes": "34",
-      "mtu": "1500",
+      "lanes": "37",
+      "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet13": {
       "admin_status": "up",
       "alias": "Eth14(Port14)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "14",
-      "lanes": "33",
+      "lanes": "38",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet14": {
       "admin_status": "up",
       "alias": "Eth15(Port15)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "15",
-      "lanes": "36",
+      "lanes": "39",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet15": {
       "admin_status": "up",
       "alias": "Eth16(Port16)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "16",
-      "lanes": "35",
+      "lanes": "40",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet16": {
       "admin_status": "up",
       "alias": "Eth17(Port17)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "17",
-      "lanes": "46",
+      "lanes": "41",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet17": {
       "admin_status": "up",
       "alias": "Eth18(Port18)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "18",
-      "lanes": "45",
+      "lanes": "42",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet18": {
       "admin_status": "up",
       "alias": "Eth19(Port19)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "19",
-      "lanes": "48",
+      "lanes": "43",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet19": {
       "admin_status": "up",
       "alias": "Eth20(Port20)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "20",
-      "lanes": "47",
+      "lanes": "44",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet2": {
       "admin_status": "up",
       "alias": "Eth3(Port3)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "3",
-      "lanes": "28",
+      "lanes": "27",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet20": {
       "admin_status": "up",
       "alias": "Eth21(Port21)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "21",
-      "lanes": "42",
+      "lanes": "49",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet21": {
       "admin_status": "up",
       "alias": "Eth22(Port22)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "22",
-      "lanes": "41",
+      "lanes": "50",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet22": {
       "admin_status": "up",
       "alias": "Eth23(Port23)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "23",
-      "lanes": "44",
+      "lanes": "51",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet23": {
       "admin_status": "up",
       "alias": "Eth24(Port24)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "24",
-      "lanes": "43",
+      "lanes": "52",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet24": {
       "admin_status": "up",
       "alias": "Eth25(Port25)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "25",
-      "lanes": "2",
+      "lanes": "1",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet25": {
       "admin_status": "up",
       "alias": "Eth26(Port26)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "26",
-      "lanes": "1",
+      "lanes": "2",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet26": {
       "admin_status": "up",
       "alias": "Eth27(Port27)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "27",
-      "lanes": "4",
+      "lanes": "3",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet27": {
       "admin_status": "up",
       "alias": "Eth28(Port28)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "28",
-      "lanes": "3",
+      "lanes": "4",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet28": {
       "admin_status": "up",
       "alias": "Eth29(Port29)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "29",
-      "lanes": "6",
+      "lanes": "5",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet29": {
       "admin_status": "up",
       "alias": "Eth30(Port30)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "30",
-      "lanes": "5",
+      "lanes": "6",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet3": {
       "admin_status": "up",
       "alias": "Eth4(Port4)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "4",
-      "lanes": "27",
+      "lanes": "28",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet30": {
       "admin_status": "up",
       "alias": "Eth31(Port31)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "31",
-      "lanes": "8",
+      "lanes": "7",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet31": {
       "admin_status": "up",
       "alias": "Eth32(Port32)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "32",
-      "lanes": "7",
+      "lanes": "8",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet32": {
       "admin_status": "up",
       "alias": "Eth33(Port33)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "33",
-      "lanes": "10",
+      "lanes": "9",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet33": {
       "admin_status": "up",
       "alias": "Eth34(Port34)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "34",
-      "lanes": "9",
+      "lanes": "10",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet34": {
       "admin_status": "up",
       "alias": "Eth35(Port35)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "35",
-      "lanes": "12",
+      "lanes": "11",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet35": {
       "admin_status": "up",
       "alias": "Eth36(Port36)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "36",
-      "lanes": "11",
+      "lanes": "12",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet36": {
       "admin_status": "up",
       "alias": "Eth37(Port37)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "37",
-      "lanes": "14",
+      "lanes": "13",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet37": {
       "admin_status": "up",
       "alias": "Eth38(Port38)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "38",
-      "lanes": "13",
+      "lanes": "14",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet38": {
       "admin_status": "up",
       "alias": "Eth39(Port39)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "39",
-      "lanes": "16",
+      "lanes": "15",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet39": {
       "admin_status": "up",
       "alias": "Eth40(Port40)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "40",
-      "lanes": "15",
+      "lanes": "16",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet4": {
       "admin_status": "up",
       "alias": "Eth5(Port5)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "5",
-      "lanes": "30",
+      "lanes": "29",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet40": {
       "admin_status": "up",
       "alias": "Eth41(Port41)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "41",
-      "lanes": "18",
+      "lanes": "17",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet41": {
       "admin_status": "up",
       "alias": "Eth42(Port42)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "42",
-      "lanes": "17",
+      "lanes": "18",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet42": {
       "admin_status": "up",
       "alias": "Eth43(Port43)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "43",
-      "lanes": "20",
+      "lanes": "19",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet43": {
       "admin_status": "up",
       "alias": "Eth44(Port44)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "44",
-      "lanes": "19",
+      "lanes": "20",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet44": {
       "admin_status": "up",
       "alias": "Eth45(Port45)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "45",
-      "lanes": "22",
+      "lanes": "21",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet45": {
       "admin_status": "up",
       "alias": "Eth46(Port46)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "46",
-      "lanes": "21",
+      "lanes": "22",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet46": {
       "admin_status": "up",
       "alias": "Eth47(Port47)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "47",
-      "lanes": "24",
+      "lanes": "23",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet47": {
       "admin_status": "up",
       "alias": "Eth48(Port48)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "48",
-      "lanes": "23",
+      "lanes": "24",
       "mtu": "9000",
       "speed": "1000"
     },
@@ -605,25 +601,25 @@
       "alias": "Eth49(Port49)",
       "autoneg": "off",
       "index": "49",
-      "lanes": "67",
+      "lanes": "57",
       "mtu": "9000",
-      "speed": "25000"
+      "speed": "10000"
     },
     "Ethernet49": {
       "admin_status": "up",
       "alias": "Eth50(Port50)",
       "autoneg": "off",
       "index": "50",
-      "lanes": "66",
+      "lanes": "58",
       "mtu": "9000",
-      "speed": "25000"
+      "speed": "10000"
     },
     "Ethernet5": {
       "admin_status": "up",
       "alias": "Eth6(Port6)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "6",
-      "lanes": "29",
+      "lanes": "30",
       "mtu": "9000",
       "speed": "1000"
     },
@@ -632,109 +628,81 @@
       "alias": "Eth51(Port51)",
       "autoneg": "off",
       "index": "51",
-      "lanes": "65",
+      "lanes": "59",
       "mtu": "9000",
-      "speed": "25000"
+      "speed": "10000"
     },
     "Ethernet51": {
       "admin_status": "up",
       "alias": "Eth52(Port52)",
       "autoneg": "off",
       "index": "52",
-      "lanes": "68",
+      "lanes": "60",
       "mtu": "9000",
-      "speed": "25000"
+      "speed": "10000"
     },
     "Ethernet52": {
       "admin_status": "up",
       "alias": "Eth53(Port53)",
       "autoneg": "off",
       "index": "53",
-      "lanes": "73,74,75,76",
+      "lanes": "61",
       "mtu": "9000",
-      "speed": "100000"
+      "speed": "10000"
     },
-    "Ethernet56": {
+    "Ethernet53": {
       "admin_status": "up",
       "alias": "Eth54(Port54)",
       "autoneg": "off",
       "index": "54",
-      "lanes": "69,70,71,72",
+      "lanes": "62",
       "mtu": "9000",
-      "speed": "100000"
+      "speed": "10000"
     },
     "Ethernet6": {
       "admin_status": "up",
       "alias": "Eth7(Port7)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "7",
-      "lanes": "32",
+      "lanes": "31",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet7": {
       "admin_status": "up",
       "alias": "Eth8(Port8)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "8",
-      "lanes": "31",
+      "lanes": "32",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet8": {
       "admin_status": "up",
       "alias": "Eth9(Port9)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "9",
-      "lanes": "38",
+      "lanes": "33",
       "mtu": "9000",
       "speed": "1000"
     },
     "Ethernet9": {
       "admin_status": "up",
       "alias": "Eth10(Port10)",
-      "autoneg": "on",
+      "autoneg": "off",
       "index": "10",
-      "lanes": "37",
+      "lanes": "34",
       "mtu": "9000",
       "speed": "1000"
     }
   },
   "VLAN": {
-    "Vlan1001": {
-      "vlanid": "1001"
-    },
-    "Vlan4009": {
-      "vlanid": "4009"
+    "Vlan4000": {
+      "vlanid": "4000"
     }
   },
   "VLAN_INTERFACE": {
-    "Vlan1001": {},
-    "Vlan1001|10.1.1.1/24": {},
-    "Vlan4009": {}
-  },
-  "VLAN_MEMBER": {
-    "Vlan1001|Ethernet47": {
-      "tagging_mode": "untagged"
-    }
-  },
-  "VRF": {
-    "VrfInternet": {}
-  },
-  "VXLAN_EVPN_NVO": {
-    "nvo": {
-      "source_vtep": "vtep"
-    }
-  },
-  "VXLAN_TUNNEL": {
-    "vtep": {
-      "src_ip": "10.0.0.2"
-    }
-  },
-  "VXLAN_TUNNEL_MAP": {
-    "vtep|map_104009_Vlan4009": {
-      "vlan": "Vlan4009",
-      "vni": "104009"
-    }
+    "Vlan4000": {},
+    "Vlan4000|10.255.1.1/24": {}
   }
 }

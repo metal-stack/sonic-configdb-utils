@@ -2,6 +2,13 @@ package values
 
 import "gopkg.in/yaml.v3"
 
+type AutonegMode string
+
+const (
+	AutonegModeOn  AutonegMode = "on"
+	AutonegModeOff AutonegMode = "off"
+)
+
 type DockerRoutingConfigMode string
 
 const (
@@ -50,18 +57,20 @@ type NTP struct {
 }
 
 type Port struct {
-	IPs     []string `yaml:"ips"`
-	FECMode FECMode  `yaml:"fec"`
-	MTU     int      `yaml:"mtu"`
-	Name    string   `yaml:"name"`
-	Speed   int      `yaml:"speed"`
-	VRF     string   `yaml:"vrf"`
+	Autoneg AutonegMode `yaml:"autoneg"`
+	IPs     []string    `yaml:"ips"`
+	FECMode FECMode     `yaml:"fec"`
+	MTU     int         `yaml:"mtu"`
+	Name    string      `yaml:"name"`
+	Speed   int         `yaml:"speed"`
+	VRF     string      `yaml:"vrf"`
 }
 
 type Ports struct {
-	DefaultFEC FECMode `yaml:"default_fec"`
-	DefaultMTU int     `yaml:"default_mtu"`
-	List       []Port  `yaml:"list"`
+	DefaultAutoneg AutonegMode `yaml:"default_autoneg"`
+	DefaultFEC     FECMode     `yaml:"default_fec"`
+	DefaultMTU     int         `yaml:"default_mtu"`
+	List           []Port      `yaml:"list"`
 }
 
 type PortChannel struct {

@@ -1,102 +1,53 @@
+---
 bgp_ports:
-  - Ethernet52
-  - Ethernet56
-
-breakouts:
-  Ethernet52: 4x25G[10G]
-  Ethernet56: 2x50G
+  - Ethernet0
+  - Ethernet1
 
 docker_routing_config_mode: split
-frr_mgmt_framework_config: false
-
-interconnects:
-  mpls:
-    vni: 104010
-    vrf: VrfMpls
-  internet:
-    vrf: VrfInternet
-
-hostname: leaf01
-lldp_hello_time: 10
-loopback_address: 10.7.7.7
-
-mclag:
-  keepalive_vlan: 1000
-  member_port_channels:
-    - 11
-    - 22
-  peer_ip: 192.168.255.1
-  peer_link: PortChannel01
-  source_ip: 192.168.255.2
-  system_mac: aa:aa:aa:aa:aa:aa
-
-mgmt_interface:
-  gateway_address: 10.7.10.1
-  ip: 10.7.10.2
-
+frr_mgmt_framework_config: true
+hostname: mgmtspine
+loopback_address: 10.0.0.2
 mgmt_vrf: false
-
-nameservers:
-  - 1.1.1.1
-  - 8.8.8.8
 
 ntp:
   servers:
-    - 0.europe.pool.ntp.org
-    - 1.europe.pool.ntp.org
-    - 2.europe.pool.ntp.org
-    - 3.europe.pool.ntp.org
-
-portchannels:
-  default_mtu: 9000
-  list:
-    - number: "01"
-      mtu: 1500
-      fallback: true
-      members:
-        - Ethernet4
-        - Ethernet5
-    - number: "11"
+    - 162.159.200.1
+    - 162.159.200.123
 
 ports:
-  default_fec: none
-  default_mtu: 9000
+  default_autoneg: on
   list:
     - name: Ethernet0
-      ips:
-        - 10.4.3.2
-      mtu: 1500
-      vrf: VrfMpls
     - name: Ethernet1
+    - name: Ethernet12
       mtu: 1500
-    - name: Ethernet4
-      mtu: 1500
+      ips:
+        - 10.100.0.2/30
+    - name: Ethernet13
       vrf: VrfInternet
+    - name: Ethernet47
+    - name: Ethernet48
+      autoneg: off
+    - name: Ethernet49
+      autoneg: off
+    - name: Ethernet50
+      autoneg: off
+    - name: Ethernet51
+      autoneg: off
     - name: Ethernet52
-      speed: 10000
-
-sag:
-  mac: bb:bb:bb:bb:bb:bb
-
-ssh_sourceranges:
-  - 10.1.23.1/30
+      autoneg: off
+    - name: Ethernet56
+      autoneg: off
 
 vlans:
-  - id: 4000
-    dhcp_servers:
-      - 10.9.8.7
-      - 10.9.8.6
-    ip: 10.9.7.0
-    sag: true
-    tagged_ports:
-      - PortChannel01
+  - id: 1001
+    ip: 10.1.1.1/24
     untagged_ports:
-      - PortChannel11
-    vrf: Vrf45
-  - id: 4001
+      - Ethernet47
+  - id: 4009
 
 vlan_members: true
 
 vteps:
-  - vni: 103999
-    vlan: Vlan3999
+  - vni: 104009
+    vlan: Vlan4009

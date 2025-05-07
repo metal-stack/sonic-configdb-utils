@@ -6,7 +6,6 @@ import (
 	"maps"
 	"slices"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -28,13 +27,7 @@ type Platform struct {
 	Interfaces map[string]Interface `json:"interfaces"`
 }
 
-type PortAliases []string
-
-type SFP struct {
-	Name string `json:"name"`
-}
-
-type SpeedOptions [2]int
+type SpeedOptions []int
 
 func (p *Platform) GetDefaultBreakoutConfig() BreakoutConfig {
 	breakoutConfig := make(BreakoutConfig)
@@ -79,47 +72,34 @@ func (p *Platform) ParseBreakout(portName, breakout string) (*BreakoutPorts, err
 }
 
 func ParseSpeedOptions(breakoutMode string) (SpeedOptions, error) {
-	parseError := fmt.Errorf("error parsing breakout mode; must be of form <number>x<speed>G or <number>x<speed>G[<alternative-speed>G]")
-	numString, suffix, ok := strings.Cut(breakoutMode, "x")
+	options := make(SpeedOptions, 0)
+	parseError := fmt.Errorf("invalid breakout mode %s, must be of form <number>x<speed>G[<altSpeed1>G,...,<altSpeedN>G]", breakoutMode)
+
+	altSpeedString, ok := cutBetween(breakoutMode, "[", "]")
 	if !ok {
-		return SpeedOptions{}, parseError
+		return parseSingleSpeedOption(breakoutMode)
 	}
 
-	num, err := strconv.Atoi(numString)
-	if err != nil || num < 0 {
-		return SpeedOptions{}, parseError
-	}
-
-	speedString, suffix, ok := strings.Cut(suffix, "G")
+	speedString, ok := cutBetween(breakoutMode, "x", "[")
 	if !ok {
-		return SpeedOptions{}, parseError
+		return nil, parseError
 	}
 
-	speed, err := strconv.Atoi(speedString)
-	if err != nil || speed < 0 {
-		return SpeedOptions{}, parseError
+	speed, err := stringToSpeed(speedString)
+	if err != nil {
+		return nil, err
+	}
+	options = append(options, speed)
+
+	for optionString := range strings.SplitSeq(altSpeedString, ",") {
+		option, err := stringToSpeed(optionString)
+		if err != nil {
+			return nil, err
+		}
+		options = append(options, option)
 	}
 
-	if breakoutMode == fmt.Sprintf("%dx%dG", num, speed) {
-		return SpeedOptions{speed * 1000, 0}, nil
-	}
-
-	_, suffix, ok = strings.Cut(suffix, "[")
-	if !ok {
-		return SpeedOptions{}, parseError
-	}
-
-	altSpeedString, _, ok := strings.Cut(suffix, "G]")
-	if !ok {
-		return SpeedOptions{}, parseError
-	}
-
-	altSpeed, err := strconv.Atoi(altSpeedString)
-	if err != nil || altSpeed < 0 {
-		return SpeedOptions{}, parseError
-	}
-
-	return SpeedOptions{speed * 1000, altSpeed * 1000}, nil
+	return options, nil
 }
 
 func UnmarshalPlatformJSON(in []byte) (*Platform, error) {
@@ -132,16 +112,16 @@ func UnmarshalPlatformJSON(in []byte) (*Platform, error) {
 	return &platform, nil
 }
 
-func stringToIntSlice(input string) ([]int, error) {
-	ints := make([]int, 0)
-
-	for n := range strings.SplitSeq(input, ",") {
-		number, err := strconv.Atoi(n)
-		if err != nil {
-			return []int{}, err
-		}
-		ints = append(ints, number)
+func parseSingleSpeedOption(breakoutMode string) (SpeedOptions, error) {
+	_, speedString, ok := strings.Cut(breakoutMode, "x")
+	if !ok {
+		return nil, fmt.Errorf("invalid breakout mode %s, must be of form <number>x<speed>G", breakoutMode)
 	}
 
-	return ints, nil
+	speed, err := stringToSpeed(speedString)
+	if err != nil {
+		return nil, err
+	}
+
+	return SpeedOptions{speed}, nil
 }

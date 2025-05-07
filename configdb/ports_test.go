@@ -7,7 +7,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
-	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
 func Test_incrementPortNameSuffix(t *testing.T) {
@@ -49,14 +48,13 @@ func Test_incrementPortNameSuffix(t *testing.T) {
 
 func Test_getPortsFromBreakout(t *testing.T) {
 	tests := []struct {
-		name               string
-		portName           string
-		breakoutMode       string
-		defaultPortFECMode values.FECMode
-		defaultMTU         int
-		platform           *p.Platform
-		want               map[string]Port
-		wantErr            bool
+		name         string
+		portName     string
+		breakoutMode string
+		defaults     portDefaults
+		platform     *p.Platform
+		want         map[string]Port
+		wantErr      bool
 	}{
 		{
 			name:         "add port with only one lane",
@@ -78,7 +76,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth2(Port2)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "2",
 					Lanes:          "25",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -89,11 +86,14 @@ func Test_getPortsFromBreakout(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:               "add one 1x100G[40G] port with different defaults",
-			portName:           "Ethernet120",
-			breakoutMode:       "1x100G[40G]",
-			defaultPortFECMode: values.FECModeRS,
-			defaultMTU:         1500,
+			name:         "add one 1x100G[40G] port with different defaults",
+			portName:     "Ethernet120",
+			breakoutMode: "1x100G[40G]",
+			defaults: portDefaults{
+				autoneg: AutonegModeOn,
+				fec:     FECModeRS,
+				mtu:     1500,
+			},
 			platform: &p.Platform{
 				Interfaces: map[string]p.Interface{
 					"Ethernet120": {
@@ -109,7 +109,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet120": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth31(Port31)",
-					Autoneg:        defaultAutonegMode,
+					Autoneg:        AutonegModeOn,
 					FEC:            FECModeRS,
 					Index:          "31",
 					Lanes:          "121,122,123,124",
@@ -140,7 +140,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth30/1(Port30)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "30",
 					Lanes:          "117,118",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -151,7 +150,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth30/2(Port30)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "30",
 					Lanes:          "119,120",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -181,7 +179,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/1(Port3)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "3",
 					Lanes:          "9",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -192,7 +189,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/2(Port3)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "3",
 					Lanes:          "10",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -203,7 +199,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/3(Port3)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "3",
 					Lanes:          "11",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -214,7 +209,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/4(Port3)",
 					Autoneg:        defaultAutonegMode,
-					FEC:            defaultFECMode,
 					Index:          "3",
 					Lanes:          "12",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -227,7 +221,7 @@ func Test_getPortsFromBreakout(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getPortsFromBreakout(tt.portName, tt.breakoutMode, tt.defaultPortFECMode, tt.defaultMTU, tt.platform)
+			got, err := getPortsFromBreakout(tt.portName, tt.breakoutMode, tt.defaults, tt.platform)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getPortsFromBreakout() error = %v, wantErr %v", err, tt.wantErr)
 				return
