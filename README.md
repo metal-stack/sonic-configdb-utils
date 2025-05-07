@@ -491,10 +491,39 @@ Result:
 ```json
 {
   "ACL_RULE": {
+    "ALLOW_NTP|DEFAULT_RULE": {
+      "ETHER_TYPE": "2048",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "1"
+    },
+    "ALLOW_NTP|RULE_1": {
+      "PACKET_ACTION": "ACCEPT",
+      "PRIORITY": "99",
+      "SRC_IP": "0.0.0.0/0"
+    },
+    "ALLOW_SSH|DEFAULT_RULE": {
+      "ETHER_TYPE": "2048",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "1"
+    },
     "ALLOW_SSH|RULE_1": {
       "PACKET_ACTION": "ACCEPT",
       "PRIORITY": "91",
       "SRC_IP": "10.1.23.1/30"
+    }
+  },
+  "ACL_TABLE": {
+    "ALLOW_NTP": {
+      "policy_desc": "Allow NTP",
+      "services": ["NTP"],
+      "stage": "ingress",
+      "type": "CTRLPLANE"
+    },
+    "ALLOW_SSH": {
+      "policy_desc": "Allow SSH access",
+      "services": ["SSH"],
+      "stage": "ingress",
+      "type": "CTRLPLANE"
     }
   }
 }
