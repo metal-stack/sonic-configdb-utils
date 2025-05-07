@@ -13,7 +13,7 @@ sonic-confidb-utils generate
 
 ## Configuration Parameters
 
-**bgp_ports**
+### bgp_ports
 
 Example:
 
@@ -38,7 +38,7 @@ Result:
 }
 ```
 
-**breakouts**
+### breakouts
 
 Example:
 
@@ -65,7 +65,7 @@ Result:
 
 For each breakout also the correspondig ports entries are added.
 
-**docker_routing_config_mode**
+### docker_routing_config_mode
 
 Can be one of `separated`, `split`, `split-unified`, `unified`.
 
@@ -87,7 +87,7 @@ Result:
 }
 ```
 
-**features**
+### features
 
 Enabling a feature makes SONiC check the status of the corresponding container.
 If a feature is enabled and the container stops running `container_checker` will complain and `show system-health summary` will show
@@ -121,7 +121,7 @@ Result:
 }
 ```
 
-**frr_mgmt_framework_config**
+### frr_mgmt_framework_config
 
 Example:
 
@@ -141,7 +141,7 @@ Result:
 }
 ```
 
-**interconnects**
+### interconnects
 
 Example:
 
@@ -172,7 +172,7 @@ Result:
 }
 ```
 
-**lldp_hello_time**
+### lldp_hello_time
 
 Example:
 
@@ -192,7 +192,7 @@ Result:
 }
 ```
 
-**looback_address**
+### looback_address
 
 Example:
 
@@ -223,7 +223,7 @@ and
 }
 ```
 
-**mclag**
+### mclag
 
 Example:
 
@@ -267,7 +267,7 @@ Result:
 }
 ```
 
-**mgmt_interface**
+### mgmt_interface
 
 Example:
 
@@ -289,7 +289,7 @@ Result:
 }
 ```
 
-**mgmt_vrf**
+### mgmt_vrf
 
 Example:
 
@@ -309,7 +309,7 @@ Result:
 }
 ```
 
-**nameservers**
+### nameservers
 
 Example:
 
@@ -330,7 +330,7 @@ Result:
 }
 ```
 
-**ntpservers**
+### ntpservers
 
 Example:
 
@@ -355,7 +355,7 @@ Result:
 }
 ```
 
-**portchannels**
+### portchannels
 
 Example:
 
@@ -393,7 +393,7 @@ Result:
 }
 ```
 
-**ports**
+### ports
 
 Example:
 
@@ -459,7 +459,7 @@ ports:
 
 For each port that is not explicitly configured in `breakouts` and `ports` an entry with defaults will be added to the `"PORT"` dictionary.
 
-**sag**
+### sag
 
 Example:
 
@@ -480,7 +480,7 @@ Result:
 }
 ```
 
-**ssh_sourceranges**
+### ssh_sourceranges
 
 Example:
 
@@ -503,7 +503,7 @@ Result:
 }
 ```
 
-**vlans** and **vlan_members**
+### vlans and vlan_members
 
 Example:
 
@@ -552,7 +552,7 @@ Result:
 }
 ```
 
-**vteps**
+### vteps
 
 Example:
 
