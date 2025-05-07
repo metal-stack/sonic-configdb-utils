@@ -318,22 +318,31 @@ Result:
 }
 ```
 
-### ntpservers
+### ntp
 
 Example:
 
 ```yaml
-ntpservers:
-  - 0.europe.pool.ntp.org
-  - 1.europe.pool.ntp.org
-  - 2.europe.pool.ntp.org
-  - 3.europe.pool.ntp.org
+ntp:
+  src_interface: Loopback0
+  vrf: default
+  servers:
+    - 0.europe.pool.ntp.org
+    - 1.europe.pool.ntp.org
+    - 2.europe.pool.ntp.org
+    - 3.europe.pool.ntp.org
 ```
 
 Result:
 
 ```json
 {
+  "NTP": {
+    "global": {
+      "src_intf": "Loopback0",
+      "vrf": "default"
+    }
+  },
   "NTP_SERVER": {
     "0.europe.pool.ntp.org": {},
     "1.europe.pool.ntp.org": {},
