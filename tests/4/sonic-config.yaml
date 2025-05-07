@@ -1,0 +1,20 @@
+docker_routing_config_mode: split
+frr_mgmt_framework_config: false
+hostname: leaf01
+lldp_hello_time: 10
+loopback_address: 10.0.0.11
+
+mgmt_vrf: false
+nameservers:
+  - 10.0.0.10
+
+ntp:
+  src_interface: Loopback0
+  vrf: default
+  servers:
+    - 162.159.200.1
+    - 162.159.200.123
+
+vlans:
+  - id: 4000
+    ip: 10.255.1.1/24

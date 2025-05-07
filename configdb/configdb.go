@@ -19,7 +19,7 @@ type ConfigDB struct {
 	DNSNameservers     map[string]DNSNameserver  `json:"DNS_NAMESERVER,omitempty"`
 	Features           map[string]Feature        `json:"FEATURE,omitempty"`
 	Interfaces         map[string]Interface      `json:"INTERFACE,omitempty"`
-	LLDP               LLDP                      `json:"LLDP"`
+	LLDP               *LLDP                     `json:"LLDP,omitempty"`
 	LoopbackInterface  map[string]struct{}       `json:"LOOPBACK_INTERFACE,omitempty"`
 	MCLAGDomains       map[string]MCLAGDomain    `json:"MCLAG_DOMAIN,omitempty"`
 	MCLAGInterfaces    map[string]MCLAGInterface `json:"MCLAG_INTERFACE,omitempty"`
@@ -37,7 +37,7 @@ type ConfigDB struct {
 	VLANInterfaces     map[string]VLANInterface  `json:"VLAN_INTERFACE,omitempty"`
 	VLANMembers        map[string]VLANMember     `json:"VLAN_MEMBER,omitempty"`
 	VRFs               map[string]VRF            `json:"VRF,omitempty"`
-	VXLANEVPN          VXLANEVPN                 `json:"VXLAN_EVPN_NVO"`
+	VXLANEVPN          *VXLANEVPN                `json:"VXLAN_EVPN_NVO,omitempty"`
 	VXLANTunnels       map[string]VXLANTunnel    `json:"VXLAN_TUNNEL,omitempty"`
 	VXLANTunnelMap     VXLANTunnelMap            `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
@@ -53,8 +53,9 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		return nil, err
 	}
 
-	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 	features := getFeatures(input.Features)
+	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
+	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEPs, input.LoopbackAddress)
 
 	configdb := ConfigDB{
 		ACLRules:       rules,
@@ -64,11 +65,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		DNSNameservers: getDNSNameservers(input.Nameservers),
 		Features:       features,
 		Interfaces:     getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
-		LLDP: LLDP{
-			Global: LLDPGlobal{
-				HelloTime: fmt.Sprintf("%d", input.LLDPHelloTime),
-			},
-		},
+		LLDP:           getLLDP(input.LLDPHelloTime),
 		LoopbackInterface: map[string]struct{}{
 			"Loopback0": {},
 			"Loopback0|" + input.LoopbackAddress + "/32": {},
@@ -99,17 +96,9 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
 		VLANMembers:        getVLANMembers(input.VLANs, input.VLANMembers),
 		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
-		VXLANEVPN: VXLANEVPN{
-			VXLANEVPNNVO: VXLANEVPNNVO{
-				SourceVTEP: "vtep",
-			},
-		},
-		VXLANTunnels: map[string]VXLANTunnel{
-			"vtep": {
-				SrcIP: input.LoopbackAddress,
-			},
-		},
-		VXLANTunnelMap: getVXLANTunnelMap(input.VTEPs),
+		VXLANEVPN:          vxlanevpn,
+		VXLANTunnels:       vxlanTunnel,
+		VXLANTunnelMap:     vxlanTunnelMap,
 	}
 	return &configdb, nil
 }
@@ -265,6 +254,17 @@ func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[stri
 	return interfaces
 }
 
+func getLLDP(interval int) *LLDP {
+	if interval < 1 {
+		return nil
+	}
+	return &LLDP{
+		Global: LLDPGlobal{
+			HelloTime: fmt.Sprintf("%d", interval),
+		},
+	}
+}
+
 func getMCLAGDomains(mclag values.MCLAG) map[string]MCLAGDomain {
 	if mclag.KeepaliveVLAN == "" {
 		return nil
@@ -312,14 +312,12 @@ func getMgmtInterfaces(mgmtif values.MgmtInterface) map[string]MgmtInterface {
 	if mgmtif.IP == "" {
 		return nil
 	}
-
 	mgmtInterfaces := make(map[string]MgmtInterface)
 
 	eth0 := MgmtInterface{}
 	if mgmtif.GatewayAddress != "" {
 		eth0.GWAddr = mgmtif.GatewayAddress
 	}
-
 	mgmtInterfaces["eth0|"+mgmtif.IP] = eth0
 
 	return mgmtInterfaces
@@ -392,8 +390,14 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 	configBreakouts := make(map[string]BreakoutConfig)
 
 	defaultBreakouts := platform.GetDefaultBreakoutConfig()
+	defaults := portDefaults{
+		autoneg: AutonegMode(ports.DefaultAutoneg),
+		fec:     FECMode(ports.DefaultFEC),
+		mtu:     ports.DefaultMTU,
+	}
+
 	for portName, breakout := range defaultBreakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, ports.DefaultFEC, ports.DefaultMTU, platform)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaults, platform)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -405,7 +409,7 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 	}
 
 	for portName, breakout := range breakouts {
-		breakoutPorts, err := getPortsFromBreakout(portName, breakout, ports.DefaultFEC, ports.DefaultMTU, platform)
+		breakoutPorts, err := getPortsFromBreakout(portName, breakout, defaults, platform)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -428,16 +432,17 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 		if port.Speed != 0 && !slices.Contains(speedOptions[:], port.Speed) {
 			return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration %s only allows speed options %v", port.Speed, port.Name, configPort.parentBreakout, speedOptions)
 		}
-
 		if port.Speed != 0 {
 			configPort.Speed = fmt.Sprintf("%d", port.Speed)
 		}
-
-		if port.FECMode != "" && string(port.FECMode) != string(configPort.FEC) {
+		if port.FECMode != "" {
 			configPort.FEC = FECMode(port.FECMode)
 		}
-		if port.MTU != 0 && fmt.Sprintf("%d", port.MTU) != configPort.MTU {
+		if port.MTU != 0 {
 			configPort.MTU = fmt.Sprintf("%d", port.MTU)
+		}
+		if port.Autoneg != "" {
+			configPort.Autoneg = AutonegMode(port.Autoneg)
 		}
 		configPorts[port.Name] = configPort
 	}
@@ -550,7 +555,23 @@ func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, v
 	return vrfs
 }
 
-func getVXLANTunnelMap(vteps []values.VTEP) VXLANTunnelMap {
+func getVXLAN(vteps []values.VTEP, loopback string) (*VXLANEVPN, map[string]VXLANTunnel, VXLANTunnelMap) {
+	if len(vteps) == 0 {
+		return nil, nil, nil
+	}
+
+	vxlanevpn := &VXLANEVPN{
+		VXLANEVPNNVO: VXLANEVPNNVO{
+			SourceVTEP: "vtep",
+		},
+	}
+
+	vxlanTunnels := map[string]VXLANTunnel{
+		"vtep": {
+			SrcIP: loopback,
+		},
+	}
+
 	vxlanTunnelMap := make(VXLANTunnelMap)
 
 	for _, vtep := range vteps {
@@ -560,5 +581,5 @@ func getVXLANTunnelMap(vteps []values.VTEP) VXLANTunnelMap {
 		}
 	}
 
-	return vxlanTunnelMap
+	return vxlanevpn, vxlanTunnels, vxlanTunnelMap
 }
