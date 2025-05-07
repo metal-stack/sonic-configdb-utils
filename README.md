@@ -351,7 +351,7 @@ Example:
 portchannels:
   default_mtu: 9000
   list:
-    - number: "01"
+    - number: 01
       mtu: 1500
       fallback: true
       members:

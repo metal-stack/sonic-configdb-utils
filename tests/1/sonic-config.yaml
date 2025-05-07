@@ -57,13 +57,13 @@ ntp:
 portchannels:
   default_mtu: 9000
   list:
-    - number: "01"
+    - number: 01
       mtu: 1500
       fallback: true
       members:
         - Ethernet4
         - Ethernet5
-    - number: "11"
+    - number: 11
 
 ports:
   default_mtu: 9000
