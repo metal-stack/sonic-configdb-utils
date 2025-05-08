@@ -529,7 +529,7 @@ Result:
 }
 ```
 
-### vlans and vlan_members
+### vlans
 
 Example:
 
@@ -546,8 +546,6 @@ vlans:
     untagged_ports:
       - PortChannel11
     vrf: Vrf45
-
-vlan_members: true
 ```
 
 Result:

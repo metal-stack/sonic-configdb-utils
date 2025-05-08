@@ -108,7 +108,6 @@ type Values struct {
 	Ports                   Ports                   `yaml:"ports"`
 	SAG                     SAG                     `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
-	VLANMembers             bool                    `yaml:"vlan_members"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
 	VTEPs                   []VTEP                  `yaml:"vteps"`
 }
