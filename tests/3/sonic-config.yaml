@@ -46,8 +46,6 @@ vlans:
       - Ethernet47
   - id: 4009
 
-vlan_members: true
-
 vteps:
   - vni: 104009
     vlan: Vlan4009

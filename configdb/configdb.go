@@ -94,7 +94,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		SAG:                getSAG(input.SAG),
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
-		VLANMembers:        getVLANMembers(input.VLANs, input.VLANMembers),
+		VLANMembers:        getVLANMembers(input.VLANs),
 		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
 		VXLANEVPN:          vxlanevpn,
 		VXLANTunnels:       vxlanTunnel,
@@ -489,22 +489,16 @@ func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
 		}
 
 		vlanInterfaces["Vlan"+vlan.ID] = vlanInterface
-
 		if vlan.IP == "" {
 			continue
 		}
-
 		vlanInterfaces["Vlan"+vlan.ID+"|"+vlan.IP] = VLANInterface{}
 	}
 
 	return vlanInterfaces
 }
 
-func getVLANMembers(vlans []values.VLAN, addVlanMembers bool) map[string]VLANMember {
-	if !addVlanMembers {
-		return nil
-	}
-
+func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {
 	vlanMembers := make(map[string]VLANMember)
 
 	for _, vlan := range vlans {
