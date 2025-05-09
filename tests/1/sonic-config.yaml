@@ -101,8 +101,6 @@ vlans:
     vrf: Vrf45
   - id: 4001
 
-vlan_members: true
-
 vteps:
   - vni: 103999
     vlan: Vlan3999
