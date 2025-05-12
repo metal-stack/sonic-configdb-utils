@@ -123,7 +123,7 @@ type VLAN struct {
 }
 
 type VTEP struct {
-	AddVTEP         bool             `yaml:"add_vtep"`
+	Enabled         bool             `yaml:"enabled"`
 	VXLANTunnelMaps []VXLANTunnelMap `yaml:"vxlan_tunnel_maps"`
 }
 

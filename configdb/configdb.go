@@ -268,15 +268,14 @@ func getLLDP(interval int) *LLDP {
 }
 
 func getLoopbackInterface(loopback string) map[string]struct{} {
-	loopbackInterface := map[string]struct{}{
-		"Loopback0": {},
+	if loopback == "" {
+		return nil
 	}
 
-	if loopback != "" {
-		loopbackInterface[fmt.Sprintf("Loopback0|%s/32", loopback)] = struct{}{}
+	return map[string]struct{}{
+		"Loopback0":                              {},
+		fmt.Sprintf("Loopback0|%s/32", loopback): {},
 	}
-
-	return loopbackInterface
 }
 
 func getMCLAGDomains(mclag values.MCLAG) map[string]MCLAGDomain {
@@ -564,7 +563,11 @@ func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, v
 }
 
 func getVXLAN(vtep values.VTEP, loopback string) (*VXLANEVPN, map[string]VXLANTunnel, VXLANTunnelMap) {
-	if !vtep.AddVTEP && len(vtep.VXLANTunnelMaps) == 0 {
+	if !vtep.Enabled && len(vtep.VXLANTunnelMaps) == 0 {
+		return nil, nil, nil
+	}
+
+	if loopback == "" {
 		return nil, nil, nil
 	}
 

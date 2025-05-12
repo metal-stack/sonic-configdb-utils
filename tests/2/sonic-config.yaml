@@ -57,4 +57,4 @@ vlans:
   - id: 4001
 
 vtep:
-  add_vtep: true
+  enabled: true
