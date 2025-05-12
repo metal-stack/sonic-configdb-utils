@@ -43,6 +43,13 @@ type ConfigDB struct {
 }
 
 func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
+	if input == nil {
+		return nil, fmt.Errorf("no input values provided")
+	}
+	if platform == nil {
+		return nil, fmt.Errorf("no platform information provided")
+	}
+
 	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
 	if err != nil {
 		return nil, err
@@ -55,25 +62,22 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 
 	features := getFeatures(input.Features)
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
-	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEPs, input.LoopbackAddress)
+	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
 	configdb := ConfigDB{
-		ACLRules:       rules,
-		ACLTables:      tables,
-		Breakouts:      breakouts,
-		DeviceMetadata: *deviceMetadata,
-		DNSNameservers: getDNSNameservers(input.Nameservers),
-		Features:       features,
-		Interfaces:     getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
-		LLDP:           getLLDP(input.LLDPHelloTime),
-		LoopbackInterface: map[string]struct{}{
-			"Loopback0": {},
-			"Loopback0|" + input.LoopbackAddress + "/32": {},
-		},
-		MCLAGDomains:    getMCLAGDomains(input.MCLAG),
-		MCLAGInterfaces: getMCLAGInterfaces(input.MCLAG),
-		MCLAGUniqueIPs:  getMCLAGUniqueIPs(input.MCLAG),
-		MgmtInterfaces:  getMgmtInterfaces(input.MgmtInterface),
+		ACLRules:          rules,
+		ACLTables:         tables,
+		Breakouts:         breakouts,
+		DeviceMetadata:    *deviceMetadata,
+		DNSNameservers:    getDNSNameservers(input.Nameservers),
+		Features:          features,
+		Interfaces:        getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
+		LLDP:              getLLDP(input.LLDPHelloTime),
+		LoopbackInterface: getLoopbackInterface(input.LoopbackAddress),
+		MCLAGDomains:      getMCLAGDomains(input.MCLAG),
+		MCLAGInterfaces:   getMCLAGInterfaces(input.MCLAG),
+		MCLAGUniqueIPs:    getMCLAGUniqueIPs(input.MCLAG),
+		MgmtInterfaces:    getMgmtInterfaces(input.MgmtInterface),
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -163,18 +167,16 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 }
 
 func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*DeviceMetadata, error) {
-	hint := "remove current config_db.json and run `config-setup factory` to generate an initial config_db.json with all the necessary information"
-
 	if currentMetadata.Localhost.Platform == "" {
-		return nil, fmt.Errorf("missing platform from current device metadata\nhint: %s", hint)
+		return nil, fmt.Errorf("missing platform from current device metadata")
 	}
 
 	if currentMetadata.Localhost.HWSKU == "" {
-		return nil, fmt.Errorf("missing hwsku from current device metadata\nhint: %s", hint)
+		return nil, fmt.Errorf("missing hwsku from current device metadata")
 	}
 
 	if currentMetadata.Localhost.MAC == "" {
-		return nil, fmt.Errorf("missing mac from current device metadata\nhint: %s", hint)
+		return nil, fmt.Errorf("missing mac from current device metadata")
 	}
 
 	return &DeviceMetadata{
@@ -263,6 +265,18 @@ func getLLDP(interval int) *LLDP {
 			HelloTime: fmt.Sprintf("%d", interval),
 		},
 	}
+}
+
+func getLoopbackInterface(loopback string) map[string]struct{} {
+	loopbackInterface := map[string]struct{}{
+		"Loopback0": {},
+	}
+
+	if loopback != "" {
+		loopbackInterface[fmt.Sprintf("Loopback0|%s/32", loopback)] = struct{}{}
+	}
+
+	return loopbackInterface
 }
 
 func getMCLAGDomains(mclag values.MCLAG) map[string]MCLAGDomain {
@@ -549,8 +563,8 @@ func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, v
 	return vrfs
 }
 
-func getVXLAN(vteps []values.VTEP, loopback string) (*VXLANEVPN, map[string]VXLANTunnel, VXLANTunnelMap) {
-	if len(vteps) == 0 {
+func getVXLAN(vtep values.VTEP, loopback string) (*VXLANEVPN, map[string]VXLANTunnel, VXLANTunnelMap) {
+	if !vtep.AddVTEP && len(vtep.VXLANTunnelMaps) == 0 {
 		return nil, nil, nil
 	}
 
@@ -568,7 +582,7 @@ func getVXLAN(vteps []values.VTEP, loopback string) (*VXLANEVPN, map[string]VXLA
 
 	vxlanTunnelMap := make(VXLANTunnelMap)
 
-	for _, vtep := range vteps {
+	for _, vtep := range vtep.VXLANTunnelMaps {
 		vxlanTunnelMap["vtep|map_"+vtep.VNI+"_"+vtep.VLAN] = VXLANTunnelMapEntry{
 			VLAN: vtep.VLAN,
 			VNI:  vtep.VNI,

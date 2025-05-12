@@ -51,15 +51,15 @@ type MgmtInterface struct {
 }
 
 type NTP struct {
-	SrcInterface string   `yaml:"src_interface"`
 	Servers      []string `yaml:"servers"`
+	SrcInterface string   `yaml:"src_interface"`
 	VRF          string   `yaml:"vrf"`
 }
 
 type Port struct {
 	Autoneg AutonegMode `yaml:"autoneg"`
-	IPs     []string    `yaml:"ips"`
 	FECMode FECMode     `yaml:"fec"`
+	IPs     []string    `yaml:"ips"`
 	MTU     int         `yaml:"mtu"`
 	Name    string      `yaml:"name"`
 	Speed   int         `yaml:"speed"`
@@ -109,7 +109,7 @@ type Values struct {
 	SAG                     SAG                     `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
-	VTEPs                   []VTEP                  `yaml:"vteps"`
+	VTEP                    VTEP                    `yaml:"vtep"`
 }
 
 type VLAN struct {
@@ -123,6 +123,11 @@ type VLAN struct {
 }
 
 type VTEP struct {
+	AddVTEP         bool             `yaml:"add_vtep"`
+	VXLANTunnelMaps []VXLANTunnelMap `yaml:"vxlan_tunnel_maps"`
+}
+
+type VXLANTunnelMap struct {
 	VNI  string `yaml:"vni"`
 	VLAN string `yaml:"vlan"`
 }

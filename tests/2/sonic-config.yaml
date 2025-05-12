@@ -55,3 +55,6 @@ vlans:
       - 10.9.8.6
     ip: 10.9.7.0
   - id: 4001
+
+vtep:
+  add_vtep: true
