@@ -187,10 +187,6 @@
       "vrf_name": "VrfInternet"
     }
   },
-  "LOOPBACK_INTERFACE": {
-    "Loopback0": {},
-    "Loopback0|10.0.0.2/32": {}
-  },
   "MGMT_PORT": {
     "eth0": {
       "admin_status": "up",
@@ -720,21 +716,5 @@
   },
   "VRF": {
     "VrfInternet": {}
-  },
-  "VXLAN_EVPN_NVO": {
-    "nvo": {
-      "source_vtep": "vtep"
-    }
-  },
-  "VXLAN_TUNNEL": {
-    "vtep": {
-      "src_ip": "10.0.0.2"
-    }
-  },
-  "VXLAN_TUNNEL_MAP": {
-    "vtep|map_104009_Vlan4009": {
-      "vlan": "Vlan4009",
-      "vni": "104009"
-    }
   }
 }
