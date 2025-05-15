@@ -101,6 +101,7 @@ vlans:
     vrf: Vrf45
   - id: 4001
 
-vteps:
-  - vni: 103999
-    vlan: Vlan3999
+vtep:
+  vxlan_tunnel_maps:
+    - vni: 103999
+      vlan: Vlan3999
