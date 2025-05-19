@@ -185,8 +185,8 @@ Result:
 ```json
 {
   "LLDP": {
-    "GLOBAL": {
-      "hello_time": "10"
+    "Global": {
+      "hello_timer": "10"
     }
   }
 }
