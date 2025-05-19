@@ -174,6 +174,9 @@ Result:
 
 ### lldp_hello_time
 
+This configuration slightly differs across SONiC versions and might not always have an effect.
+As this tool is tailored for Edgecore SONiC versions 202111.x the LLDP configuration for those versions should work.
+
 Example:
 
 ```yaml
