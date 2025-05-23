@@ -532,6 +532,32 @@ Result:
 }
 ```
 
+### vlan_subinterfaces
+
+Example:
+
+```yaml
+vlan_subinterfaces:
+  - cidr: 1.2.3.0/24
+    port: Ethernet0
+    vlan: 1000
+    vrf: Vrf45
+```
+
+Result:
+
+```json
+{
+  "VLAN_SUB_INTERFACE": {
+    "Ethernet0.1000": {
+      "admin_status": "up",
+      "vrf_name": "Vrf45"
+    },
+    "Ethernet0.1000|1.2.3.0/24": {}
+  }
+}
+```
+
 ### vlans
 
 Example:
