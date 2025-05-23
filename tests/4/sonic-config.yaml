@@ -15,6 +15,12 @@ ntp:
     - 162.159.200.1
     - 162.159.200.123
 
+vlan_subinterfaces:
+  - cidr: 1.2.3.0/24
+    port: Ethernet0
+    vlan: 1000
+    vrf: Vrf45
+
 vlans:
   - id: 4000
     ip: 10.255.1.1/24
