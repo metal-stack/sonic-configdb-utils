@@ -109,7 +109,15 @@ type Values struct {
 	SAG                     SAG                     `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
+	VLANSubinterfaces       []VLANSubinterface      `yaml:"vlan_subinterfaces"`
 	VTEP                    VTEP                    `yaml:"vtep"`
+}
+
+type VLANSubinterface struct {
+	CIDR string `yaml:"cidr"`
+	Port string `yaml:"port"`
+	VLAN string `yaml:"vlan"`
+	VRF  string `yaml:"vrf"`
 }
 
 type VLAN struct {
