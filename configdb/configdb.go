@@ -43,7 +43,7 @@ type ConfigDB struct {
 	VXLANTunnelMap     VXLANTunnelMap              `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata DeviceMetadata) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata values.DeviceMetadata) (*ConfigDB, error) {
 	if input == nil {
 		return nil, fmt.Errorf("no input values provided")
 	}
@@ -168,16 +168,16 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	return rules, tables
 }
 
-func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*DeviceMetadata, error) {
-	if currentMetadata.Localhost.Platform == "" {
+func getDeviceMetadata(input *values.Values, currentMetadata values.DeviceMetadata) (*DeviceMetadata, error) {
+	if currentMetadata.Platform == "" {
 		return nil, fmt.Errorf("missing platform from current device metadata")
 	}
 
-	if currentMetadata.Localhost.HWSKU == "" {
+	if currentMetadata.HWSKU == "" {
 		return nil, fmt.Errorf("missing hwsku from current device metadata")
 	}
 
-	if currentMetadata.Localhost.MAC == "" {
+	if currentMetadata.MAC == "" {
 		return nil, fmt.Errorf("missing mac from current device metadata")
 	}
 
@@ -186,9 +186,9 @@ func getDeviceMetadata(input *values.Values, currentMetadata DeviceMetadata) (*D
 			DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
 			FRRMgmtFrameworkConfig:  strconv.FormatBool(input.FRRMgmtFrameworkConfig),
 			Hostname:                input.Hostname,
-			HWSKU:                   currentMetadata.Localhost.HWSKU,
-			MAC:                     currentMetadata.Localhost.MAC,
-			Platform:                currentMetadata.Localhost.Platform,
+			HWSKU:                   currentMetadata.HWSKU,
+			MAC:                     currentMetadata.MAC,
+			Platform:                currentMetadata.Platform,
 			RouterType:              "LeafRouter",
 		},
 	}, nil

@@ -5,6 +5,11 @@ bgp_ports:
 breakouts:
   Ethernet0: 4x25G
 
+device_metadata:
+  hwsku: Accton-AS7726-32X
+  mac: aa:aa:aa:aa:aa:aa
+  platform: x86_64-accton_as7726_32x-r0
+
 docker_routing_config_mode: split
 
 features:

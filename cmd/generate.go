@@ -15,21 +15,23 @@ var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate a config_db.json",
 	Run: func(cmd *cobra.Command, args []string) {
-		configDBFile, _ := cmd.Flags().GetString("config-db")
-		configDBBytes, err := os.ReadFile(configDBFile)
-		if err != nil {
-			fmt.Printf("failed to read current config file, %v\n", err)
-			os.Exit(1)
-		}
-
-		currentConfig, err := configdb.UnmarshalConfigDB(configDBBytes)
-		if err != nil {
-			fmt.Printf("failed to parse current config file, %v\n", err)
-			os.Exit(1)
-		}
-
-		platformIdentifier := currentConfig.DeviceMetadata.Localhost.Platform
+		inputFile, _ := cmd.Flags().GetString("input-file")
+		outputFile, _ := cmd.Flags().GetString("output-file")
 		deviceDir, _ := cmd.Flags().GetString("device-dir")
+
+		inputBytes, err := os.ReadFile(inputFile)
+		if err != nil {
+			fmt.Printf("failed to read input file, %v\n", err)
+			os.Exit(1)
+		}
+
+		values, err := values.UnmarshalValues(inputBytes)
+		if err != nil {
+			fmt.Printf("failed to parse input file, %v\n", err)
+			os.Exit(1)
+		}
+
+		platformIdentifier := values.DeviceMetadata.Platform
 		platformFile := fmt.Sprintf("%s/%s/platform.json", deviceDir, platformIdentifier)
 
 		platformBytes, err := os.ReadFile(platformFile)
@@ -44,32 +46,18 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		inputFile, _ := cmd.Flags().GetString("input-file")
-		inputBytes, err := os.ReadFile(inputFile)
-		if err != nil {
-			fmt.Printf("failed to read input file, %v\n", err)
-			os.Exit(1)
-		}
-
-		values, err := values.UnmarshalValues(inputBytes)
-		if err != nil {
-			fmt.Printf("failed to parse input file, %v\n", err)
-			os.Exit(1)
-		}
-
-		configDB, err := configdb.GenerateConfigDB(values, platform, currentConfig.DeviceMetadata)
+		configDB, err := configdb.GenerateConfigDB(values, platform, values.DeviceMetadata)
 		if err != nil {
 			fmt.Printf("failed to generate config, %v\n", err)
 			os.Exit(1)
 		}
 
-		configDBBytes, err = json.MarshalIndent(configDB, "", "  ")
+		configDBBytes, err := json.MarshalIndent(configDB, "", "  ")
 		if err != nil {
 			fmt.Printf("failed to serialize json, %v\n", err)
 			os.Exit(1)
 		}
 
-		outputFile, _ := cmd.Flags().GetString("output-file")
 		err = os.WriteFile(outputFile, configDBBytes, 0644) //nolint:gosec
 		if err != nil {
 			fmt.Printf("failed to write file, %v", err)
@@ -84,5 +72,4 @@ func init() {
 	generateCmd.Flags().StringP("input-file", "i", "sonic-config.yaml", "path to input file to generate the config_db.json from")
 	generateCmd.Flags().StringP("output-file", "o", "config_db.json", "path to output file")
 	generateCmd.Flags().String("device-dir", "/usr/share/sonic/device", "directory which holds all device-specific files")
-	generateCmd.Flags().StringP("config-db", "c", "/etc/sonic/config_db.json", "path to current config_db.json")
 }
