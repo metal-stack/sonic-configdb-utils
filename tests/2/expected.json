@@ -117,6 +117,13 @@
     "Ethernet0|10.4.3.2": {},
     "Ethernet120": {
       "ipv6_use_link_local_only": "enable"
+    },
+    "Ethernet124": {
+      "ipv6_use_link_local_only": "enable"
+    },
+    "Ethernet48": {
+      "ipv6_use_link_local_only": "enable",
+      "vrf_name": "Vrf42"
     }
   },
   "LLDP": {
@@ -522,6 +529,9 @@
     "Vlan4000": {},
     "Vlan4000|10.9.7.0": {},
     "Vlan4001": {}
+  },
+  "VRF": {
+    "Vrf42": {}
   },
   "VXLAN_EVPN_NVO": {
     "nvo": {

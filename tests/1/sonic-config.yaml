@@ -25,6 +25,11 @@ interconnects:
     vrf: VrfMpls
   internet:
     vrf: VrfInternet
+  storage:
+    vrf: Vrf42
+    unnumbered_interfaces:
+      - Ethernet96
+      - Ethernet100
 
 hostname: leaf01
 lldp_hello_time: 10

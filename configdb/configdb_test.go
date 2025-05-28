@@ -87,7 +87,7 @@ func Test_getInterfaces(t *testing.T) {
 			},
 		},
 		{
-			name: "port not in bgp ports without vrf but with and ips",
+			name: "port not in bgp ports without vrf but with ip",
 			ports: values.Ports{
 				List: []values.Port{
 					{
@@ -122,6 +122,15 @@ func Test_getInterfaces(t *testing.T) {
 			},
 		},
 		{
+			name:     "port in bgp ports but not in ports",
+			bgpPorts: []string{"Ethernet0"},
+			want: map[string]Interface{
+				"Ethernet0": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+				},
+			},
+		},
+		{
 			name: "interconnect without unnumbered interfaces",
 			interconnects: map[string]values.Interconnect{
 				"internet": {
@@ -152,6 +161,25 @@ func Test_getInterfaces(t *testing.T) {
 				"Ethernet1": {
 					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
 					VRFName:              "VrfInternet",
+				},
+			},
+		},
+		{
+			name: "interconnect with unnumbered interfaces but without vrf",
+			interconnects: map[string]values.Interconnect{
+				"internet": {
+					UnnumberedInterfaces: []string{
+						"Ethernet0",
+						"Ethernet1",
+					},
+				},
+			},
+			want: map[string]Interface{
+				"Ethernet0": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+				},
+				"Ethernet1": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
 				},
 			},
 		},
