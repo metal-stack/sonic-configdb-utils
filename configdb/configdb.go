@@ -226,6 +226,13 @@ func getFeatures(features map[string]values.Feature) map[string]Feature {
 func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
+	for _, port := range bgpPorts {
+		intf := Interface{
+			IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+		}
+		interfaces[port] = intf
+	}
+
 	for _, port := range ports.List {
 		if len(port.IPs) == 0 && port.VRF == "" && !slices.Contains(bgpPorts, port.Name) {
 			continue

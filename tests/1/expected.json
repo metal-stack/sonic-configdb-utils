@@ -163,11 +163,22 @@
       "vrf_name": "VrfMpls"
     },
     "Ethernet0|10.4.3.2": {},
+    "Ethernet100": {
+      "ipv6_use_link_local_only": "enable",
+      "vrf_name": "Vrf42"
+    },
     "Ethernet120": {
+      "ipv6_use_link_local_only": "enable"
+    },
+    "Ethernet124": {
       "ipv6_use_link_local_only": "enable"
     },
     "Ethernet4": {
       "vrf_name": "VrfInternet"
+    },
+    "Ethernet96": {
+      "ipv6_use_link_local_only": "enable",
+      "vrf_name": "Vrf42"
     }
   },
   "LLDP": {
@@ -605,6 +616,7 @@
     }
   },
   "VRF": {
+    "Vrf42": {},
     "Vrf45": {},
     "VrfInternet": {},
     "VrfMpls": {

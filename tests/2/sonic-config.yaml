@@ -1,4 +1,5 @@
 bgp_ports:
+  - Ethernet48
   - Ethernet120
   - Ethernet124
 
@@ -49,7 +50,8 @@ ports:
       mtu: 1500
     - name: Ethernet4
       mtu: 1500
-    - name: Ethernet120
+    - name: Ethernet48
+      vrf: Vrf42
 
 sag: {}
 
