@@ -2,6 +2,11 @@ bgp_ports:
   - Ethernet0
   - Ethernet1
 
+device_metadata:
+  hwsku: Accton-AS4630-54TE
+  mac: aa:aa:aa:aa:aa:aa
+  platform: x86_64-accton_as4630_54te-r0
+
 docker_routing_config_mode: split
 frr_mgmt_framework_config: true
 hostname: mgmtspine
