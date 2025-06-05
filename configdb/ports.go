@@ -10,7 +10,6 @@ import (
 
 const (
 	defaultAdminStatus = AdminStatusUp
-	defaultAutonegMode = AutonegModeOff
 	defaultMTU         = 9000
 )
 
