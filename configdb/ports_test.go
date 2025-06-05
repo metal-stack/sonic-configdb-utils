@@ -75,7 +75,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet1": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth2(Port2)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "2",
 					Lanes:          "25",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -139,7 +138,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet116": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth30/1(Port30)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "30",
 					Lanes:          "117,118",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -149,7 +147,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet118": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth30/2(Port30)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "30",
 					Lanes:          "119,120",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -178,7 +175,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet8": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/1(Port3)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "3",
 					Lanes:          "9",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -188,7 +184,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet9": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/2(Port3)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "3",
 					Lanes:          "10",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -198,7 +193,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet10": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/3(Port3)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "3",
 					Lanes:          "11",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -208,7 +202,6 @@ func Test_getPortsFromBreakout(t *testing.T) {
 				"Ethernet11": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth3/4(Port3)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "3",
 					Lanes:          "12",
 					MTU:            fmt.Sprintf("%d", defaultMTU),

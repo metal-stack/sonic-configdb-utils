@@ -227,7 +227,6 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				"Ethernet0": {
 					AdminStatus:    defaultAdminStatus,
 					Alias:          "Eth1(Port1)",
-					Autoneg:        defaultAutonegMode,
 					Index:          "1",
 					Lanes:          "1,2,3,4",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -247,8 +246,9 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 			ports: values.Ports{
 				List: []values.Port{
 					{
-						Name:  "Ethernet0",
-						Speed: 40000,
+						Name:    "Ethernet0",
+						Speed:   40000,
+						Autoneg: values.AutonegModeOn,
 					},
 					{
 						Name:  "Ethernet4",
@@ -288,7 +288,7 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				"Ethernet0": {
 					AdminStatus:    AdminStatusUp,
 					Alias:          "Eth1(Port1)",
-					Autoneg:        AutonegModeOff,
+					Autoneg:        AutonegModeOn,
 					Index:          "1",
 					Lanes:          "1,2,3,4",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -298,7 +298,6 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				"Ethernet4": {
 					AdminStatus:    AdminStatusUp,
 					Alias:          "Eth2(Port2)",
-					Autoneg:        AutonegModeOff,
 					Index:          "2",
 					Lanes:          "5,6,7,8",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -308,7 +307,6 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				"Ethernet8": {
 					AdminStatus:    AdminStatusUp,
 					Alias:          "Eth3(Port3)",
-					Autoneg:        AutonegModeOff,
 					Index:          "3",
 					Lanes:          "9,10,11,12",
 					MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -390,7 +388,6 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				"Ethernet4": {
 					AdminStatus:    AdminStatusUp,
 					Alias:          "Eth2(Port2)",
-					Autoneg:        AutonegModeOff,
 					FEC:            FECModeRS,
 					Index:          "2",
 					Lanes:          "5,6,7,8",
@@ -437,7 +434,6 @@ func Test_getPortsAndBreakouts(t *testing.T) {
 				"Ethernet4": {
 					AdminStatus:    AdminStatusUp,
 					Alias:          "Eth2(Port2)",
-					Autoneg:        AutonegModeOff,
 					FEC:            FECModeRS,
 					Index:          "2",
 					Lanes:          "5,6,7,8",
