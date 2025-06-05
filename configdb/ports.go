@@ -55,7 +55,6 @@ func getPortsFromBreakout(portName, breakoutMode string, defaults portDefaults, 
 		port := Port{
 			AdminStatus:    defaultAdminStatus,
 			Alias:          alias,
-			Autoneg:        defaultAutonegMode,
 			Index:          fmt.Sprintf("%d", breakoutPorts.Index[i]),
 			Lanes:          lanesString,
 			MTU:            fmt.Sprintf("%d", defaultMTU),
