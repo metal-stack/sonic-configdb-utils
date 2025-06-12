@@ -65,31 +65,6 @@ Result:
 
 For each breakout also the correspondig ports entries are added.
 
-### device_metadata
-
-Example:
-
-```yaml
-device_metadata:
-  hwsku: Accton-AS7726-32X
-  mac: aa:aa:aa:aa:aa:aa
-  platform: x86_64-accton_as7726_32x-r0
-```
-
-Result:
-
-```json
-{
-  "DEVICE_METADATA": {
-    "localhost": {
-      "hwsku": "Accton-AS7726-32X",
-      "mac": "aa:aa:aa:aa:aa:aa",
-      "platform": "x86_64-accton_as7726_32x-r0"
-    }
-  }
-}
-```
-
 ### docker_routing_config_mode
 
 Can be one of `separated`, `split`, `split-unified`, `unified`.
@@ -630,16 +605,17 @@ Result:
 }
 ```
 
-### vteps
+### vtep
 
 Example:
 
 ```yaml
 loopback_address: 10.7.7.7
 
-vteps:
-  - vni: 103999
-    vlan: Vlan3999
+vtep:
+  vxlan_tunnel_maps:
+    - vni: 103999
+      vlan: Vlan3999
 ```
 
 Result:
@@ -660,6 +636,32 @@ Result:
     "vtep|map_103999_Vlan3999": {
       "vlan": "Vlan3999",
       "vni": "103999"
+    }
+  }
+}
+```
+
+If only `VXLAN_EVPN_NVO` and `VXLAN_TUNNEL` are needed with no tunnel maps:
+
+```yaml
+loopback_address: 10.7.7.7
+
+vtep:
+  enabled: true
+```
+
+Result:
+
+```json
+{
+  "VXLAN_EVPN_NVO": {
+    "nvo": {
+      "source_vtep": "vtep"
+    }
+  },
+  "VXLAN_TUNNEL": {
+    "vtep": {
+      "src_ip": "10.7.7.7"
     }
   }
 }
