@@ -605,7 +605,7 @@ Result:
 }
 ```
 
-### vteps
+### vtep
 
 Example:
 
@@ -613,8 +613,9 @@ Example:
 loopback_address: 10.7.7.7
 
 vteps:
-  - vni: 103999
-    vlan: Vlan3999
+  vxlan_tunnel_maps:
+    - vni: 103999
+      vlan: Vlan3999
 ```
 
 Result:
@@ -635,6 +636,34 @@ Result:
     "vtep|map_103999_Vlan3999": {
       "vlan": "Vlan3999",
       "vni": "103999"
+    }
+  }
+}
+```
+
+If only `VXLAN_EVPN_NVO` and `VXLAN_TUNNEL` are needed with no tunnel maps:
+
+```yaml
+loopback_address: 10.7.7.7
+
+vteps:
+  vxlan_tunnel_maps:
+    - vni: 103999
+      vlan: Vlan3999
+```
+
+Result:
+
+```json
+{
+  "VXLAN_EVPN_NVO": {
+    "nvo": {
+      "source_vtep": "vtep"
+    }
+  },
+  "VXLAN_TUNNEL": {
+    "vtep": {
+      "src_ip": "10.7.7.7"
     }
   }
 }
