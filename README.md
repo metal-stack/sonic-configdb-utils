@@ -612,7 +612,7 @@ Example:
 ```yaml
 loopback_address: 10.7.7.7
 
-vteps:
+vtep:
   vxlan_tunnel_maps:
     - vni: 103999
       vlan: Vlan3999
@@ -646,10 +646,8 @@ If only `VXLAN_EVPN_NVO` and `VXLAN_TUNNEL` are needed with no tunnel maps:
 ```yaml
 loopback_address: 10.7.7.7
 
-vteps:
-  vxlan_tunnel_maps:
-    - vni: 103999
-      vlan: Vlan3999
+vtep:
+  enabled: true
 ```
 
 Result:
