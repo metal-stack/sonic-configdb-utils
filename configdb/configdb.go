@@ -171,15 +171,15 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 
 func getDeviceMetadata(input *values.Values, environment *platform.Environment) (*DeviceMetadata, error) {
 	if environment.Platform == "" {
-		return nil, fmt.Errorf("missing platform from current device metadata")
+		return nil, fmt.Errorf("no platform identifiert found in environment file")
 	}
 
 	if environment.HWSKU == "" {
-		return nil, fmt.Errorf("missing hwsku from current device metadata")
+		return nil, fmt.Errorf("no hwsku found in environment file")
 	}
 
 	if environment.MAC == "" {
-		return nil, fmt.Errorf("missing mac from current device metadata")
+		return nil, fmt.Errorf("failed to retrieve system mac address")
 	}
 
 	return &DeviceMetadata{
