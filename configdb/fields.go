@@ -1,10 +1,10 @@
 package configdb
 
 type ACLRule struct {
-	EtherType    string `json:"ETHER_TYPE,omitempty"`
-	PacketAction `json:"PACKET_ACTION,omitempty"`
-	Priority     string `json:"PRIORITY,omitempty"`
-	SrcIP        string `json:"SRC_IP,omitempty"`
+	EtherType    string       `json:"ETHER_TYPE,omitempty"`
+	PacketAction PacketAction `json:"PACKET_ACTION,omitempty"`
+	Priority     string       `json:"PRIORITY,omitempty"`
+	SrcIP        string       `json:"SRC_IP,omitempty"`
 }
 
 type ACLTable struct {
@@ -84,11 +84,11 @@ const (
 )
 
 type LLDP struct {
-	Global LLDPGlobal `json:"GLOBAL"`
+	Global LLDPGlobal `json:"Global"`
 }
 
 type LLDPGlobal struct {
-	HelloTime string `json:"hello_time,omitempty"`
+	HelloTime string `json:"hello_timer,omitempty"`
 }
 
 type MCLAGDomain struct {
@@ -113,13 +113,13 @@ const (
 )
 
 type Metadata struct {
-	DockerRoutingConfigMode `json:"docker_routing_config_mode,omitempty"`
-	FRRMgmtFrameworkConfig  string `json:"frr_mgmt_framework_config,omitempty"`
-	Hostname                string `json:"hostname,omitempty"`
-	HWSKU                   string `json:"hwsku,omitempty"`
-	MAC                     string `json:"mac,omitempty"`
-	Platform                string `json:"platform,omitempty"`
-	RouterType              `json:"type,omitempty"`
+	DockerRoutingConfigMode DockerRoutingConfigMode `json:"docker_routing_config_mode,omitempty"`
+	FRRMgmtFrameworkConfig  string                  `json:"frr_mgmt_framework_config,omitempty"`
+	Hostname                string                  `json:"hostname,omitempty"`
+	HWSKU                   string                  `json:"hwsku,omitempty"`
+	MAC                     string                  `json:"mac,omitempty"`
+	Platform                string                  `json:"platform,omitempty"`
+	RouterType              RouterType              `json:"type,omitempty"`
 }
 
 type MgmtInterface struct {
@@ -127,9 +127,9 @@ type MgmtInterface struct {
 }
 
 type MgmtPort struct {
-	AdminStatus `json:"admin_status,omitempty"`
-	Alias       string `json:"alias,omitempty"`
-	Description string `json:"description,omitempty"`
+	AdminStatus AdminStatus `json:"admin_status,omitempty"`
+	Alias       string      `json:"alias,omitempty"`
+	Description string      `json:"description,omitempty"`
 }
 
 type MgmtVRFConfig struct {
@@ -142,6 +142,7 @@ type NTP struct {
 
 type NTPGlobal struct {
 	SrcIntf string `json:"src_intf"`
+	VRF     string `json:"vrf,omitempty"`
 }
 
 type PacketAction string
@@ -152,7 +153,7 @@ const (
 )
 
 type Port struct {
-	AdminStatus    `json:"admin_status,omitempty"`
+	AdminStatus    AdminStatus `json:"admin_status,omitempty"`
 	Alias          string      `json:"alias,omitempty"`
 	Autoneg        AutonegMode `json:"autoneg,omitempty"`
 	FEC            FECMode     `json:"fec,omitempty"`
@@ -164,7 +165,7 @@ type Port struct {
 }
 
 type PortChannel struct {
-	AdminStatus `json:"admin_status,omitempty"`
+	AdminStatus AdminStatus `json:"admin_status,omitempty"`
 	Fallback    string      `json:"fallback,omitempty"`
 	FastRate    string      `json:"fast_rate,omitempty"`
 	LACPKey     LACPKeyMode `json:"lacp_key,omitempty"`
@@ -182,7 +183,7 @@ const (
 )
 
 type SAG struct {
-	SAGGlobal `json:"GLOBAL"`
+	SAGGlobal SAGGlobal `json:"GLOBAL"`
 }
 
 type SAGGlobal struct {
@@ -207,7 +208,12 @@ type VLANInterface struct {
 }
 
 type VLANMember struct {
-	TaggingMode `json:"tagging_mode,omitempty"`
+	TaggingMode TaggingMode `json:"tagging_mode,omitempty"`
+}
+
+type VLANSubinterface struct {
+	AdminStatus AdminStatus `json:"admin_status,omitempty"`
+	VRFName     string      `json:"vrf_name,omitempty"`
 }
 
 type VRF struct {
@@ -219,7 +225,7 @@ type VRFGlobal struct {
 }
 
 type VXLANEVPN struct {
-	VXLANEVPNNVO `json:"nvo"`
+	VXLANEVPNNVO VXLANEVPNNVO `json:"nvo"`
 }
 
 type VXLANEVPNNVO struct {

@@ -5,10 +5,15 @@ bgp_ports:
 breakouts:
   Ethernet0: 4x25G
 
+device_metadata:
+  hwsku: Accton-AS7726-32X
+  mac: aa:aa:aa:aa:aa:aa
+  platform: x86_64-accton_as7726_32x-r0
+
 docker_routing_config_mode: split
 
 features:
-  dhcp_relay:
+  metal-core:
     auto_restart: true
     enabled: true
 
@@ -20,6 +25,11 @@ interconnects:
     vrf: VrfMpls
   internet:
     vrf: VrfInternet
+  storage:
+    vrf: Vrf42
+    unnumbered_interfaces:
+      - Ethernet96
+      - Ethernet100
 
 hostname: leaf01
 lldp_hello_time: 10
@@ -35,47 +45,52 @@ mclag:
   source_ip: 192.168.255.2
   system_mac: aa:aa:aa:aa:aa:aa
 
-mgmtif_gateway: 10.7.10.1
-mgmtif_ip: 10.7.10.2
+mgmt_interface:
+  gateway_address: 10.7.10.1
+  ip: 10.7.10.2
+
 mgmt_vrf: false
 
 nameservers:
   - 1.1.1.1
   - 8.8.8.8
 
-ntpservers:
-  - 0.europe.pool.ntp.org
-  - 1.europe.pool.ntp.org
-  - 2.europe.pool.ntp.org
-  - 3.europe.pool.ntp.org
+ntp:
+  src_interface: Loopback0
+  vrf: default
+  servers:
+    - 0.europe.pool.ntp.org
+    - 1.europe.pool.ntp.org
+    - 2.europe.pool.ntp.org
+    - 3.europe.pool.ntp.org
 
 portchannels:
-  - number: "01"
-    mtu: 1500
-    fallback: true
-    members:
-      - Ethernet4
-      - Ethernet5
-  - number: "11"
-
-portchannels_default_mtu: 9000
+  default_mtu: 9000
+  list:
+    - number: 01
+      mtu: 1500
+      fallback: true
+      members:
+        - Ethernet4
+        - Ethernet5
+    - number: 11
 
 ports:
-  - name: Ethernet0
-    ips:
-      - 10.4.3.2
-    fec: rs
-    mtu: 1500
-    vrf: VrfMpls
-  - name: Ethernet1
-    mtu: 1500
-  - name: Ethernet4
-    mtu: 1500
-    vrf: VrfInternet
-  - name: Ethernet120
-
-ports_default_fec: none
-ports_default_mtu: 9000
+  default_mtu: 9000
+  default_autoneg: off
+  list:
+    - name: Ethernet0
+      ips:
+        - 10.4.3.2
+      fec: rs
+      mtu: 1500
+      vrf: VrfMpls
+    - name: Ethernet1
+      mtu: 1500
+    - name: Ethernet4
+      mtu: 1500
+      vrf: VrfInternet
+    - name: Ethernet120
 
 sag:
   mac: bb:bb:bb:bb:bb:bb
@@ -97,8 +112,7 @@ vlans:
     vrf: Vrf45
   - id: 4001
 
-vlan_members: true
-
-vteps:
-  - vni: 103999
-    vlan: Vlan3999
+vtep:
+  vxlan_tunnel_maps:
+    - vni: 103999
+      vlan: Vlan3999

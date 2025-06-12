@@ -6,17 +6,20 @@ import (
 	"strings"
 
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
-	"github.com/metal-stack/sonic-configdb-utils/values"
 )
 
 const (
 	defaultAdminStatus = AdminStatusUp
-	defaultAutonegMode = AutonegModeOff
-	defaultFECMode     = FECModeNone
 	defaultMTU         = 9000
 )
 
-func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode values.FECMode, defaultPortMTU int, platform *p.Platform) (map[string]Port, error) {
+type portDefaults struct {
+	autoneg AutonegMode
+	fec     FECMode
+	mtu     int
+}
+
+func getPortsFromBreakout(portName, breakoutMode string, defaults portDefaults, platform *p.Platform) (map[string]Port, error) {
 	ports := make(map[string]Port)
 
 	breakoutPorts, err := platform.ParseBreakout(portName, breakoutMode)
@@ -51,8 +54,6 @@ func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode valu
 		port := Port{
 			AdminStatus:    defaultAdminStatus,
 			Alias:          alias,
-			Autoneg:        defaultAutonegMode,
-			FEC:            defaultFECMode,
 			Index:          fmt.Sprintf("%d", breakoutPorts.Index[i]),
 			Lanes:          lanesString,
 			MTU:            fmt.Sprintf("%d", defaultMTU),
@@ -60,11 +61,14 @@ func getPortsFromBreakout(portName, breakoutMode string, defaultPortFECMode valu
 			Speed:          fmt.Sprintf("%d", speedOptions[0]),
 		}
 
-		if defaultPortFECMode != "" {
-			port.FEC = FECMode(defaultPortFECMode)
+		if defaults.fec != "" {
+			port.FEC = defaults.fec
 		}
-		if defaultPortMTU != 0 {
-			port.MTU = fmt.Sprintf("%d", defaultPortMTU)
+		if defaults.mtu != 0 {
+			port.MTU = fmt.Sprintf("%d", defaults.mtu)
+		}
+		if defaults.autoneg != "" {
+			port.Autoneg = defaults.autoneg
 		}
 
 		name, err := incrementPortNameSuffix(portName, i*lanesPerPort)

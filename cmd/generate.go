@@ -22,7 +22,23 @@ var generateCmd = &cobra.Command{
 		}
 
 		platformIdentifier := env.Platform
+		inputFile, _ := cmd.Flags().GetString("input-file")
+		outputFile, _ := cmd.Flags().GetString("output-file")
 		deviceDir, _ := cmd.Flags().GetString("device-dir")
+
+		inputBytes, err := os.ReadFile(inputFile)
+		if err != nil {
+			fmt.Printf("failed to read input file, %v\n", err)
+			os.Exit(1)
+		}
+
+		values, err := values.UnmarshalValues(inputBytes)
+		if err != nil {
+			fmt.Printf("failed to parse input file, %v\n", err)
+			os.Exit(1)
+		}
+
+		platformIdentifier := values.DeviceMetadata.Platform
 		platformFile := fmt.Sprintf("%s/%s/platform.json", deviceDir, platformIdentifier)
 
 		platformBytes, err := os.ReadFile(platformFile)
@@ -35,7 +51,6 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to parse platform.json:%w", err)
 		}
 
-		inputFile, _ := cmd.Flags().GetString("input")
 		inputBytes, err := os.ReadFile(inputFile)
 		if err != nil {
 			return fmt.Errorf("failed to read input file:%w", err)
@@ -46,7 +61,7 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to parse input file:%w", err)
 		}
 
-		configDB, err := configdb.GenerateConfigDB(values, platform, env)
+		configDB, err := configdb.GenerateConfigDB(values, platform, values.DeviceMetadata)
 		if err != nil {
 			return fmt.Errorf("failed to generate config:%w", err)
 		}
@@ -56,8 +71,7 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to serialize json:%w", err)
 		}
 
-		output, _ := cmd.Flags().GetString("output")
-		err = os.WriteFile(output, configDBBytes, 0644) //nolint:gosec
+		err = os.WriteFile(outputFile, configDBBytes, 0644) //nolint:gosec
 		if err != nil {
 			return fmt.Errorf("failed to write file:%w", err)
 		}
@@ -69,8 +83,8 @@ var generateCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(generateCmd)
 
-	generateCmd.Flags().StringP("input", "i", "sonic-config.yaml", "path to input file to generate the config_db.json from")
-	generateCmd.Flags().StringP("output", "o", "/etc/sonic/config_db.json", "path to output file")
+	generateCmd.Flags().StringP("input-file", "i", "sonic-config.yaml", "path to input file to generate the config_db.json from")
+	generateCmd.Flags().StringP("output-file", "o", "config_db.json", "path to output file")
 	generateCmd.Flags().String("device-dir", "/usr/share/sonic/device", "directory which holds all device-specific files")
 	generateCmd.Flags().StringP("env-file", "e", "/etc/sonic/sonic-environment", "sonic-environment file holding platform information")
 }

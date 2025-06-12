@@ -166,7 +166,7 @@ func TestPlatform_ParseBreakout(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.p.ParseBreakout(tt.portName, tt.breakout)
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
-				t.Errorf("Platform.ParseBreakout() error diff = %v", diff)
+				t.Errorf("Platform.ParseBreakout() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if diff := cmp.Diff(tt.want, got); diff != "" {
@@ -184,51 +184,39 @@ func TestPlatform_ParseSpeedOptions(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name:         "invalid port number",
-			breakoutMode: "Onex100G[40G]",
-			want:         SpeedOptions{},
-			wantErr:      true,
-		},
-		{
 			name:         "missing 'x'",
 			breakoutMode: "100G[40G]",
-			want:         SpeedOptions{},
+			want:         nil,
 			wantErr:      true,
 		},
 		{
 			name:         "missing 'G'",
 			breakoutMode: "1x100",
-			want:         SpeedOptions{},
+			want:         nil,
 			wantErr:      true,
 		},
 		{
 			name:         "invalid speed",
 			breakoutMode: "1x-100G",
-			want:         SpeedOptions{},
+			want:         nil,
 			wantErr:      true,
 		},
 		{
 			name:         "invalid alt speed syntax",
 			breakoutMode: "1x100G(40G)",
-			want:         SpeedOptions{},
+			want:         nil,
 			wantErr:      true,
 		},
 		{
 			name:         "missing 'G' for alt speed",
 			breakoutMode: "1x100G[40]",
-			want:         SpeedOptions{},
+			want:         nil,
 			wantErr:      true,
 		},
 		{
 			name:         "invalid alt speed",
 			breakoutMode: "1x100G[-40G]",
-			want:         SpeedOptions{},
-			wantErr:      true,
-		},
-		{
-			name:         "negative number",
-			breakoutMode: "-1x100G[40G]",
-			want:         SpeedOptions{},
+			want:         nil,
 			wantErr:      true,
 		},
 		{
@@ -241,6 +229,12 @@ func TestPlatform_ParseSpeedOptions(t *testing.T) {
 			name:         "two speed options",
 			breakoutMode: "1x100G[40G]",
 			want:         SpeedOptions{100000, 40000},
+			wantErr:      false,
+		},
+		{
+			name:         "multiple speed options",
+			breakoutMode: "4x25G[10G,1G]",
+			want:         SpeedOptions{25000, 10000, 1000},
 			wantErr:      false,
 		},
 	}

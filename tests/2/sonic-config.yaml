@@ -1,9 +1,15 @@
 bgp_ports:
+  - Ethernet48
   - Ethernet120
   - Ethernet124
 
 breakouts:
   Ethernet0: 4x25G
+
+device_metadata:
+  hwsku: Accton-AS7726-32X
+  mac: aa:aa:aa:aa:aa:aa
+  platform: x86_64-accton_as7726_32x-r0
 
 docker_routing_config_mode: split
 features: {}
@@ -14,38 +20,40 @@ lldp_hello_time: 10
 loopback_address: 10.7.7.7
 
 mclag: {}
-mgmtif_gateway: 10.7.10.1
-mgmtif_ip: 10.7.10.2
+
+mgmt_interface:
+  ip: 10.7.10.2
+
 mgmt_vrf: false
 
 nameservers:
   - 1.1.1.1
   - 8.8.8.8
 
-ntpservers:
-  - 0.europe.pool.ntp.org
-  - 1.europe.pool.ntp.org
-  - 2.europe.pool.ntp.org
-  - 3.europe.pool.ntp.org
+ntp:
+  servers:
+    - 0.europe.pool.ntp.org
+    - 1.europe.pool.ntp.org
+    - 2.europe.pool.ntp.org
+    - 3.europe.pool.ntp.org
 
 ports:
-  - name: Ethernet0
-    ips:
-      - 10.4.3.2
-    fec: rs
-    mtu: 1500
-  - name: Ethernet1
-    mtu: 1500
-  - name: Ethernet4
-    mtu: 1500
-  - name: Ethernet120
+  default_fec: none
+  default_mtu: 9000
+  list:
+    - name: Ethernet0
+      ips:
+        - 10.4.3.2
+      fec: rs
+      mtu: 1500
+    - name: Ethernet1
+      mtu: 1500
+    - name: Ethernet4
+      mtu: 1500
+    - name: Ethernet48
+      vrf: Vrf42
 
-ports_default_fec: none
-ports_default_mtu: 9000
 sag: {}
-
-ssh_sourceranges:
-  - 10.1.23.1/30
 
 vlans:
   - id: 4000
@@ -55,8 +63,5 @@ vlans:
     ip: 10.9.7.0
   - id: 4001
 
-vlan_members: true
-
-vteps:
-  - vni: 103999
-    vlan: Vlan3999
+vtep:
+  enabled: true
