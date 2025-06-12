@@ -65,31 +65,6 @@ Result:
 
 For each breakout also the correspondig ports entries are added.
 
-### device_metadata
-
-Example:
-
-```yaml
-device_metadata:
-  hwsku: Accton-AS7726-32X
-  mac: aa:aa:aa:aa:aa:aa
-  platform: x86_64-accton_as7726_32x-r0
-```
-
-Result:
-
-```json
-{
-  "DEVICE_METADATA": {
-    "localhost": {
-      "hwsku": "Accton-AS7726-32X",
-      "mac": "aa:aa:aa:aa:aa:aa",
-      "platform": "x86_64-accton_as7726_32x-r0"
-    }
-  }
-}
-```
-
 ### docker_routing_config_mode
 
 Can be one of `separated`, `split`, `split-unified`, `unified`.

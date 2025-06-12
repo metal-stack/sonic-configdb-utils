@@ -9,12 +9,6 @@ const (
 	AutonegModeOff AutonegMode = "off"
 )
 
-type DeviceMetadata struct {
-	HWSKU    string `yaml:"hwsku"`
-	MAC      string `yaml:"mac"`
-	Platform string `yaml:"platform"`
-}
-
 type DockerRoutingConfigMode string
 
 const (
@@ -98,7 +92,6 @@ type SAG struct {
 type Values struct {
 	BGPPorts                []string                `yaml:"bgp_ports"`
 	Breakouts               map[string]string       `yaml:"breakouts"`
-	DeviceMetadata          DeviceMetadata          `yaml:"device_metadata"`
 	DockerRoutingConfigMode DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
 	Features                map[string]Feature      `yaml:"features"`
 	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config"`

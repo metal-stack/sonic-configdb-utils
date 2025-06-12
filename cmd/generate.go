@@ -38,7 +38,6 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		platformIdentifier := values.DeviceMetadata.Platform
 		platformFile := fmt.Sprintf("%s/%s/platform.json", deviceDir, platformIdentifier)
 
 		platformBytes, err := os.ReadFile(platformFile)
@@ -51,17 +50,7 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to parse platform.json:%w", err)
 		}
 
-		inputBytes, err := os.ReadFile(inputFile)
-		if err != nil {
-			return fmt.Errorf("failed to read input file:%w", err)
-		}
-
-		values, err := values.UnmarshalValues(inputBytes)
-		if err != nil {
-			return fmt.Errorf("failed to parse input file:%w", err)
-		}
-
-		configDB, err := configdb.GenerateConfigDB(values, platform, values.DeviceMetadata)
+		configDB, err := configdb.GenerateConfigDB(values, platform, env)
 		if err != nil {
 			return fmt.Errorf("failed to generate config:%w", err)
 		}
