@@ -11,6 +11,19 @@ Then run
 sonic-confidb-utils generate
 ```
 
+Following files and directories are expected to be in place:
+
+1. The `/usr/share/sonic/device` directory holds all device specific information. `sonic-configdb-utils` needs to read `usr/share/sonic/device/<platform-identifier>/platform.json` to set and validate the ports' breakout configurations.
+2. To retrieve the platform identifier and HWSKU the `/etc/sonic/sonic-environment` file is read which looks like this:
+
+```bash
+SONIC_VERSION=sonic-123
+PLATFORM=x86_64-accton_as7726_32x-r0
+HWSKU=Accton-AS7726-32X
+DEVICE_TYPE=LeafRouter
+ASIC_TYPE=broadcom
+```
+
 ## Configuration Parameters
 
 ### bgp_ports
