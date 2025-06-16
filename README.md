@@ -11,6 +11,19 @@ Then run
 sonic-confidb-utils generate
 ```
 
+Following files and directories are expected to be in place:
+
+1. The `/usr/share/sonic/device` directory holds all device specific information. `sonic-configdb-utils` needs to read `usr/share/sonic/device/<platform-identifier>/platform.json` to set and validate the ports' breakout configurations.
+2. To retrieve the platform identifier and HWSKU the `/etc/sonic/sonic-environment` file is read which looks like this:
+
+```bash
+SONIC_VERSION=sonic-123
+PLATFORM=x86_64-accton_as7726_32x-r0
+HWSKU=Accton-AS7726-32X
+DEVICE_TYPE=LeafRouter
+ASIC_TYPE=broadcom
+```
+
 ## Configuration Parameters
 
 ### bgp_ports
@@ -64,31 +77,6 @@ Result:
 ```
 
 For each breakout also the correspondig ports entries are added.
-
-### device_metadata
-
-Example:
-
-```yaml
-device_metadata:
-  hwsku: Accton-AS7726-32X
-  mac: aa:aa:aa:aa:aa:aa
-  platform: x86_64-accton_as7726_32x-r0
-```
-
-Result:
-
-```json
-{
-  "DEVICE_METADATA": {
-    "localhost": {
-      "hwsku": "Accton-AS7726-32X",
-      "mac": "aa:aa:aa:aa:aa:aa",
-      "platform": "x86_64-accton_as7726_32x-r0"
-    }
-  }
-}
-```
 
 ### docker_routing_config_mode
 
@@ -630,16 +618,17 @@ Result:
 }
 ```
 
-### vteps
+### vtep
 
 Example:
 
 ```yaml
 loopback_address: 10.7.7.7
 
-vteps:
-  - vni: 103999
-    vlan: Vlan3999
+vtep:
+  vxlan_tunnel_maps:
+    - vni: 103999
+      vlan: Vlan3999
 ```
 
 Result:
@@ -660,6 +649,32 @@ Result:
     "vtep|map_103999_Vlan3999": {
       "vlan": "Vlan3999",
       "vni": "103999"
+    }
+  }
+}
+```
+
+If only `VXLAN_EVPN_NVO` and `VXLAN_TUNNEL` are needed with no tunnel maps:
+
+```yaml
+loopback_address: 10.7.7.7
+
+vtep:
+  enabled: true
+```
+
+Result:
+
+```json
+{
+  "VXLAN_EVPN_NVO": {
+    "nvo": {
+      "source_vtep": "vtep"
+    }
+  },
+  "VXLAN_TUNNEL": {
+    "vtep": {
+      "src_ip": "10.7.7.7"
     }
   }
 }

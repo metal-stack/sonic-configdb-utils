@@ -7,6 +7,7 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/metal-stack/sonic-configdb-utils/platform"
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
 )
@@ -43,7 +44,7 @@ type ConfigDB struct {
 	VXLANTunnelMap     VXLANTunnelMap              `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceMetadata values.DeviceMetadata) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *platform.Environment) (*ConfigDB, error) {
 	if input == nil {
 		return nil, fmt.Errorf("no input values provided")
 	}
@@ -56,7 +57,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, currentDeviceM
 		return nil, err
 	}
 
-	deviceMetadata, err := getDeviceMetadata(input, currentDeviceMetadata)
+	deviceMetadata, err := getDeviceMetadata(input, environment)
 	if err != nil {
 		return nil, err
 	}
@@ -168,17 +169,17 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	return rules, tables
 }
 
-func getDeviceMetadata(input *values.Values, currentMetadata values.DeviceMetadata) (*DeviceMetadata, error) {
-	if currentMetadata.Platform == "" {
-		return nil, fmt.Errorf("missing platform from current device metadata")
+func getDeviceMetadata(input *values.Values, environment *platform.Environment) (*DeviceMetadata, error) {
+	if environment.Platform == "" {
+		return nil, fmt.Errorf("no platform identifiert found in environment file")
 	}
 
-	if currentMetadata.HWSKU == "" {
-		return nil, fmt.Errorf("missing hwsku from current device metadata")
+	if environment.HWSKU == "" {
+		return nil, fmt.Errorf("no hwsku found in environment file")
 	}
 
-	if currentMetadata.MAC == "" {
-		return nil, fmt.Errorf("missing mac from current device metadata")
+	if environment.MAC == "" {
+		return nil, fmt.Errorf("failed to retrieve system mac address")
 	}
 
 	return &DeviceMetadata{
@@ -186,9 +187,9 @@ func getDeviceMetadata(input *values.Values, currentMetadata values.DeviceMetada
 			DockerRoutingConfigMode: DockerRoutingConfigMode(input.DockerRoutingConfigMode),
 			FRRMgmtFrameworkConfig:  strconv.FormatBool(input.FRRMgmtFrameworkConfig),
 			Hostname:                input.Hostname,
-			HWSKU:                   currentMetadata.HWSKU,
-			MAC:                     currentMetadata.MAC,
-			Platform:                currentMetadata.Platform,
+			HWSKU:                   environment.HWSKU,
+			MAC:                     environment.MAC,
+			Platform:                environment.Platform,
 			RouterType:              "LeafRouter",
 		},
 	}, nil
