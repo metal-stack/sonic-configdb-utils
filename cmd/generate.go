@@ -8,6 +8,7 @@ import (
 	"github.com/metal-stack/sonic-configdb-utils/configdb"
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
+	v "github.com/metal-stack/sonic-configdb-utils/version"
 	"github.com/spf13/cobra"
 )
 
@@ -15,16 +16,16 @@ var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Generate a config_db.json",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		inputFile, _ := cmd.Flags().GetString("input-file")
+		outputFile, _ := cmd.Flags().GetString("output-file")
+		deviceDir, _ := cmd.Flags().GetString("device-dir")
 		sonicEnvFile, _ := cmd.Flags().GetString("env-file")
+		sonicVersionFile, _ := cmd.Flags().GetString("version-file")
+
 		env, err := p.GetEnvironment(sonicEnvFile)
 		if err != nil {
 			return fmt.Errorf("failed to get environment information:%w", err)
 		}
-
-		platformIdentifier := env.Platform
-		inputFile, _ := cmd.Flags().GetString("input-file")
-		outputFile, _ := cmd.Flags().GetString("output-file")
-		deviceDir, _ := cmd.Flags().GetString("device-dir")
 
 		inputBytes, err := os.ReadFile(inputFile)
 		if err != nil {
@@ -38,8 +39,7 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		platformFile := fmt.Sprintf("%s/%s/platform.json", deviceDir, platformIdentifier)
-
+		platformFile := fmt.Sprintf("%s/%s/platform.json", deviceDir, env.Platform)
 		platformBytes, err := os.ReadFile(platformFile)
 		if err != nil {
 			return fmt.Errorf("failed to read platform.json file:%w", err)
@@ -50,7 +50,17 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to parse platform.json:%w", err)
 		}
 
-		configDB, err := configdb.GenerateConfigDB(values, platform, env)
+		versionBytes, err := os.ReadFile(sonicVersionFile)
+		if err != nil {
+			return fmt.Errorf("failed to read version file:%w", err)
+		}
+
+		version, err := v.UnmarshalVersion(versionBytes)
+		if err != nil {
+			return fmt.Errorf("failed to parse version file:%w", err)
+		}
+
+		configDB, err := configdb.GenerateConfigDB(values, platform, env, version)
 		if err != nil {
 			return fmt.Errorf("failed to generate config:%w", err)
 		}
@@ -76,4 +86,5 @@ func init() {
 	generateCmd.Flags().StringP("output-file", "o", "config_db.json", "path to output file")
 	generateCmd.Flags().String("device-dir", "/usr/share/sonic/device", "directory which holds all device-specific files")
 	generateCmd.Flags().StringP("env-file", "e", "/etc/sonic/sonic-environment", "sonic-environment file holding platform information")
+	generateCmd.Flags().StringP("version-file", "v", "/etc/sonic/sonic_version.yaml", "sonic version file")
 }

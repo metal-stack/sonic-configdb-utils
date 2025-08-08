@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/metal-stack/sonic-configdb-utils/platform"
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
+	v "github.com/metal-stack/sonic-configdb-utils/version"
 )
 
 type ConfigDB struct {
@@ -44,7 +44,7 @@ type ConfigDB struct {
 	VXLANTunnelMap     VXLANTunnelMap              `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *platform.Environment) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p.Environment, version *v.Version) (*ConfigDB, error) {
 	if input == nil {
 		return nil, fmt.Errorf("no input values provided")
 	}
@@ -74,12 +74,13 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		DNSNameservers:    getDNSNameservers(input.Nameservers),
 		Features:          features,
 		Interfaces:        getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
-		LLDP:              getLLDP(input.LLDPHelloTime),
+		LLDP:              getLLDP(input.LLDPHelloTime, version),
 		LoopbackInterface: getLoopbackInterface(input.LoopbackAddress),
 		MCLAGDomains:      getMCLAGDomains(input.MCLAG),
 		MCLAGInterfaces:   getMCLAGInterfaces(input.MCLAG),
 		MCLAGUniqueIPs:    getMCLAGUniqueIPs(input.MCLAG),
 		MgmtInterfaces:    getMgmtInterfaces(input.MgmtInterface),
+		// FIX: some switches don't have an eth0
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -169,7 +170,7 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	return rules, tables
 }
 
-func getDeviceMetadata(input *values.Values, environment *platform.Environment) (*DeviceMetadata, error) {
+func getDeviceMetadata(input *values.Values, environment *p.Environment) (*DeviceMetadata, error) {
 	if environment.Platform == "" {
 		return nil, fmt.Errorf("no platform identifiert found in environment file")
 	}
@@ -266,15 +267,28 @@ func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[stri
 	return interfaces
 }
 
-func getLLDP(interval int) *LLDP {
+func getLLDP(interval int, version *v.Version) *LLDP {
 	if interval < 1 {
 		return nil
 	}
-	return &LLDP{
-		Global: LLDPGlobal{
-			HelloTime: fmt.Sprintf("%d", interval),
-		},
+
+	lldp := &LLDP{}
+	global := LLDPGlobal{
+		HelloTime: fmt.Sprintf("%d", interval),
 	}
+
+	switch version.Branch {
+	case string(v.Branch202111):
+		global202111 := LLDPGlobal202111(global)
+		lldp.Global202111 = &global202111
+	case string(v.Branch202211):
+		global202211 := LLDPGlobal202211(global)
+		lldp.Global202211 = &global202211
+	default:
+		lldp = nil
+	}
+
+	return lldp
 }
 
 func getLoopbackInterface(loopback string) map[string]struct{} {

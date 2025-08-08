@@ -178,8 +178,8 @@
     "10.0.0.10": {}
   },
   "LLDP": {
-    "Global": {
-      "hello_timer": "10"
+    "GLOBAL": {
+      "hello_time": "10"
     }
   },
   "LOOPBACK_INTERFACE": {
