@@ -497,8 +497,8 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 	return configPorts, configBreakouts, nil
 }
 
-func getSAG(sag values.SAG, version *v.Version) (*SAG, error) {
-	if version.Branch != string(v.Branch202211) && sag.MAC != "" {
+func getSAG(sag *values.SAG, version *v.Version) (*SAG, error) {
+	if version.Branch != string(v.Branch202211) && sag != nil {
 		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211 branch")
 	}
 

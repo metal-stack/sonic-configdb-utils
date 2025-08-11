@@ -556,16 +556,14 @@ func Test_getVRFs(t *testing.T) {
 func Test_getSAG(t *testing.T) {
 	tests := []struct {
 		name    string
-		sag     values.SAG
+		sag     *values.SAG
 		version *v.Version
 		want    *SAG
 		wantErr bool
 	}{
 		{
 			name: "wrong version",
-			sag: values.SAG{
-				MAC: "11:11:11:11:11:11",
-			},
+			sag:  &values.SAG{},
 			version: &v.Version{
 				Branch: string(v.Branch202111),
 			},
@@ -574,7 +572,7 @@ func Test_getSAG(t *testing.T) {
 		},
 		{
 			name: "empty mac",
-			sag:  values.SAG{},
+			sag:  &values.SAG{},
 			version: &v.Version{
 				Branch: string(v.Branch202211),
 			},
@@ -583,7 +581,7 @@ func Test_getSAG(t *testing.T) {
 		},
 		{
 			name: "valid",
-			sag: values.SAG{
+			sag: &values.SAG{
 				MAC: "11:11:11:11:11:11",
 			},
 			version: &v.Version{

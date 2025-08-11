@@ -106,7 +106,7 @@ type Values struct {
 	NTP                     NTP                     `yaml:"ntp"`
 	PortChannels            PortChannels            `yaml:"portchannels"`
 	Ports                   Ports                   `yaml:"ports"`
-	SAG                     SAG                     `yaml:"sag"`
+	SAG                     *SAG                    `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
 	VLANSubinterfaces       []VLANSubinterface      `yaml:"vlan_subinterfaces"`
