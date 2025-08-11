@@ -66,6 +66,11 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
+	sag, err := getSAG(input.SAG, version)
+	if err != nil {
+		return nil, err
+	}
+
 	configdb := ConfigDB{
 		ACLRules:          rules,
 		ACLTables:         tables,
@@ -98,7 +103,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		Ports:              ports,
 		PortChannels:       getPortChannels(input.PortChannels),
 		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
-		SAG:                getSAG(input.SAG),
+		SAG:                sag,
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     getVLANInterfaces(input.VLANs),
 		VLANMembers:        getVLANMembers(input.VLANs),
@@ -487,16 +492,20 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 	return configPorts, configBreakouts, nil
 }
 
-func getSAG(sag values.SAG) *SAG {
+func getSAG(sag values.SAG, version *v.Version) (*SAG, error) {
+	if version.Branch != string(v.Branch202211) {
+		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211 branch")
+	}
+
 	if sag.MAC == "" {
-		return nil
+		return nil, nil
 	}
 
 	return &SAG{
 		SAGGlobal: SAGGlobal{
 			GatewayMAC: sag.MAC,
 		},
-	}
+	}, nil
 }
 
 func getVLANs(vlans []values.VLAN) map[string]VLAN {

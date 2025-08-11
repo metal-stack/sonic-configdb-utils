@@ -8,6 +8,7 @@ import (
 	"github.com/metal-stack/metal-lib/pkg/testcommon"
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
+	v "github.com/metal-stack/sonic-configdb-utils/version"
 )
 
 func Test_getInterfaces(t *testing.T) {
@@ -547,6 +548,65 @@ func Test_getVRFs(t *testing.T) {
 			got := getVRFs(tt.interconnects, tt.ports, tt.vlans)
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("getVRFs() diff = %s", diff)
+			}
+		})
+	}
+}
+
+func Test_getSAG(t *testing.T) {
+	tests := []struct {
+		name    string
+		sag     values.SAG
+		version *v.Version
+		want    *SAG
+		wantErr bool
+	}{
+		{
+			name: "wrong version",
+			sag: values.SAG{
+				MAC: "11:11:11:11:11:11",
+			},
+			version: &v.Version{
+				Branch: string(v.Branch202111),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "empty mac",
+			sag:  values.SAG{},
+			version: &v.Version{
+				Branch: string(v.Branch202211),
+			},
+			want:    nil,
+			wantErr: false,
+		},
+		{
+			name: "valid",
+			sag: values.SAG{
+				MAC: "11:11:11:11:11:11",
+			},
+			version: &v.Version{
+				Branch: string(v.Branch202211),
+			},
+			want: &SAG{
+				SAGGlobal: SAGGlobal{
+					GatewayMAC: "11:11:11:11:11:11",
+				},
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getSAG(tt.sag, tt.version)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getSAG() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("getSAG() diff = %s", diff)
 			}
 		})
 	}
