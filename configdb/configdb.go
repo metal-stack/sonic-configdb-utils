@@ -502,7 +502,7 @@ func getSAG(sag *values.SAG, version *v.Version) (*SAG, error) {
 		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211 branch")
 	}
 
-	if sag.MAC == "" {
+	if sag == nil || sag.MAC == "" {
 		return nil, nil
 	}
 

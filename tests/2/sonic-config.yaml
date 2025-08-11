@@ -48,8 +48,6 @@ ports:
     - name: Ethernet48
       vrf: Vrf42
 
-sag: {}
-
 vlans:
   - id: 4000
     dhcp_servers:
