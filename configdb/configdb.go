@@ -71,6 +71,11 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		return nil, err
 	}
 
+	vlanInterfaces, err := getVLANInterfaces(input.VLANs, version)
+	if err != nil {
+		return nil, err
+	}
+
 	configdb := ConfigDB{
 		ACLRules:          rules,
 		ACLTables:         tables,
@@ -105,7 +110,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
 		SAG:                sag,
 		VLANs:              getVLANs(input.VLANs),
-		VLANInterfaces:     getVLANInterfaces(input.VLANs),
+		VLANInterfaces:     vlanInterfaces,
 		VLANMembers:        getVLANMembers(input.VLANs),
 		VLANSubinterfaces:  getVLANSubinterfaces(input.VLANSubinterfaces),
 		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
@@ -493,7 +498,7 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 }
 
 func getSAG(sag values.SAG, version *v.Version) (*SAG, error) {
-	if version.Branch != string(v.Branch202211) {
+	if version.Branch != string(v.Branch202211) && sag.MAC != "" {
 		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211 branch")
 	}
 
@@ -521,15 +526,23 @@ func getVLANs(vlans []values.VLAN) map[string]VLAN {
 	return configVLANs
 }
 
-func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
+func getVLANInterfaces(vlans []values.VLAN, version *v.Version) (map[string]VLANInterface, error) {
 	vlanInterfaces := make(map[string]VLANInterface)
 
 	for _, vlan := range vlans {
 		var vlanInterface VLANInterface
 
+		if version.Branch != string(v.Branch202211) && vlan.SAG != nil {
+			return nil, fmt.Errorf("sag only works for sonic builds from branch 202211")
+		}
+		var sag string
+		if vlan.SAG != nil {
+			sag = strconv.FormatBool(*vlan.SAG)
+		}
+
 		if vlan.VRF != "" {
 			vlanInterface = VLANInterface{
-				StaticAnycastGateway: strconv.FormatBool(vlan.SAG),
+				StaticAnycastGateway: sag,
 				VRFName:              vlan.VRF,
 			}
 		}
@@ -541,7 +554,7 @@ func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
 		vlanInterfaces["Vlan"+vlan.ID+"|"+vlan.IP] = VLANInterface{}
 	}
 
-	return vlanInterfaces
+	return vlanInterfaces, nil
 }
 
 func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {

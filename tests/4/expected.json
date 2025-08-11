@@ -642,13 +642,21 @@
       "speed": "1000"
     }
   },
+  "SAG": {
+    "GLOBAL": {
+      "gateway_mac": "bb:bb:bb:bb:bb:bb"
+    }
+  },
   "VLAN": {
     "Vlan4000": {
       "vlanid": "4000"
     }
   },
   "VLAN_INTERFACE": {
-    "Vlan4000": {},
+    "Vlan4000": {
+      "static_anycast_gateway": "true",
+      "vrf_name": "Vrf45"
+    },
     "Vlan4000|10.255.1.1/24": {}
   },
   "VLAN_SUB_INTERFACE": {
@@ -657,5 +665,8 @@
       "vrf_name": "Vrf45"
     },
     "Ethernet0.1000|1.2.3.0/24": {}
+  },
+  "VRF": {
+    "Vrf45": {}
   }
 }

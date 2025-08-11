@@ -582,11 +582,6 @@
     "PortChannel01|Ethernet4": {},
     "PortChannel01|Ethernet5": {}
   },
-  "SAG": {
-    "GLOBAL": {
-      "gateway_mac": "bb:bb:bb:bb:bb:bb"
-    }
-  },
   "VLAN": {
     "Vlan4000": {
       "dhcp_servers": [
@@ -601,7 +596,6 @@
   },
   "VLAN_INTERFACE": {
     "Vlan4000": {
-      "static_anycast_gateway": "true",
       "vrf_name": "Vrf45"
     },
     "Vlan4000|10.9.7.0": {},
