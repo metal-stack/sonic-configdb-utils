@@ -126,11 +126,6 @@
       "vrf_name": "Vrf42"
     }
   },
-  "LLDP": {
-    "Global": {
-      "hello_timer": "10"
-    }
-  },
   "LOOPBACK_INTERFACE": {
     "Loopback0": {},
     "Loopback0|10.7.7.7/32": {}

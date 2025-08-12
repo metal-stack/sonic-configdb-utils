@@ -84,11 +84,20 @@ const (
 )
 
 type LLDP struct {
-	Global LLDPGlobal `json:"Global"`
+	Global202111 *LLDPGlobal202111 `json:"Global,omitempty"`
+	Global202211 *LLDPGlobal202211 `json:"GLOBAL,omitempty"`
 }
 
 type LLDPGlobal struct {
+	HelloTime string
+}
+
+type LLDPGlobal202111 struct {
 	HelloTime string `json:"hello_timer,omitempty"`
+}
+
+type LLDPGlobal202211 struct {
+	HelloTime string `json:"hello_time,omitempty"`
 }
 
 type MCLAGDomain struct {

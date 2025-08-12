@@ -106,7 +106,7 @@ type Values struct {
 	NTP                     NTP                     `yaml:"ntp"`
 	PortChannels            PortChannels            `yaml:"portchannels"`
 	Ports                   Ports                   `yaml:"ports"`
-	SAG                     SAG                     `yaml:"sag"`
+	SAG                     *SAG                    `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
 	VLANSubinterfaces       []VLANSubinterface      `yaml:"vlan_subinterfaces"`
@@ -124,7 +124,7 @@ type VLAN struct {
 	DHCPServers   []string `yaml:"dhcp_servers"`
 	ID            string   `yaml:"id"`
 	IP            string   `yaml:"ip"`
-	SAG           bool     `yaml:"sag"`
+	SAG           *bool    `yaml:"sag"`
 	TaggedPorts   []string `yaml:"tagged_ports"`
 	UntaggedPorts []string `yaml:"untagged_ports"`
 	VRF           string   `yaml:"vrf"`

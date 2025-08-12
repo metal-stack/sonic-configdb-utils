@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/metal-stack/sonic-configdb-utils/platform"
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
+	v "github.com/metal-stack/sonic-configdb-utils/version"
 )
 
 type ConfigDB struct {
@@ -44,7 +44,7 @@ type ConfigDB struct {
 	VXLANTunnelMap     VXLANTunnelMap              `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *platform.Environment) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p.Environment, version *v.Version) (*ConfigDB, error) {
 	if input == nil {
 		return nil, fmt.Errorf("no input values provided")
 	}
@@ -66,6 +66,16 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
+	sag, err := getSAG(input.SAG, version)
+	if err != nil {
+		return nil, err
+	}
+
+	vlanInterfaces, err := getVLANInterfaces(input.VLANs, version)
+	if err != nil {
+		return nil, err
+	}
+
 	configdb := ConfigDB{
 		ACLRules:          rules,
 		ACLTables:         tables,
@@ -74,12 +84,13 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		DNSNameservers:    getDNSNameservers(input.Nameservers),
 		Features:          features,
 		Interfaces:        getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
-		LLDP:              getLLDP(input.LLDPHelloTime),
+		LLDP:              getLLDP(input.LLDPHelloTime, version),
 		LoopbackInterface: getLoopbackInterface(input.LoopbackAddress),
 		MCLAGDomains:      getMCLAGDomains(input.MCLAG),
 		MCLAGInterfaces:   getMCLAGInterfaces(input.MCLAG),
 		MCLAGUniqueIPs:    getMCLAGUniqueIPs(input.MCLAG),
 		MgmtInterfaces:    getMgmtInterfaces(input.MgmtInterface),
+		// FIX: some switches don't have an eth0
 		MgmtPorts: map[string]MgmtPort{
 			"eth0": {
 				AdminStatus: AdminStatusUp,
@@ -97,9 +108,9 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		Ports:              ports,
 		PortChannels:       getPortChannels(input.PortChannels),
 		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
-		SAG:                getSAG(input.SAG),
+		SAG:                sag,
 		VLANs:              getVLANs(input.VLANs),
-		VLANInterfaces:     getVLANInterfaces(input.VLANs),
+		VLANInterfaces:     vlanInterfaces,
 		VLANMembers:        getVLANMembers(input.VLANs),
 		VLANSubinterfaces:  getVLANSubinterfaces(input.VLANSubinterfaces),
 		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
@@ -169,7 +180,7 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 	return rules, tables
 }
 
-func getDeviceMetadata(input *values.Values, environment *platform.Environment) (*DeviceMetadata, error) {
+func getDeviceMetadata(input *values.Values, environment *p.Environment) (*DeviceMetadata, error) {
 	if environment.Platform == "" {
 		return nil, fmt.Errorf("no platform identifiert found in environment file")
 	}
@@ -266,15 +277,28 @@ func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[stri
 	return interfaces
 }
 
-func getLLDP(interval int) *LLDP {
+func getLLDP(interval int, version *v.Version) *LLDP {
 	if interval < 1 {
 		return nil
 	}
-	return &LLDP{
-		Global: LLDPGlobal{
-			HelloTime: fmt.Sprintf("%d", interval),
-		},
+
+	lldp := &LLDP{}
+	global := LLDPGlobal{
+		HelloTime: fmt.Sprintf("%d", interval),
 	}
+
+	switch version.Branch {
+	case string(v.Branch202111):
+		global202111 := LLDPGlobal202111(global)
+		lldp.Global202111 = &global202111
+	case string(v.Branch202211):
+		global202211 := LLDPGlobal202211(global)
+		lldp.Global202211 = &global202211
+	default:
+		lldp = nil
+	}
+
+	return lldp
 }
 
 func getLoopbackInterface(loopback string) map[string]struct{} {
@@ -473,16 +497,20 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 	return configPorts, configBreakouts, nil
 }
 
-func getSAG(sag values.SAG) *SAG {
-	if sag.MAC == "" {
-		return nil
+func getSAG(sag *values.SAG, version *v.Version) (*SAG, error) {
+	if version.Branch != string(v.Branch202211) && sag != nil {
+		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211 branch")
+	}
+
+	if sag == nil || sag.MAC == "" {
+		return nil, nil
 	}
 
 	return &SAG{
 		SAGGlobal: SAGGlobal{
 			GatewayMAC: sag.MAC,
 		},
-	}
+	}, nil
 }
 
 func getVLANs(vlans []values.VLAN) map[string]VLAN {
@@ -498,15 +526,23 @@ func getVLANs(vlans []values.VLAN) map[string]VLAN {
 	return configVLANs
 }
 
-func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
+func getVLANInterfaces(vlans []values.VLAN, version *v.Version) (map[string]VLANInterface, error) {
 	vlanInterfaces := make(map[string]VLANInterface)
 
 	for _, vlan := range vlans {
 		var vlanInterface VLANInterface
 
+		if version.Branch != string(v.Branch202211) && vlan.SAG != nil {
+			return nil, fmt.Errorf("sag only works for sonic builds from branch 202211")
+		}
+		var sag string
+		if vlan.SAG != nil {
+			sag = strconv.FormatBool(*vlan.SAG)
+		}
+
 		if vlan.VRF != "" {
 			vlanInterface = VLANInterface{
-				StaticAnycastGateway: strconv.FormatBool(vlan.SAG),
+				StaticAnycastGateway: sag,
 				VRFName:              vlan.VRF,
 			}
 		}
@@ -518,7 +554,7 @@ func getVLANInterfaces(vlans []values.VLAN) map[string]VLANInterface {
 		vlanInterfaces["Vlan"+vlan.ID+"|"+vlan.IP] = VLANInterface{}
 	}
 
-	return vlanInterfaces
+	return vlanInterfaces, nil
 }
 
 func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {
