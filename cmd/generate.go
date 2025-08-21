@@ -86,5 +86,5 @@ func init() {
 	generateCmd.Flags().StringP("output-file", "o", "config_db.json", "path to output file")
 	generateCmd.Flags().String("device-dir", "/usr/share/sonic/device", "directory which holds all device-specific files")
 	generateCmd.Flags().StringP("env-file", "e", "/etc/sonic/sonic-environment", "sonic-environment file holding platform information")
-	generateCmd.Flags().StringP("version-file", "v", "/etc/sonic/sonic_version.yaml", "sonic version file")
+	generateCmd.Flags().StringP("version-file", "v", "/etc/sonic/sonic_version.yml", "sonic version file")
 }
