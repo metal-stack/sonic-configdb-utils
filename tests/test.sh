@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in 1 2 3 4
+for i in 1 2 3 4 5
 do
   test_dir=$(pwd)/tests/$i
   docker run --rm --mac-address aa:aa:aa:aa:aa:aa -v $test_dir:/etc/sonic -v $(pwd)/tests/device:/usr/share/sonic/device:ro -v $test_dir:/sonic sonic-configdb-utils:local generate -i /sonic/sonic-config.yaml -o /sonic/config_db.json

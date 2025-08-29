@@ -1,0 +1,40 @@
+bgp_ports:
+  - Ethernet50
+  - Ethernet51
+
+docker_routing_config_mode: split
+frr_mgmt_framework_config: true
+hostname: mgmtleaf
+mgmt_vrf: false
+
+ntp:
+  servers:
+    - 162.159.200.1
+    - 162.159.200.123
+
+ports:
+  default_autoneg: on
+  list:
+    - name: Ethernet0
+    - name: Ethernet1
+    - name: Ethernet2
+    - name: Ethernet3
+    - name: Ethernet47
+    - name: Ethernet50
+    - name: Ethernet51
+
+vlans:
+  - id: 1
+    ip: 10.1.1.1/24
+    untagged_ports:
+      - Ethernet0
+  - id: 2
+    ip: 192.168.0.1/24
+    untagged_ports:
+    - Ethernet1
+    - Ethernet2
+    tagged_ports:
+    - Ethernet3
+    vrrp:
+      group: 1
+      ip: 10.1.2.1/24

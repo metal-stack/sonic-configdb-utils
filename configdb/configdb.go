@@ -37,6 +37,7 @@ type ConfigDB struct {
 	VLANs              map[string]VLAN             `json:"VLAN,omitempty"`
 	VLANInterfaces     map[string]VLANInterface    `json:"VLAN_INTERFACE,omitempty"`
 	VLANMembers        map[string]VLANMember       `json:"VLAN_MEMBER,omitempty"`
+	VRRPInterfaces     map[string]VRRPInterface    `json:"VRRP_INTERFACE,omitempty"`
 	VLANSubinterfaces  map[string]VLANSubinterface `json:"VLAN_SUB_INTERFACE,omitempty"`
 	VRFs               map[string]VRF              `json:"VRF,omitempty"`
 	VXLANEVPN          *VXLANEVPN                  `json:"VXLAN_EVPN_NVO,omitempty"`
@@ -72,6 +73,11 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 	}
 
 	vlanInterfaces, err := getVLANInterfaces(input.VLANs, version)
+	if err != nil {
+		return nil, err
+	}
+
+	vrrpInterfaces, err := getVRRPInterfaces(input.VLANs, version)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +118,7 @@ func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     vlanInterfaces,
 		VLANMembers:        getVLANMembers(input.VLANs),
+		VRRPInterfaces:     vrrpInterfaces,
 		VLANSubinterfaces:  getVLANSubinterfaces(input.VLANSubinterfaces),
 		VRFs:               getVRFs(input.Interconnects, input.Ports, input.VLANs),
 		VXLANEVPN:          vxlanevpn,
@@ -574,6 +581,31 @@ func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {
 	}
 
 	return vlanMembers
+}
+
+func getVRRPInterfaces(vlans []values.VLAN, version *v.Version) (map[string]VRRPInterface, error) {
+	vrrpInterfaces := make(map[string]VRRPInterface)
+	for _, vlan := range vlans {
+		if vlan.VRRP.Group == "" {
+			continue
+		}
+
+		if version.Branch != string(v.Branch202111) {
+			return nil, fmt.Errorf("vrrp configuration only works with sonic versions from the ec202111 branch")
+		}
+
+		vrrpInterfaces["Vrrp"+vlan.VRRP.Group+"-v4"] = VRRPInterface{
+			ParentInterface: "Vlan" + vlan.ID,
+		}
+
+		if vlan.VRRP.IP == "" {
+			continue
+		}
+
+		vrrpInterfaces["Vrrp"+vlan.VRRP.Group+"-v4|"+vlan.VRRP.IP] = VRRPInterface{}
+	}
+
+	return vrrpInterfaces, nil
 }
 
 func getVLANSubinterfaces(subinterfaces []values.VLANSubinterface) map[string]VLANSubinterface {

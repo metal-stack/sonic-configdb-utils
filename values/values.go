@@ -128,6 +128,12 @@ type VLAN struct {
 	TaggedPorts   []string `yaml:"tagged_ports"`
 	UntaggedPorts []string `yaml:"untagged_ports"`
 	VRF           string   `yaml:"vrf"`
+	VRRP          VRRP     `yaml:"vrrp"`
+}
+
+type VRRP struct {
+	Group string `yaml:"group"`
+	IP    string `yaml:"ip"`
 }
 
 type VTEP struct {

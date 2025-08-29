@@ -220,6 +220,10 @@ type VLANMember struct {
 	TaggingMode TaggingMode `json:"tagging_mode,omitempty"`
 }
 
+type VRRPInterface struct {
+	ParentInterface string `json:"parent_interface,omitempty"`
+}
+
 type VLANSubinterface struct {
 	AdminStatus AdminStatus `json:"admin_status,omitempty"`
 	VRFName     string      `json:"vrf_name,omitempty"`
