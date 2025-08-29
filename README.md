@@ -588,6 +588,10 @@ vlans:
     untagged_ports:
       - PortChannel11
     vrf: Vrf45
+    vrrp:
+      group: 1
+      priority: 66
+      ip: 10.255.1.1/24
 ```
 
 Result:
@@ -614,6 +618,12 @@ Result:
     "Vlan4000|PortChannel11": {
       "tagging_mode": "untagged"
     }
+  },
+  "VRRP_INTERFACE": {
+      "Vrrp1-v4": {
+          "parent_interface": "Vlan4000"
+      },
+      "Vrrp1-v4|10.255.1.1/24": {}
   }
 }
 ```
