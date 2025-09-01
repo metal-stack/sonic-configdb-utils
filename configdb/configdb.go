@@ -506,7 +506,7 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 
 func getSAG(sag *values.SAG, version *v.Version) (*SAG, error) {
 	if version.Branch != string(v.Branch202211) && sag != nil {
-		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211 branch")
+		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211_ecsonic branch")
 	}
 
 	if sag == nil || sag.MAC == "" {
@@ -540,7 +540,7 @@ func getVLANInterfaces(vlans []values.VLAN, version *v.Version) (map[string]VLAN
 		var vlanInterface VLANInterface
 
 		if version.Branch != string(v.Branch202211) && vlan.SAG != nil {
-			return nil, fmt.Errorf("sag only works for sonic builds from branch 202211")
+			return nil, fmt.Errorf("sag only works for sonic builds from branch ec202211_ecsonic")
 		}
 		var sag string
 		if vlan.SAG != nil {
