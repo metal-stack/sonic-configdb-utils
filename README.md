@@ -24,6 +24,8 @@ DEVICE_TYPE=LeafRouter
 ASIC_TYPE=broadcom
 ```
 
+3. The `/etc/sonic/sonic_version.yml` file includes the build branch of the current SONiC version. This information is necessary for version-specific configuration.
+
 ## Configuration Parameters
 
 ### bgp_ports
@@ -207,6 +209,8 @@ Result:
   }
 }
 ```
+
+Depending on the SONiC version, the resulting field names in may slightly differ.
 
 ### looback_address
 
@@ -474,6 +478,8 @@ For each port that is not explicitly configured in `breakouts` and `ports` an en
 
 ### sag
 
+SAG configuration is only supported for SONiC versions from the `ec202211_ecsonic` build branch.
+
 Example:
 
 ```yaml
@@ -582,13 +588,13 @@ vlans:
       - 10.9.8.7
       - 10.9.8.6
     ip: 10.9.7.0
-    sag: true
+    sag: true # only for ec202211_ecsonic branch
     tagged_ports:
       - PortChannel01
     untagged_ports:
       - PortChannel11
     vrf: Vrf45
-    vrrp:
+    vrrp: # only for ec202111 branch
       group: 1
       priority: 66
       ip: 10.255.1.1/24
@@ -620,10 +626,10 @@ Result:
     }
   },
   "VRRP_INTERFACE": {
-      "Vrrp1-v4": {
-          "parent_interface": "Vlan4000"
-      },
-      "Vrrp1-v4|10.255.1.1/24": {}
+    "Vrrp1-v4": {
+      "parent_interface": "Vlan4000"
+    },
+    "Vrrp1-v4|10.255.1.1/24": {}
   }
 }
 ```
