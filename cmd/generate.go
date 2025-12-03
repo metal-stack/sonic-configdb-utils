@@ -55,7 +55,7 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to read version file:%w", err)
 		}
 
-		version, err := v.UnmarshalVersion(versionBytes)
+		version, err := v.GetVersion(versionBytes)
 		if err != nil {
 			return fmt.Errorf("failed to parse version file:%w", err)
 		}
