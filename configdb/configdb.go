@@ -45,7 +45,7 @@ type ConfigDB struct {
 	VXLANTunnelMap     VXLANTunnelMap              `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p.Environment, version *v.Version) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p.Environment, version v.Branch) (*ConfigDB, error) {
 	if input == nil {
 		return nil, fmt.Errorf("no input values provided")
 	}
@@ -284,7 +284,7 @@ func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[stri
 	return interfaces
 }
 
-func getLLDP(interval int, version *v.Version) *LLDP {
+func getLLDP(interval int, version v.Branch) *LLDP {
 	if interval < 1 {
 		return nil
 	}
@@ -294,11 +294,11 @@ func getLLDP(interval int, version *v.Version) *LLDP {
 		HelloTime: fmt.Sprintf("%d", interval),
 	}
 
-	switch version.Branch {
-	case string(v.Branch202111):
+	switch version {
+	case v.Branch202111:
 		global202111 := LLDPGlobal202111(global)
 		lldp.Global202111 = &global202111
-	case string(v.Branch202211):
+	case v.Branch202211:
 		global202211 := LLDPGlobal202211(global)
 		lldp.Global202211 = &global202211
 	default:
@@ -504,8 +504,8 @@ func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platf
 	return configPorts, configBreakouts, nil
 }
 
-func getSAG(sag *values.SAG, version *v.Version) (*SAG, error) {
-	if version.Branch != string(v.Branch202211) && sag != nil {
+func getSAG(sag *values.SAG, version v.Branch) (*SAG, error) {
+	if version != v.Branch202211 && sag != nil {
 		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211_ecsonic branch")
 	}
 
@@ -533,13 +533,13 @@ func getVLANs(vlans []values.VLAN) map[string]VLAN {
 	return configVLANs
 }
 
-func getVLANInterfaces(vlans []values.VLAN, version *v.Version) (map[string]VLANInterface, error) {
+func getVLANInterfaces(vlans []values.VLAN, version v.Branch) (map[string]VLANInterface, error) {
 	vlanInterfaces := make(map[string]VLANInterface)
 
 	for _, vlan := range vlans {
 		var vlanInterface VLANInterface
 
-		if version.Branch != string(v.Branch202211) && vlan.SAG != nil {
+		if version != v.Branch202211 && vlan.SAG != nil {
 			return nil, fmt.Errorf("sag only works for sonic builds from branch ec202211_ecsonic")
 		}
 		var sag string
@@ -583,14 +583,14 @@ func getVLANMembers(vlans []values.VLAN) map[string]VLANMember {
 	return vlanMembers
 }
 
-func getVRRPInterfaces(vlans []values.VLAN, version *v.Version) (map[string]VRRPInterface, error) {
+func getVRRPInterfaces(vlans []values.VLAN, version v.Branch) (map[string]VRRPInterface, error) {
 	vrrpInterfaces := make(map[string]VRRPInterface)
 	for _, vlan := range vlans {
 		if vlan.VRRP.Group == "" {
 			continue
 		}
 
-		if version.Branch != string(v.Branch202111) {
+		if version != v.Branch202111 {
 			return nil, fmt.Errorf("vrrp configuration only works with sonic versions from the ec202111 branch")
 		}
 
