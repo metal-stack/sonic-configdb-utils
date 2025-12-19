@@ -21,7 +21,6 @@ var generateCmd = &cobra.Command{
 		deviceDir, _ := cmd.Flags().GetString("device-dir")
 		sonicEnvFile, _ := cmd.Flags().GetString("env-file")
 		sonicVersionFile, _ := cmd.Flags().GetString("version-file")
-		platformFile, _ := cmd.Flags().GetString("platform-file")
 
 		env, err := p.GetEnvironment(sonicEnvFile)
 		if err != nil {
@@ -38,19 +37,6 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to parse input file: %w", err)
 		}
 
-		if platformFile == "" {
-			platformFile = fmt.Sprintf("%s/%s/platform.json", deviceDir, env.Platform)
-		}
-		platformBytes, err := os.ReadFile(platformFile)
-		if err != nil {
-			return fmt.Errorf("failed to read platform.json file: %w", err)
-		}
-
-		platform, err := p.UnmarshalPlatformJSON(platformBytes)
-		if err != nil {
-			return fmt.Errorf("failed to parse platform.json: %w", err)
-		}
-
 		versionBytes, err := os.ReadFile(sonicVersionFile)
 		if err != nil {
 			return fmt.Errorf("failed to read version file: %w", err)
@@ -61,7 +47,8 @@ var generateCmd = &cobra.Command{
 			return fmt.Errorf("failed to parse version file: %w", err)
 		}
 
-		configDB, err := configdb.GenerateConfigDB(values, platform, env, version)
+		platformFile := fmt.Sprintf("%s/%s/platform.json", deviceDir, env.Platform)
+		configDB, err := configdb.GenerateConfigDB(values, platformFile, env, version)
 		if err != nil {
 			return fmt.Errorf("failed to generate config: %w", err)
 		}
@@ -87,6 +74,5 @@ func init() {
 	generateCmd.Flags().StringP("output-file", "o", "config_db.json", "path to output file")
 	generateCmd.Flags().String("device-dir", "/usr/share/sonic/device", "directory which holds all device-specific files")
 	generateCmd.Flags().StringP("env-file", "e", "/etc/sonic/sonic-environment", "sonic-environment file holding platform information")
-	generateCmd.Flags().StringP("platform-file", "p", "", "path to platform.json")
 	generateCmd.Flags().StringP("version-file", "v", "/etc/sonic/sonic_version.yml", "sonic version file")
 }

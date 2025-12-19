@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"os"
 	"slices"
 	"strconv"
 
@@ -45,17 +46,32 @@ type ConfigDB struct {
 	VXLANTunnelMap     VXLANTunnelMap              `json:"VXLAN_TUNNEL_MAP,omitempty"`
 }
 
-func GenerateConfigDB(input *values.Values, platform *p.Platform, environment *p.Environment, version *v.Version) (*ConfigDB, error) {
+func GenerateConfigDB(input *values.Values, platformFile string, environment *p.Environment, version *v.Version) (*ConfigDB, error) {
 	if input == nil {
 		return nil, fmt.Errorf("no input values provided")
 	}
-	if platform == nil {
-		return nil, fmt.Errorf("no platform information provided")
-	}
 
-	ports, breakouts, err := getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
-	if err != nil {
-		return nil, err
+	var (
+		ports     map[string]Port
+		breakouts map[string]BreakoutConfig
+		err       error
+	)
+
+	if input.Ports != nil || input.Breakouts != nil {
+		platformBytes, err := os.ReadFile(platformFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read platform.json file: %w", err)
+		}
+
+		platform, err := p.UnmarshalPlatformJSON(platformBytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse platform.json: %w", err)
+		}
+
+		ports, breakouts, err = getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	deviceMetadata, err := getDeviceMetadata(input, environment)
@@ -242,7 +258,7 @@ func getFeatures(features map[string]values.Feature) map[string]Feature {
 	return configFeatures
 }
 
-func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
+func getInterfaces(ports *values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
 	for _, port := range bgpPorts {
@@ -250,6 +266,19 @@ func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[stri
 			IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
 		}
 		interfaces[port] = intf
+	}
+
+	for _, interconnect := range interconnects {
+		for _, intf := range interconnect.UnnumberedInterfaces {
+			interfaces[intf] = Interface{
+				IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+				VRFName:              interconnect.VRF,
+			}
+		}
+	}
+
+	if ports == nil {
+		return interfaces
 	}
 
 	for _, port := range ports.List {
@@ -269,15 +298,6 @@ func getInterfaces(ports values.Ports, bgpPorts []string, interconnects map[stri
 		for _, ip := range port.IPs {
 			intf = Interface{}
 			interfaces[port.Name+"|"+ip] = intf
-		}
-	}
-
-	for _, interconnect := range interconnects {
-		for _, intf := range interconnect.UnnumberedInterfaces {
-			interfaces[intf] = Interface{
-				IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
-				VRFName:              interconnect.VRF,
-			}
 		}
 	}
 
@@ -439,7 +459,7 @@ func getPortChannelMembers(portchannels []values.PortChannel) map[string]struct{
 	return portchannelMembers
 }
 
-func getPortsAndBreakouts(ports values.Ports, breakouts map[string]string, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
+func getPortsAndBreakouts(ports *values.Ports, breakouts map[string]string, platform *p.Platform) (map[string]Port, map[string]BreakoutConfig, error) {
 	configPorts := make(map[string]Port)
 	configBreakouts := make(map[string]BreakoutConfig)
 
@@ -627,23 +647,13 @@ func getVLANSubinterfaces(subinterfaces []values.VLANSubinterface) map[string]VL
 	return vlanSubinterfaces
 }
 
-func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, vlans []values.VLAN) map[string]VRF {
+func getVRFs(interconnects map[string]values.Interconnect, ports *values.Ports, vlans []values.VLAN) map[string]VRF {
 	vrfs := make(map[string]VRF)
 
 	for _, interconnect := range interconnects {
 		vrfs[interconnect.VRF] = VRF{
 			VNI: interconnect.VNI,
 		}
-	}
-
-	for _, port := range ports.List {
-		if port.VRF == "" {
-			continue
-		}
-		if _, ok := vrfs[port.VRF]; ok {
-			continue
-		}
-		vrfs[port.VRF] = VRF{}
 	}
 
 	for _, vlan := range vlans {
@@ -654,6 +664,20 @@ func getVRFs(interconnects map[string]values.Interconnect, ports values.Ports, v
 			continue
 		}
 		vrfs[vlan.VRF] = VRF{}
+	}
+
+	if ports == nil {
+		return vrfs
+	}
+
+	for _, port := range ports.List {
+		if port.VRF == "" {
+			continue
+		}
+		if _, ok := vrfs[port.VRF]; ok {
+			continue
+		}
+		vrfs[port.VRF] = VRF{}
 	}
 
 	return vrfs
