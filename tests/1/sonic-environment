@@ -1,2 +1,2 @@
-PLATFORM=x86_64-accton_as7726_32x-r0
-HWSKU=Accton-AS7726-32X
+	PLATFORM=x86_64-accton_as7726_32x-r0
+    HWSKU=Accton-AS7726-32X

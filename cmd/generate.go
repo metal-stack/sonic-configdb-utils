@@ -25,19 +25,17 @@ var generateCmd = &cobra.Command{
 
 		env, err := p.GetEnvironment(sonicEnvFile)
 		if err != nil {
-			return fmt.Errorf("failed to get environment information:%w", err)
+			return fmt.Errorf("failed to get environment information: %w", err)
 		}
 
 		inputBytes, err := os.ReadFile(inputFile)
 		if err != nil {
-			fmt.Printf("failed to read input file, %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("failed to read input file: %w", err)
 		}
 
 		values, err := values.UnmarshalValues(inputBytes)
 		if err != nil {
-			fmt.Printf("failed to parse input file, %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("failed to parse input file: %w", err)
 		}
 
 		if platformFile == "" {
@@ -45,37 +43,37 @@ var generateCmd = &cobra.Command{
 		}
 		platformBytes, err := os.ReadFile(platformFile)
 		if err != nil {
-			return fmt.Errorf("failed to read platform.json file:%w", err)
+			return fmt.Errorf("failed to read platform.json file: %w", err)
 		}
 
 		platform, err := p.UnmarshalPlatformJSON(platformBytes)
 		if err != nil {
-			return fmt.Errorf("failed to parse platform.json:%w", err)
+			return fmt.Errorf("failed to parse platform.json: %w", err)
 		}
 
 		versionBytes, err := os.ReadFile(sonicVersionFile)
 		if err != nil {
-			return fmt.Errorf("failed to read version file:%w", err)
+			return fmt.Errorf("failed to read version file: %w", err)
 		}
 
 		version, err := v.UnmarshalVersion(versionBytes)
 		if err != nil {
-			return fmt.Errorf("failed to parse version file:%w", err)
+			return fmt.Errorf("failed to parse version file: %w", err)
 		}
 
 		configDB, err := configdb.GenerateConfigDB(values, platform, env, version)
 		if err != nil {
-			return fmt.Errorf("failed to generate config:%w", err)
+			return fmt.Errorf("failed to generate config: %w", err)
 		}
 
 		configDBBytes, err := json.MarshalIndent(configDB, "", "  ")
 		if err != nil {
-			return fmt.Errorf("failed to serialize json:%w", err)
+			return fmt.Errorf("failed to serialize json: %w", err)
 		}
 
 		err = os.WriteFile(outputFile, configDBBytes, 0644) //nolint:gosec
 		if err != nil {
-			return fmt.Errorf("failed to write file:%w", err)
+			return fmt.Errorf("failed to write file: %w", err)
 		}
 
 		return nil
