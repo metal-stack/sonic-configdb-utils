@@ -57,7 +57,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		err       error
 	)
 
-	if input.Ports != nil || input.Breakouts != nil {
+	if input.Ports != nil || len(input.Breakouts) > 0 {
 		platformBytes, err := os.ReadFile(platformFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read platform.json file: %w", err)
