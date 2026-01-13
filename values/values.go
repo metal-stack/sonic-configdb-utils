@@ -105,7 +105,7 @@ type Values struct {
 	Nameservers             []string                `yaml:"nameservers"`
 	NTP                     NTP                     `yaml:"ntp"`
 	PortChannels            PortChannels            `yaml:"portchannels"`
-	Ports                   Ports                   `yaml:"ports"`
+	Ports                   *Ports                  `yaml:"ports"`
 	SAG                     *SAG                    `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
