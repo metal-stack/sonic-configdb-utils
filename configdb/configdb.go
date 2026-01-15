@@ -464,10 +464,12 @@ func getPortsAndBreakouts(ports *values.Ports, breakouts map[string]string, plat
 	configBreakouts := make(map[string]BreakoutConfig)
 
 	defaultBreakouts := platform.GetDefaultBreakoutConfig()
-	defaults := portDefaults{
-		autoneg: AutonegMode(ports.DefaultAutoneg),
-		fec:     FECMode(ports.DefaultFEC),
-		mtu:     ports.DefaultMTU,
+	defaults := portDefaults{}
+
+	if ports != nil {
+		defaults.autoneg = AutonegMode(ports.DefaultAutoneg)
+		defaults.fec = FECMode(ports.DefaultFEC)
+		defaults.mtu = ports.DefaultMTU
 	}
 
 	for portName, breakout := range defaultBreakouts {
@@ -492,6 +494,10 @@ func getPortsAndBreakouts(ports *values.Ports, breakouts map[string]string, plat
 		configBreakouts[portName] = BreakoutConfig{
 			BreakoutMode: breakout,
 		}
+	}
+
+	if ports == nil {
+		return configPorts, configBreakouts, nil
 	}
 
 	for _, port := range ports.List {

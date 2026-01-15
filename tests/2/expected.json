@@ -113,8 +113,6 @@
     "8.8.8.8": {}
   },
   "INTERFACE": {
-    "Ethernet0": {},
-    "Ethernet0|10.4.3.2": {},
     "Ethernet120": {
       "ipv6_use_link_local_only": "enable"
     },
@@ -122,8 +120,7 @@
       "ipv6_use_link_local_only": "enable"
     },
     "Ethernet48": {
-      "ipv6_use_link_local_only": "enable",
-      "vrf_name": "Vrf42"
+      "ipv6_use_link_local_only": "enable"
     }
   },
   "LOOPBACK_INTERFACE": {
@@ -160,25 +157,22 @@
     "Ethernet0": {
       "admin_status": "up",
       "alias": "Eth1/1(Port1)",
-      "fec": "rs",
       "index": "1",
       "lanes": "1",
-      "mtu": "1500",
+      "mtu": "9000",
       "speed": "25000"
     },
     "Ethernet1": {
       "admin_status": "up",
       "alias": "Eth1/2(Port1)",
-      "fec": "none",
       "index": "1",
       "lanes": "2",
-      "mtu": "1500",
+      "mtu": "9000",
       "speed": "25000"
     },
     "Ethernet100": {
       "admin_status": "up",
       "alias": "Eth26(Port26)",
-      "fec": "none",
       "index": "26",
       "lanes": "101,102,103,104",
       "mtu": "9000",
@@ -187,7 +181,6 @@
     "Ethernet104": {
       "admin_status": "up",
       "alias": "Eth27(Port27)",
-      "fec": "none",
       "index": "27",
       "lanes": "105,106,107,108",
       "mtu": "9000",
@@ -196,7 +189,6 @@
     "Ethernet108": {
       "admin_status": "up",
       "alias": "Eth28(Port28)",
-      "fec": "none",
       "index": "28",
       "lanes": "109,110,111,112",
       "mtu": "9000",
@@ -205,7 +197,6 @@
     "Ethernet112": {
       "admin_status": "up",
       "alias": "Eth29(Port29)",
-      "fec": "none",
       "index": "29",
       "lanes": "113,114,115,116",
       "mtu": "9000",
@@ -214,7 +205,6 @@
     "Ethernet116": {
       "admin_status": "up",
       "alias": "Eth30(Port30)",
-      "fec": "none",
       "index": "30",
       "lanes": "117,118,119,120",
       "mtu": "9000",
@@ -223,7 +213,6 @@
     "Ethernet12": {
       "admin_status": "up",
       "alias": "Eth4(Port4)",
-      "fec": "none",
       "index": "4",
       "lanes": "13,14,15,16",
       "mtu": "9000",
@@ -232,7 +221,6 @@
     "Ethernet120": {
       "admin_status": "up",
       "alias": "Eth31(Port31)",
-      "fec": "none",
       "index": "31",
       "lanes": "121,122,123,124",
       "mtu": "9000",
@@ -241,7 +229,6 @@
     "Ethernet124": {
       "admin_status": "up",
       "alias": "Eth32(Port32)",
-      "fec": "none",
       "index": "32",
       "lanes": "125,126,127,128",
       "mtu": "9000",
@@ -250,7 +237,6 @@
     "Ethernet16": {
       "admin_status": "up",
       "alias": "Eth5(Port5)",
-      "fec": "none",
       "index": "5",
       "lanes": "17,18,19,20",
       "mtu": "9000",
@@ -259,7 +245,6 @@
     "Ethernet2": {
       "admin_status": "up",
       "alias": "Eth1/3(Port1)",
-      "fec": "none",
       "index": "1",
       "lanes": "3",
       "mtu": "9000",
@@ -268,7 +253,6 @@
     "Ethernet20": {
       "admin_status": "up",
       "alias": "Eth6(Port6)",
-      "fec": "none",
       "index": "6",
       "lanes": "21,22,23,24",
       "mtu": "9000",
@@ -277,7 +261,6 @@
     "Ethernet24": {
       "admin_status": "up",
       "alias": "Eth7(Port7)",
-      "fec": "none",
       "index": "7",
       "lanes": "25,26,27,28",
       "mtu": "9000",
@@ -286,7 +269,6 @@
     "Ethernet28": {
       "admin_status": "up",
       "alias": "Eth8(Port8)",
-      "fec": "none",
       "index": "8",
       "lanes": "29,30,31,32",
       "mtu": "9000",
@@ -295,7 +277,6 @@
     "Ethernet3": {
       "admin_status": "up",
       "alias": "Eth1/4(Port1)",
-      "fec": "none",
       "index": "1",
       "lanes": "4",
       "mtu": "9000",
@@ -304,7 +285,6 @@
     "Ethernet32": {
       "admin_status": "up",
       "alias": "Eth9(Port9)",
-      "fec": "none",
       "index": "9",
       "lanes": "33,34,35,36",
       "mtu": "9000",
@@ -313,7 +293,6 @@
     "Ethernet36": {
       "admin_status": "up",
       "alias": "Eth10(Port10)",
-      "fec": "none",
       "index": "10",
       "lanes": "37,38,39,40",
       "mtu": "9000",
@@ -322,16 +301,14 @@
     "Ethernet4": {
       "admin_status": "up",
       "alias": "Eth2(Port2)",
-      "fec": "none",
       "index": "2",
       "lanes": "5,6,7,8",
-      "mtu": "1500",
+      "mtu": "9000",
       "speed": "100000"
     },
     "Ethernet40": {
       "admin_status": "up",
       "alias": "Eth11(Port11)",
-      "fec": "none",
       "index": "11",
       "lanes": "41,42,43,44",
       "mtu": "9000",
@@ -340,7 +317,6 @@
     "Ethernet44": {
       "admin_status": "up",
       "alias": "Eth12(Port12)",
-      "fec": "none",
       "index": "12",
       "lanes": "45,46,47,48",
       "mtu": "9000",
@@ -349,7 +325,6 @@
     "Ethernet48": {
       "admin_status": "up",
       "alias": "Eth13(Port13)",
-      "fec": "none",
       "index": "13",
       "lanes": "49,50,51,52",
       "mtu": "9000",
@@ -358,7 +333,6 @@
     "Ethernet52": {
       "admin_status": "up",
       "alias": "Eth14(Port14)",
-      "fec": "none",
       "index": "14",
       "lanes": "53,54,55,56",
       "mtu": "9000",
@@ -367,7 +341,6 @@
     "Ethernet56": {
       "admin_status": "up",
       "alias": "Eth15(Port15)",
-      "fec": "none",
       "index": "15",
       "lanes": "57,58,59,60",
       "mtu": "9000",
@@ -376,7 +349,6 @@
     "Ethernet60": {
       "admin_status": "up",
       "alias": "Eth16(Port16)",
-      "fec": "none",
       "index": "16",
       "lanes": "61,62,63,64",
       "mtu": "9000",
@@ -385,7 +357,6 @@
     "Ethernet64": {
       "admin_status": "up",
       "alias": "Eth17(Port17)",
-      "fec": "none",
       "index": "17",
       "lanes": "65,66,67,68",
       "mtu": "9000",
@@ -394,7 +365,6 @@
     "Ethernet68": {
       "admin_status": "up",
       "alias": "Eth18(Port18)",
-      "fec": "none",
       "index": "18",
       "lanes": "69,70,71,72",
       "mtu": "9000",
@@ -403,7 +373,6 @@
     "Ethernet72": {
       "admin_status": "up",
       "alias": "Eth19(Port19)",
-      "fec": "none",
       "index": "19",
       "lanes": "73,74,75,76",
       "mtu": "9000",
@@ -412,7 +381,6 @@
     "Ethernet76": {
       "admin_status": "up",
       "alias": "Eth20(Port20)",
-      "fec": "none",
       "index": "20",
       "lanes": "77,78,79,80",
       "mtu": "9000",
@@ -421,7 +389,6 @@
     "Ethernet8": {
       "admin_status": "up",
       "alias": "Eth3(Port3)",
-      "fec": "none",
       "index": "3",
       "lanes": "9,10,11,12",
       "mtu": "9000",
@@ -430,7 +397,6 @@
     "Ethernet80": {
       "admin_status": "up",
       "alias": "Eth21(Port21)",
-      "fec": "none",
       "index": "21",
       "lanes": "81,82,83,84",
       "mtu": "9000",
@@ -439,7 +405,6 @@
     "Ethernet84": {
       "admin_status": "up",
       "alias": "Eth22(Port22)",
-      "fec": "none",
       "index": "22",
       "lanes": "85,86,87,88",
       "mtu": "9000",
@@ -448,7 +413,6 @@
     "Ethernet88": {
       "admin_status": "up",
       "alias": "Eth23(Port23)",
-      "fec": "none",
       "index": "23",
       "lanes": "89,90,91,92",
       "mtu": "9000",
@@ -457,7 +421,6 @@
     "Ethernet92": {
       "admin_status": "up",
       "alias": "Eth24(Port24)",
-      "fec": "none",
       "index": "24",
       "lanes": "93,94,95,96",
       "mtu": "9000",
@@ -466,7 +429,6 @@
     "Ethernet96": {
       "admin_status": "up",
       "alias": "Eth25(Port25)",
-      "fec": "none",
       "index": "25",
       "lanes": "97,98,99,100",
       "mtu": "9000",
@@ -489,9 +451,6 @@
     "Vlan4000": {},
     "Vlan4000|10.9.7.0": {},
     "Vlan4001": {}
-  },
-  "VRF": {
-    "Vrf42": {}
   },
   "VXLAN_EVPN_NVO": {
     "nvo": {
