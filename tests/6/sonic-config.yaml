@@ -1,0 +1,17 @@
+hostname: leaf-sflow
+sflow:
+  enabled: true
+  polling_interval: 2
+  collectors:
+    - name: collector1
+      ip: 10.0.0.1
+      port: 6343
+    - name: collector2
+      ip: 10.0.0.2
+      vrf: mgmt
+  sessions:
+    - interface: Ethernet0
+      enabled: false
+      sample_rate: 1024
+    - interface: Ethernet4
+      sample_rate: 2048
