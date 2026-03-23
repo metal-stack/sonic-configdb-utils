@@ -609,3 +609,118 @@ func Test_getSAG(t *testing.T) {
 		})
 	}
 }
+
+func Test_getSFLOW(t *testing.T) {
+	bFalse := false
+	tests := []struct {
+		name			string
+		sflow			*values.SFLOW
+		wantGlobal 		map[string]SFLOWGlobal
+		wantCollector 	map[string]SFLOWCollector
+		wantSessions 	map[string]SFLOWSession
+		wantErr 		bool
+	}{
+		{
+			name: "nil input",
+			sflow: nil,
+		},
+		{
+			name: "disabled",
+			sflow: &values.SFLOW{Enabled: false},
+		},
+		{
+			name: "collector with empty name",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				Collectors: []values.SFLOWCollector{{IP: "172.17.0.1" }},
+			},
+			wantErr: true,
+		},
+		{
+			name: "collector with empty ip",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				Collectors: []values.SFLOWCollector{{Name: "goflow2" }},
+			},
+			wantErr: true,
+		},
+		{
+			name: "enabled with default port",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				PollingInterval: 20,
+				Collectors: []values.SFLOWCollector{
+					{Name: "goflow2", IP: "172.17.0.1", VRF: "default" },
+				},
+			},
+			wantGlobal: map[string]SFLOWGlobal{
+				"global": {AdminStatus: AdminStatusUp, PollingInterval: "20"},
+			},
+			wantCollector: map[string]SFLOWCollector{
+				"goflow2": {CollectorIP: "172.17.0.1", CollectorPort: "6343", CollectorVRF: "default"},
+			},
+			wantSessions: map[string]SFLOWSession{},
+		},
+		{
+			name: "enabled with multiple collectors and sessions",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				PollingInterval: 20,
+				Collectors: []values.SFLOWCollector{
+					{Name: "primary", IP: "172.17.0.1", Port: 9999},
+					{Name: "backup", IP: "172.17.0.1", Port: 6343},
+				},
+				Sessions: []values.SFLOWSession{
+					{Interface: "Ethernet0", SampleRate: 1024},
+				},
+			},
+			wantGlobal: map[string]SFLOWGlobal{
+				"global": {AdminStatus: AdminStatusUp, PollingInterval: "20"},
+			},
+			wantCollector: map[string]SFLOWCollector{
+				"primary": {CollectorIP: "172.17.0.1", CollectorPort: "9999"},
+				"backup":  {CollectorIP: "172.17.0.1", CollectorPort: "6343"},
+			},
+			wantSessions: map[string]SFLOWSession{
+				"Ethernet0": {AdminStatus: AdminStatusUp, SampleRate: "1024"},
+			},
+		},
+		{
+			name: "low polling interval and disabled session",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				PollingInterval: 2,
+				Sessions: []values.SFLOWSession{
+					{Interface: "Ethernet0", Enabled: &bFalse},
+					{Interface: "Ethernet4"},
+				},
+			},
+			wantGlobal: map[string]SFLOWGlobal{
+				"global": {AdminStatus: AdminStatusUp, PollingInterval: "5"},
+			},
+			wantCollector: map[string]SFLOWCollector{},
+			wantSessions: map[string]SFLOWSession{
+				"Ethernet0": {AdminStatus: AdminStatusDown},
+				"Ethernet4": {AdminStatus: AdminStatusUp},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotGlobal, gotCollectors, gotSessions, err := getSFLOW(tt.sflow)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getSFLOW() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.wantGlobal, gotGlobal); diff != "" {
+				t.Errorf("getSFLOW() global diff = %s", diff)
+			}
+			if diff := cmp.Diff(tt.wantCollector, gotCollectors); diff != "" {
+				t.Errorf("getSFLOW() collector diff = %s", diff)
+			}
+			if diff := cmp.Diff(tt.wantSessions, gotSessions); diff != "" {
+				t.Errorf("getSFLOW() session diff = %s", diff)
+			}
+		})
+	}
+}
