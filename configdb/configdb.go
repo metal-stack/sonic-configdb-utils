@@ -13,11 +13,6 @@ import (
 	v "github.com/metal-stack/sonic-configdb-utils/version"
 )
 
-const (
-	defaultSFLOWCollectorPort   = 6343
-	minimumSFLOWPollingInterval = 5
-)
-
 type ConfigDB struct {
 	ACLRules           map[string]ACLRule          `json:"ACL_RULE,omitempty"`
 	ACLTables          map[string]ACLTable         `json:"ACL_TABLE,omitempty"`
