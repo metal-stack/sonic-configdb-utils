@@ -215,6 +215,11 @@ type SFLOWSession struct {
 	SampleRate	string	`json:"sample_rate,omitempty"`
 }
 
+const (
+	defaultSFLOWCollectorPort   int = 6343
+	minimumSFLOWPollingInterval int = 5
+)
+
 type TaggingMode string
 
 const (
