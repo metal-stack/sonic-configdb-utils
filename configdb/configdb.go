@@ -588,10 +588,7 @@ func getSFLOW(sflow *values.SFLOW) (map[string]SFLOWGlobal, map[string]SFLOWColl
 		}
 	}
 
-	pollingInterval := sflow.PollingInterval
-	if pollingInterval > 0 && pollingInterval < minimumSFLOWPollingInterval {
-		pollingInterval = minimumSFLOWPollingInterval
-	}
+	pollingInterval := max(sflow.PollingInterval, minimumSFLOWPollingInterval)
 
 	global := map[string]SFLOWGlobal{
 		"global": {
