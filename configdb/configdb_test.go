@@ -612,9 +612,12 @@ func Test_getSAG(t *testing.T) {
 
 func Test_getSFLOW(t *testing.T) {
 	bFalse := false
+	version202211 := &v.Version{Branch: string(v.Branch202211)}
+	version202111 := &v.Version{Branch: string(v.Branch202111)}
 	tests := []struct {
 		name			string
 		sflow			*values.SFLOW
+		version			*v.Version
 		wantGlobal 		map[string]SFLOWGlobal
 		wantCollector 	map[string]SFLOWCollector
 		wantSessions 	map[string]SFLOWSession
@@ -623,10 +626,12 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "nil input",
 			sflow: nil,
+			version: version202211,
 		},
 		{
 			name: "disabled",
 			sflow: &values.SFLOW{Enabled: false},
+			version: version202211,
 		},
 		{
 			name: "collector with empty name",
@@ -634,6 +639,7 @@ func Test_getSFLOW(t *testing.T) {
 				Enabled: true,
 				Collectors: []values.SFLOWCollector{{IP: "172.17.0.1" }},
 			},
+			version: version202211,
 			wantErr: true,
 		},
 		{
@@ -642,6 +648,7 @@ func Test_getSFLOW(t *testing.T) {
 				Enabled: true,
 				Collectors: []values.SFLOWCollector{{Name: "goflow2" }},
 			},
+			version: version202211,
 			wantErr: true,
 		},
 		{
@@ -653,6 +660,7 @@ func Test_getSFLOW(t *testing.T) {
 					{Name: "goflow2", IP: "172.17.0.1", VRF: "default" },
 				},
 			},
+			version: version202211,
 			wantGlobal: map[string]SFLOWGlobal{
 				"global": {AdminStatus: AdminStatusUp, PollingInterval: "20"},
 			},
@@ -674,6 +682,7 @@ func Test_getSFLOW(t *testing.T) {
 					{Interface: "Ethernet0", SampleRate: 1024},
 				},
 			},
+			version: version202211,
 			wantGlobal: map[string]SFLOWGlobal{
 				"global": {AdminStatus: AdminStatusUp, PollingInterval: "20"},
 			},
@@ -695,6 +704,7 @@ func Test_getSFLOW(t *testing.T) {
 					{Interface: "Ethernet4"},
 				},
 			},
+			version: version202211,
 			wantGlobal: map[string]SFLOWGlobal{
 				"global": {AdminStatus: AdminStatusUp, PollingInterval: "5"},
 			},
@@ -704,10 +714,45 @@ func Test_getSFLOW(t *testing.T) {
 				"Ethernet4": {AdminStatus: AdminStatusUp},
 			},
 		},
+		{
+			name: "202111 rejects collector_vrf",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				PollingInterval: 20,
+				Collectors: []values.SFLOWCollector{
+					{Name: "goflow2", IP: "172.17.0.1", VRF: "default"},
+				},
+			},
+			version: version202111,
+			wantErr: true,
+		},
+		{
+			name: "202111 without collector_vrf",
+			sflow: &values.SFLOW{
+				Enabled: true,
+				PollingInterval: 20,
+				Collectors: []values.SFLOWCollector{
+					{Name: "goflow2", IP: "172.17.0.1"},
+				},
+				Sessions: []values.SFLOWSession{
+					{Interface: "Ethernet0", SampleRate: 1024},
+				},
+			},
+			version: version202111,
+			wantGlobal: map[string]SFLOWGlobal{
+				"global": {AdminStatus: AdminStatusUp, PollingInterval: "20"},
+			},
+			wantCollector: map[string]SFLOWCollector{
+				"goflow2": {CollectorIP: "172.17.0.1", CollectorPort: "6343"},
+			},
+			wantSessions: map[string]SFLOWSession{
+				"Ethernet0": {AdminStatus: AdminStatusUp, SampleRate: "1024"},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotGlobal, gotCollectors, gotSessions, err := getSFLOW(tt.sflow)
+			gotGlobal, gotCollectors, gotSessions, err := getSFLOW(tt.sflow, tt.version)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getSFLOW() error = %v, wantErr %v", err, tt.wantErr)
 				return
