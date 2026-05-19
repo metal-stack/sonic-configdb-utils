@@ -509,11 +509,18 @@ func getPortsAndBreakouts(ports *values.Ports, breakouts map[string]string, plat
 		// error is ignored because the breakout gets parsed before and any error would have made the function return before reaching this line
 		speedOptions, _ := p.ParseSpeedOptions(configPort.parentBreakout)
 
-		if port.Speed != 0 && !slices.Contains(speedOptions[:], port.Speed) {
-			return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration %s only allows speed options %v", port.Speed, port.Name, configPort.parentBreakout, speedOptions)
+		var tmpPortSpeed int
+		if ports.DefaultSpeed != nil {
+			tmpPortSpeed = *ports.DefaultSpeed
 		}
 		if port.Speed != 0 {
-			configPort.Speed = fmt.Sprintf("%d", port.Speed)
+			tmpPortSpeed = port.Speed
+		}
+		if tmpPortSpeed != 0 {
+			if !slices.Contains(speedOptions[:], tmpPortSpeed) {
+				return nil, nil, fmt.Errorf("invalid speed %d for port %s; current breakout configuration %s only allows speed options %v", tmpPortSpeed, port.Name, configPort.parentBreakout, speedOptions)
+			}
+			configPort.Speed = fmt.Sprintf("%d", tmpPortSpeed)
 		}
 		if port.FECMode != "" {
 			configPort.FEC = FECMode(port.FECMode)

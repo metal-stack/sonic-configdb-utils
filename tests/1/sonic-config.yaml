@@ -72,6 +72,7 @@ portchannels:
 
 ports:
   default_mtu: 9000
+  default_speed: 25000
   default_autoneg: off
   list:
     - name: Ethernet0

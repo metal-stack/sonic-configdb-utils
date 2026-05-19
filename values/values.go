@@ -70,6 +70,7 @@ type Ports struct {
 	DefaultAutoneg AutonegMode `yaml:"default_autoneg"`
 	DefaultFEC     FECMode     `yaml:"default_fec"`
 	DefaultMTU     int         `yaml:"default_mtu"`
+	DefaultSpeed   *int        `yaml:"default_speed"`
 	List           []Port      `yaml:"list"`
 }
 
