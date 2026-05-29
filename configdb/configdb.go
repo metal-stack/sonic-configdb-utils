@@ -647,7 +647,9 @@ func getVLANSubinterfaces(subinterfaces []values.VLANSubinterface) map[string]VL
 		}
 
 		vlanSubinterfaces[fmt.Sprintf("%s.%s", sub.Port, sub.VLAN)] = newSubinterface
-		vlanSubinterfaces[fmt.Sprintf("%s.%s|%s", sub.Port, sub.VLAN, sub.CIDR)] = VLANSubinterface{}
+		for _, cidr := range sub.CIDRs {
+			vlanSubinterfaces[fmt.Sprintf("%s.%s|%s", sub.Port, sub.VLAN, cidr)] = VLANSubinterface{}
+		}
 	}
 
 	return vlanSubinterfaces

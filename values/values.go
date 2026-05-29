@@ -114,10 +114,10 @@ type Values struct {
 }
 
 type VLANSubinterface struct {
-	CIDR string `yaml:"cidr"`
-	Port string `yaml:"port"`
-	VLAN string `yaml:"vlan"`
-	VRF  string `yaml:"vrf"`
+	CIDRs []string `yaml:"cidrs"`
+	Port  string   `yaml:"port"`
+	VLAN  string   `yaml:"vlan"`
+	VRF   string   `yaml:"vrf"`
 }
 
 type VLAN struct {
