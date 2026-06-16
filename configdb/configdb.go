@@ -318,7 +318,8 @@ func getLLDP(interval int, version *v.Version) *LLDP {
 	case string(v.Branch202111):
 		global202111 := LLDPGlobal202111(global)
 		lldp.Global202111 = &global202111
-	case string(v.Branch202211):
+	case string(v.Branch202211), string(v.Branch202505):
+		// 202505 uses the same uppercase LLDP|GLOBAL table key as 202211.
 		global202211 := LLDPGlobal202211(global)
 		lldp.Global202211 = &global202211
 	default:

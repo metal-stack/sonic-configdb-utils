@@ -7,6 +7,7 @@ type Branch string
 const (
 	Branch202111 Branch = "ec202111"
 	Branch202211 Branch = "ec202211_ecsonic"
+	Branch202505 Branch = "202505"
 )
 
 type Version struct {
