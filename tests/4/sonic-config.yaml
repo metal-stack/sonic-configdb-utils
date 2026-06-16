@@ -19,7 +19,9 @@ sag:
   mac: bb:bb:bb:bb:bb:bb
 
 vlan_subinterfaces:
-  - cidr: 1.2.3.0/24
+  - cidrs:
+      - 1.2.3.0/24
+      - 1:2:3:4::1/64
     port: Ethernet0
     vlan: 1000
     vrf: Vrf45
