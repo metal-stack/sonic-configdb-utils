@@ -126,12 +126,12 @@ type VLANSubinterface struct {
 }
 
 type VLAN struct {
+	DHCPRelayServerVRF    string   `yaml:"dhcp_relay_server_vrf"`
+	DHCPRelaySrcInterface string   `yaml:"dhcp_relay_src_intf"`
 	DHCPServers           []string `yaml:"dhcp_servers"`
 	ID                    string   `yaml:"id"`
 	IP                    string   `yaml:"ip"`
 	SAG                   *bool    `yaml:"sag"`
-	DHCPRelayServerVRF    string   `yaml:"dhcp_relay_server_vrf"`
-	DHCPRelaySrcInterface string   `yaml:"dhcp_relay_src_intf"`
 	TaggedPorts           []string `yaml:"tagged_ports"`
 	UntaggedPorts         []string `yaml:"untagged_ports"`
 	VRF                   string   `yaml:"vrf"`
