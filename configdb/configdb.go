@@ -532,7 +532,7 @@ func getPortsAndBreakouts(ports *values.Ports, breakouts map[string]string, plat
 
 func getSAG(sag *values.SAG, version v.Branch) (*SAG, error) {
 	if version != v.Branch202211 && sag != nil {
-		return nil, fmt.Errorf("sag configuration only works with sonic versions from the ec202211_ecsonic branch")
+		return nil, fmt.Errorf("sag configuration only works with sonic versions from the %s branch", v.Branch202211)
 	}
 
 	if sag == nil || sag.MAC == "" {
@@ -566,7 +566,7 @@ func getVLANInterfaces(vlans []values.VLAN, version v.Branch) (map[string]VLANIn
 		var vlanInterface VLANInterface
 
 		if version != v.Branch202211 && vlan.SAG != nil {
-			return nil, fmt.Errorf("sag only works for sonic builds from branch ec202211_ecsonic")
+			return nil, fmt.Errorf("sag only works for sonic builds from branch %s", v.Branch202211)
 		}
 		var sag string
 		if vlan.SAG != nil {
@@ -617,7 +617,7 @@ func getVRRPInterfaces(vlans []values.VLAN, version v.Branch) (map[string]VRRPIn
 		}
 
 		if version != v.Branch202111 {
-			return nil, fmt.Errorf("vrrp configuration only works with sonic versions from the ec202111 branch")
+			return nil, fmt.Errorf("vrrp configuration only works with sonic versions from the %s branch", v.Branch202111)
 		}
 
 		vrrpInterfaces["Vrrp"+vlan.VRRP.Group+"-v4"] = VRRPInterface{
