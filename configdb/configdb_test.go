@@ -557,25 +557,21 @@ func Test_getSAG(t *testing.T) {
 	tests := []struct {
 		name    string
 		sag     *values.SAG
-		version *v.Version
+		version v.Branch
 		want    *SAG
 		wantErr bool
 	}{
 		{
-			name: "wrong version",
-			sag:  &values.SAG{},
-			version: &v.Version{
-				Branch: string(v.Branch202111),
-			},
+			name:    "wrong version",
+			sag:     &values.SAG{},
+			version: v.Branch202111,
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name: "empty mac",
-			sag:  &values.SAG{},
-			version: &v.Version{
-				Branch: string(v.Branch202211),
-			},
+			name:    "empty mac",
+			sag:     &values.SAG{},
+			version: v.Branch202211,
 			want:    nil,
 			wantErr: false,
 		},
@@ -584,9 +580,7 @@ func Test_getSAG(t *testing.T) {
 			sag: &values.SAG{
 				MAC: "11:11:11:11:11:11",
 			},
-			version: &v.Version{
-				Branch: string(v.Branch202211),
-			},
+			version: v.Branch202211,
 			want: &SAG{
 				SAGGlobal: SAGGlobal{
 					GatewayMAC: "11:11:11:11:11:11",
