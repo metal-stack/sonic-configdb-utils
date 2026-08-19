@@ -105,7 +105,7 @@ type Values struct {
 	Nameservers             []string                `yaml:"nameservers"`
 	NTP                     NTP                     `yaml:"ntp"`
 	PortChannels            PortChannels            `yaml:"portchannels"`
-	Ports                   Ports                   `yaml:"ports"`
+	Ports                   *Ports                  `yaml:"ports"`
 	SAG                     *SAG                    `yaml:"sag"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
@@ -114,10 +114,10 @@ type Values struct {
 }
 
 type VLANSubinterface struct {
-	CIDR string `yaml:"cidr"`
-	Port string `yaml:"port"`
-	VLAN string `yaml:"vlan"`
-	VRF  string `yaml:"vrf"`
+	CIDRs []string `yaml:"cidrs"`
+	Port  string   `yaml:"port"`
+	VLAN  string   `yaml:"vlan"`
+	VRF   string   `yaml:"vrf"`
 }
 
 type VLAN struct {

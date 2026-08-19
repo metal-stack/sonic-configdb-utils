@@ -34,6 +34,7 @@ func GetEnvironment(envFile string) (*Environment, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
+		line = strings.Trim(line, "\n\t ")
 		if p, ok := strings.CutPrefix(line, "PLATFORM="); ok {
 			platform = p
 		}

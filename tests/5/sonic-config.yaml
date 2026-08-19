@@ -14,14 +14,6 @@ ntp:
 
 ports:
   default_autoneg: on
-  list:
-    - name: Ethernet0
-    - name: Ethernet1
-    - name: Ethernet2
-    - name: Ethernet3
-    - name: Ethernet47
-    - name: Ethernet50
-    - name: Ethernet51
 
 vlans:
   - id: 1
