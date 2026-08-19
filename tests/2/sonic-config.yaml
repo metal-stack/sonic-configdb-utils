@@ -14,6 +14,12 @@ hostname: leaf01
 lldp_hello_time: 10
 loopback_address: 10.7.7.7
 
+interfaces:
+  Ethernet0.10:
+    ips:
+      - 172.16.0.1/32
+      - 10.0.0.1/30
+
 mclag: {}
 
 mgmt_interface:

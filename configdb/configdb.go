@@ -105,7 +105,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		DeviceMetadata:    *deviceMetadata,
 		DNSNameservers:    getDNSNameservers(input.Nameservers),
 		Features:          features,
-		Interfaces:        getInterfaces(input.Ports, input.BGPPorts, input.Interconnects),
+		Interfaces:        getInterfaces(input.Ports, input.BGPPorts, input.Interconnects, input.Interfaces),
 		LLDP:              getLLDP(input.LLDPHelloTime, version),
 		LoopbackInterface: getLoopbackInterface(input.LoopbackAddress),
 		MCLAGDomains:      getMCLAGDomains(input.MCLAG),
@@ -258,14 +258,13 @@ func getFeatures(features map[string]values.Feature) map[string]Feature {
 	return configFeatures
 }
 
-func getInterfaces(ports *values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect) map[string]Interface {
+func getInterfaces(ports *values.Ports, bgpPorts []string, interconnects map[string]values.Interconnect, ifs map[string]values.Interface) map[string]Interface {
 	interfaces := make(map[string]Interface)
 
 	for _, port := range bgpPorts {
-		intf := Interface{
+		interfaces[port] = Interface{
 			IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
 		}
-		interfaces[port] = intf
 	}
 
 	for _, interconnect := range interconnects {
@@ -277,18 +276,29 @@ func getInterfaces(ports *values.Ports, bgpPorts []string, interconnects map[str
 		}
 	}
 
+	for name, i := range ifs {
+		intf, ok := interfaces[name]
+		if !ok {
+			intf = Interface{}
+		}
+		for _, ip := range i.IPs {
+			interfaces[name+"|"+ip] = Interface{}
+		}
+		interfaces[name] = intf
+	}
+
 	if ports == nil {
 		return interfaces
 	}
 
 	for _, port := range ports.List {
-		if len(port.IPs) == 0 && port.VRF == "" && !slices.Contains(bgpPorts, port.Name) {
+		if len(port.IPs) == 0 && port.VRF == "" {
 			continue
 		}
 
-		intf := Interface{}
-		if slices.Contains(bgpPorts, port.Name) {
-			intf.IPv6UseLinkLocalOnly = IPv6UseLinkLocalOnlyModeEnable
+		intf, ok := interfaces[port.Name]
+		if !ok {
+			intf = Interface{}
 		}
 		if port.VRF != "" {
 			intf.VRFName = port.VRF
@@ -296,8 +306,7 @@ func getInterfaces(ports *values.Ports, bgpPorts []string, interconnects map[str
 		interfaces[port.Name] = intf
 
 		for _, ip := range port.IPs {
-			intf = Interface{}
-			interfaces[port.Name+"|"+ip] = intf
+			interfaces[port.Name+"|"+ip] = Interface{}
 		}
 	}
 
@@ -659,6 +668,9 @@ func getVRFs(interconnects map[string]values.Interconnect, ports *values.Ports, 
 	vrfs := make(map[string]VRF)
 
 	for _, interconnect := range interconnects {
+		if interconnect.VRF == "" {
+			continue
+		}
 		vrfs[interconnect.VRF] = VRF{
 			VNI: interconnect.VNI,
 		}

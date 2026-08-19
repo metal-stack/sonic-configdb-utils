@@ -36,6 +36,10 @@ type Interconnect struct {
 	VRF                  string   `yaml:"vrf"`
 }
 
+type Interface struct {
+	IPs []string `yaml:"ips"`
+}
+
 type MCLAG struct {
 	KeepaliveVLAN      string   `yaml:"keepalive_vlan"`
 	MemberPortChannels []string `yaml:"member_port_channels"`
@@ -97,6 +101,7 @@ type Values struct {
 	FRRMgmtFrameworkConfig  bool                    `yaml:"frr_mgmt_framework_config"`
 	Hostname                string                  `yaml:"hostname"`
 	Interconnects           map[string]Interconnect `yaml:"interconnects"`
+	Interfaces              map[string]Interface    `yaml:"interfaces"`
 	LLDPHelloTime           int                     `yaml:"lldp_hello_time"`
 	LoopbackAddress         string                  `yaml:"loopback_address"`
 	MCLAG                   MCLAG                   `yaml:"mclag"`

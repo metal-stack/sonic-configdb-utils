@@ -173,6 +173,9 @@
     "Ethernet124": {
       "ipv6_use_link_local_only": "enable"
     },
+    "Ethernet32": {
+      "ipv6_use_link_local_only": "enable"
+    },
     "Ethernet4": {
       "vrf_name": "VrfInternet"
     },
