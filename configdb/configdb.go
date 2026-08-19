@@ -560,8 +560,10 @@ func getVLANs(vlans []values.VLAN) map[string]VLAN {
 
 	for _, vlan := range vlans {
 		configVLANs["Vlan"+vlan.ID] = VLAN{
-			DHCPServers: vlan.DHCPServers,
-			VLANID:      vlan.ID,
+			DHCPServers:           vlan.DHCPServers,
+			VLANID:                vlan.ID,
+			DHCPRelayServerVRF:    vlan.DHCPRelayServerVRF,
+			DHCPRelaySrcInterface: vlan.DHCPRelaySrcInterface,
 		}
 	}
 
