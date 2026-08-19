@@ -207,8 +207,10 @@ const (
 )
 
 type VLAN struct {
-	DHCPServers []string `json:"dhcp_servers,omitempty"`
-	VLANID      string   `json:"vlanid,omitempty"`
+	DHCPRelayServerVRF    string   `json:"dhcp_relay_server_vrf,omitempty"`
+	DHCPRelaySrcInterface string   `json:"dhcp_relay_src_intf,omitempty"`
+	DHCPServers           []string `json:"dhcp_servers,omitempty"`
+	VLANID                string   `json:"vlanid,omitempty"`
 }
 
 type VLANInterface struct {
