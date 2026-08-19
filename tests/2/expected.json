@@ -113,6 +113,9 @@
     "8.8.8.8": {}
   },
   "INTERFACE": {
+    "Ethernet0.10": {},
+    "Ethernet0.10|10.0.0.1/30": {},
+    "Ethernet0.10|172.16.0.1/32": {},
     "Ethernet120": {
       "ipv6_use_link_local_only": "enable"
     },

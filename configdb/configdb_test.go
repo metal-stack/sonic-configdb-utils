@@ -17,6 +17,7 @@ func Test_getInterfaces(t *testing.T) {
 		ports         *values.Ports
 		bgpPorts      []string
 		interconnects map[string]values.Interconnect
+		interfaces    map[string]values.Interface
 		want          map[string]Interface
 	}{
 		{
@@ -184,10 +185,80 @@ func Test_getInterfaces(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "port with ip in interconnects",
+			ports: &values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+						IPs:  []string{"10.0.0.1/32"},
+					},
+				},
+			},
+			interconnects: map[string]values.Interconnect{
+				"internal": {
+					UnnumberedInterfaces: []string{"Ethernet0"},
+					VRF:                  "internal",
+				},
+			},
+			want: map[string]Interface{
+				"Ethernet0": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+					VRFName:              "internal",
+				},
+				"Ethernet0|10.0.0.1/32": {},
+			},
+		},
+		{
+			name: "additional interfaces with ips",
+			interfaces: map[string]values.Interface{
+				"Ethernet50.10": {
+					IPs: []string{
+						"172.16.0.1/32",
+						"10.1.1.1/32",
+					},
+				},
+			},
+			want: map[string]Interface{
+				"Ethernet50.10":               {},
+				"Ethernet50.10|172.16.0.1/32": {},
+				"Ethernet50.10|10.1.1.1/32":   {},
+			},
+		},
+		{
+			name: "additional ips for existing interface entry",
+			ports: &values.Ports{
+				List: []values.Port{
+					{
+						Name: "Ethernet0",
+						IPs:  []string{"10.0.0.1/32"},
+					},
+				},
+			},
+			interconnects: map[string]values.Interconnect{
+				"internal": {
+					UnnumberedInterfaces: []string{"Ethernet0"},
+					VRF:                  "internal",
+				},
+			},
+			interfaces: map[string]values.Interface{
+				"Ethernet0": {
+					IPs: []string{"172.16.0.1/32"},
+				},
+			},
+			want: map[string]Interface{
+				"Ethernet0": {
+					IPv6UseLinkLocalOnly: IPv6UseLinkLocalOnlyModeEnable,
+					VRFName:              "internal",
+				},
+				"Ethernet0|10.0.0.1/32":   {},
+				"Ethernet0|172.16.0.1/32": {},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getInterfaces(tt.ports, tt.bgpPorts, tt.interconnects)
+			got := getInterfaces(tt.ports, tt.bgpPorts, tt.interconnects, tt.interfaces)
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("getInterfaces() %v", diff)
 			}

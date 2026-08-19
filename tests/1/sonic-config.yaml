@@ -15,6 +15,9 @@ features:
 frr_mgmt_framework_config: false
 
 interconnects:
+  default:
+    unnumbered_interfaces:
+      - Ethernet32
   mpls:
     vni: 104010
     vrf: VrfMpls
