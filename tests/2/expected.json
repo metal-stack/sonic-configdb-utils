@@ -440,6 +440,7 @@
   },
   "VLAN": {
     "Vlan4000": {
+      "dhcp_relay_src_intf": "Vlan4000",
       "dhcp_servers": [
         "10.9.8.7",
         "10.9.8.6"
@@ -448,21 +449,12 @@
     },
     "Vlan4001": {
       "vlanid": "4001"
-    },
-    "Vlan4002": {
-      "dhcp_relay_server_vrf": "VrfMgmt",
-      "dhcp_relay_src_intf": "Vlan4002",
-      "dhcp_servers": [
-        "10.10.0.1"
-      ],
-      "vlanid": "4002"
     }
   },
   "VLAN_INTERFACE": {
     "Vlan4000": {},
     "Vlan4000|10.9.7.0": {},
-    "Vlan4001": {},
-    "Vlan4002": {}
+    "Vlan4001": {}
   },
   "VXLAN_EVPN_NVO": {
     "nvo": {

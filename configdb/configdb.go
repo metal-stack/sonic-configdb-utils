@@ -558,13 +558,17 @@ func getSAG(sag *values.SAG, version v.Branch) (*SAG, error) {
 func getVLANs(vlans []values.VLAN) map[string]VLAN {
 	configVLANs := make(map[string]VLAN)
 
-	for _, vlan := range vlans {
-		configVLANs["Vlan"+vlan.ID] = VLAN{
-			DHCPServers:           vlan.DHCPServers,
-			VLANID:                vlan.ID,
-			DHCPRelayServerVRF:    vlan.DHCPRelayServerVRF,
-			DHCPRelaySrcInterface: vlan.DHCPRelaySrcInterface,
+	for _, v := range vlans {
+		vlanName := "Vlan" + v.ID
+		vlan := VLAN{
+			DHCPServers: v.DHCPServers,
+			VLANID:      v.ID,
 		}
+		if len(v.DHCPServers) > 0 {
+			vlan.DHCPRelaySrcInterface = vlanName
+			vlan.DHCPRelayServerVRF = v.VRF
+		}
+		configVLANs[vlanName] = vlan
 	}
 
 	return configVLANs
