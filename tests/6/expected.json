@@ -1,0 +1,62 @@
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "frr_mgmt_framework_config": "false",
+      "hostname": "leaf-sflow",
+      "hwsku": "Accton-AS7726-32X",
+      "mac": "aa:aa:aa:aa:aa:aa",
+      "platform": "x86_64-accton_as7726_32x-r0",
+      "type": "LeafRouter"
+    }
+  },
+  "FEATURE": {
+    "sflow": {
+      "auto_restart": "enabled",
+      "state": "enabled"
+    }
+  },
+  "MGMT_PORT": {
+    "eth0": {
+      "admin_status": "up",
+      "alias": "eth0",
+      "description": "Management Port"
+    }
+  },
+  "MGMT_VRF_CONFIG": {
+    "vrf_global": {
+      "mgmtVrfEnabled": "false"
+    }
+  },
+  "NTP": {
+    "global": {
+      "src_intf": "eth0"
+    }
+  },
+  "SFLOW": {
+    "global": {
+      "admin_state": "up",
+      "polling_interval": "5"
+    }
+  },
+  "SFLOW_COLLECTOR": {
+    "collector1": {
+      "collector_ip": "10.0.0.1",
+      "collector_port": "6343"
+    },
+    "collector2": {
+      "collector_ip": "10.0.0.2",
+      "collector_port": "6343",
+      "collector_vrf": "mgmt"
+    }
+  },
+  "SFLOW_SESSION": {
+    "Ethernet0": {
+      "admin_state": "down",
+      "sample_rate": "1024"
+    },
+    "Ethernet4": {
+      "admin_state": "up",
+      "sample_rate": "2048"
+    }
+  }
+}

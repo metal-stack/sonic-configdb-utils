@@ -35,6 +35,9 @@ type ConfigDB struct {
 	PortChannels       map[string]PortChannel      `json:"PORTCHANNEL,omitempty"`
 	PortChannelMembers map[string]struct{}         `json:"PORTCHANNEL_MEMBER,omitempty"`
 	SAG                *SAG                        `json:"SAG,omitempty"`
+	SFLOW              map[string]SFLOWGlobal      `json:"SFLOW,omitempty"`
+	SFLOWCollector     map[string]SFLOWCollector   `json:"SFLOW_COLLECTOR,omitempty"`
+	SFLOWSession       map[string]SFLOWSession     `json:"SFLOW_SESSION,omitempty"`
 	VLANs              map[string]VLAN             `json:"VLAN,omitempty"`
 	VLANInterfaces     map[string]VLANInterface    `json:"VLAN_INTERFACE,omitempty"`
 	VLANMembers        map[string]VLANMember       `json:"VLAN_MEMBER,omitempty"`
@@ -80,10 +83,23 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 	}
 
 	features := getFeatures(input.Features)
+	if input.SFLOW != nil && input.SFLOW.Enabled {
+		if _, ok := features["sflow"]; !ok {
+			features["sflow"] = Feature{
+				AutoRestart: FeatureModeEnabled,
+				State:       FeatureModeEnabled,
+			}
+		}
+	}
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
 	sag, err := getSAG(input.SAG, version)
+	if err != nil {
+		return nil, err
+	}
+
+	sflow, sflowCollectors, sflowSessions, err := getSFLOW(input.SFLOW, version)
 	if err != nil {
 		return nil, err
 	}
@@ -131,6 +147,9 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		PortChannels:       getPortChannels(input.PortChannels),
 		PortChannelMembers: getPortChannelMembers(input.PortChannels.List),
 		SAG:                sag,
+		SFLOW:              sflow,
+		SFLOWCollector:     sflowCollectors,
+		SFLOWSession:       sflowSessions,
 		VLANs:              getVLANs(input.VLANs),
 		VLANInterfaces:     vlanInterfaces,
 		VLANMembers:        getVLANMembers(input.VLANs),
@@ -553,6 +572,63 @@ func getSAG(sag *values.SAG, version v.Branch) (*SAG, error) {
 			GatewayMAC: sag.MAC,
 		},
 	}, nil
+}
+
+func getSFLOW(sflow *values.SFLOW, version *v.Version) (map[string]SFLOWGlobal, map[string]SFLOWCollector, map[string]SFLOWSession, error) {
+	if sflow == nil || !sflow.Enabled {
+		return nil, nil, nil, nil
+	}
+
+	for _, c := range sflow.Collectors {
+		if c.Name == "" {
+			return nil, nil, nil, fmt.Errorf("sflow collector name must not be empty")
+		}
+		if c.IP == "" {
+			return nil, nil, nil, fmt.Errorf("sflow collector %q: ip must not be empty", c.Name)
+		}
+		if c.VRF != "" && version.Branch == string(v.Branch202111) {
+			return nil, nil, nil, fmt.Errorf("sflow collector %q: collector_vrf is not supported on the ec202111 branch", c.Name)
+		}
+	}
+
+	pollingInterval := max(sflow.PollingInterval, minimumSFLOWPollingInterval)
+
+	global := map[string]SFLOWGlobal{
+		"global": {
+			AdminStatus:     defaultAdminStatus,
+			PollingInterval: strconv.Itoa(pollingInterval),
+		},
+	}
+
+	collectors := make(map[string]SFLOWCollector, len(sflow.Collectors))
+	for _, c := range sflow.Collectors {
+		port := defaultSFLOWCollectorPort
+		if c.Port != 0 {
+			port = c.Port
+		}
+		collectors[c.Name] = SFLOWCollector{
+			CollectorIP:   c.IP,
+			CollectorPort: strconv.Itoa(port),
+			CollectorVRF:  c.VRF,
+		}
+	}
+
+	sessions := make(map[string]SFLOWSession, len(sflow.Sessions))
+	for _, s := range sflow.Sessions {
+		status := defaultAdminStatus
+		if s.Enabled != nil && !*s.Enabled {
+			status = AdminStatusDown
+		}
+
+		session := SFLOWSession{
+			AdminStatus: status,
+		}
+		if s.SampleRate != 0 {
+			session.SampleRate = strconv.Itoa(s.SampleRate)
+		}
+		sessions[s.Interface] = session
+	}
+	return global, collectors, sessions, nil
 }
 
 func getVLANs(vlans []values.VLAN) map[string]VLAN {

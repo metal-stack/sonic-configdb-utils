@@ -93,6 +93,26 @@ type SAG struct {
 	MAC string `yaml:"mac"`
 }
 
+type SFLOW struct {
+	Enabled			bool				`yaml:"enabled"`
+	PollingInterval	int					`yaml:"polling_interval"`
+	Collectors		[]SFLOWCollector	`yaml:"collectors"`
+	Sessions		[]SFLOWSession		`yaml:"sessions"`
+}
+
+type SFLOWCollector struct {
+	Name 	string 	`yaml:"name"`
+	IP		string	`yaml:"ip"`
+	Port	int		`yaml:"port"`
+	VRF		string	`yaml:"vrf"`
+}
+
+type SFLOWSession struct {
+	Interface  string `yaml:"interface"`
+	Enabled    *bool  `yaml:"enabled"`
+	SampleRate int    `yaml:"sample_rate"`
+}
+
 type Values struct {
 	BGPPorts                []string                `yaml:"bgp_ports"`
 	Breakouts               map[string]string       `yaml:"breakouts"`
@@ -112,6 +132,7 @@ type Values struct {
 	PortChannels            PortChannels            `yaml:"portchannels"`
 	Ports                   *Ports                  `yaml:"ports"`
 	SAG                     *SAG                    `yaml:"sag"`
+	SFLOW					*SFLOW					`yaml:"sflow"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
 	VLANSubinterfaces       []VLANSubinterface      `yaml:"vlan_subinterfaces"`
