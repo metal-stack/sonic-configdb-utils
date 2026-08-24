@@ -95,6 +95,8 @@ ssh_sourceranges:
 
 vlans:
   - id: 4000
+    dhcp_relay_server_vrf: Vrf45
+    dhcp_relay_src_intf: Vlan4000
     dhcp_servers:
       - 10.9.8.7
       - 10.9.8.6
