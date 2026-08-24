@@ -565,8 +565,8 @@ func getVLANs(vlans []values.VLAN) map[string]VLAN {
 			VLANID:      v.ID,
 		}
 		if len(v.DHCPServers) > 0 {
-			vlan.DHCPRelaySrcInterface = vlanName
-			vlan.DHCPRelayServerVRF = v.VRF
+			vlan.DHCPRelayServerVRF = v.DHCPRelayServerVRF
+			vlan.DHCPRelaySrcInterface = v.DHCPRelaySrcIntf
 		}
 		configVLANs[vlanName] = vlan
 	}
