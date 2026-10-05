@@ -83,14 +83,6 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 	}
 
 	features := getFeatures(input.Features)
-	if input.SFLOW != nil && input.SFLOW.Enabled {
-		if _, ok := features["sflow"]; !ok {
-			features["sflow"] = Feature{
-				AutoRestart: FeatureModeEnabled,
-				State:       FeatureModeEnabled,
-			}
-		}
-	}
 	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
 	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 

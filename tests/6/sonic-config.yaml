@@ -1,4 +1,8 @@
 hostname: leaf-sflow
+features:
+  sflow:
+    enabled: true
+    auto_restart: true
 sflow:
   enabled: true
   polling_interval: 2

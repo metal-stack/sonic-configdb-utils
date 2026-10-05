@@ -94,17 +94,17 @@ type SAG struct {
 }
 
 type SFLOW struct {
-	Enabled			bool				`yaml:"enabled"`
-	PollingInterval	int					`yaml:"polling_interval"`
-	Collectors		[]SFLOWCollector	`yaml:"collectors"`
-	Sessions		[]SFLOWSession		`yaml:"sessions"`
+	Enabled         bool             `yaml:"enabled"`
+	PollingInterval int              `yaml:"polling_interval"`
+	Collectors      []SFLOWCollector `yaml:"collectors"`
+	Sessions        []SFLOWSession   `yaml:"sessions"`
 }
 
 type SFLOWCollector struct {
-	Name 	string 	`yaml:"name"`
-	IP		string	`yaml:"ip"`
-	Port	int		`yaml:"port"`
-	VRF		string	`yaml:"vrf"`
+	Name string `yaml:"name"`
+	IP   string `yaml:"ip"`
+	Port int    `yaml:"port"`
+	VRF  string `yaml:"vrf"`
 }
 
 type SFLOWSession struct {
@@ -132,7 +132,7 @@ type Values struct {
 	PortChannels            PortChannels            `yaml:"portchannels"`
 	Ports                   *Ports                  `yaml:"ports"`
 	SAG                     *SAG                    `yaml:"sag"`
-	SFLOW					*SFLOW					`yaml:"sflow"`
+	SFLOW                   *SFLOW                  `yaml:"sflow"`
 	SSHSourceranges         []string                `yaml:"ssh_sourceranges"`
 	VLANs                   []VLAN                  `yaml:"vlans"`
 	VLANSubinterfaces       []VLANSubinterface      `yaml:"vlan_subinterfaces"`

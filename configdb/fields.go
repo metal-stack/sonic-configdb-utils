@@ -200,19 +200,19 @@ type SAGGlobal struct {
 }
 
 type SFLOWGlobal struct {
-	AdminStatus AdminStatus `json:"admin_state,omitempty"`
-	PollingInterval	string `json:"polling_interval,omitempty"`
+	AdminStatus     AdminStatus `json:"admin_state,omitempty"`
+	PollingInterval string      `json:"polling_interval,omitempty"`
 }
 
 type SFLOWCollector struct {
-	CollectorIP string `json:"collector_ip"`
+	CollectorIP   string `json:"collector_ip"`
 	CollectorPort string `json:"collector_port"`
-	CollectorVRF string `json:"collector_vrf,omitempty"`
+	CollectorVRF  string `json:"collector_vrf,omitempty"`
 }
 
 type SFLOWSession struct {
 	AdminStatus AdminStatus `json:"admin_state"`
-	SampleRate	string	`json:"sample_rate,omitempty"`
+	SampleRate  string      `json:"sample_rate,omitempty"`
 }
 
 const (

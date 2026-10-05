@@ -680,29 +680,29 @@ func Test_getSFLOW(t *testing.T) {
 	version202211 := &v.Version{Branch: string(v.Branch202211)}
 	version202111 := &v.Version{Branch: string(v.Branch202111)}
 	tests := []struct {
-		name			string
-		sflow			*values.SFLOW
-		version			*v.Version
-		wantGlobal 		map[string]SFLOWGlobal
-		wantCollector 	map[string]SFLOWCollector
-		wantSessions 	map[string]SFLOWSession
-		wantErr 		bool
+		name          string
+		sflow         *values.SFLOW
+		version       *v.Version
+		wantGlobal    map[string]SFLOWGlobal
+		wantCollector map[string]SFLOWCollector
+		wantSessions  map[string]SFLOWSession
+		wantErr       bool
 	}{
 		{
-			name: "nil input",
-			sflow: nil,
+			name:    "nil input",
+			sflow:   nil,
 			version: version202211,
 		},
 		{
-			name: "disabled",
-			sflow: &values.SFLOW{Enabled: false},
+			name:    "disabled",
+			sflow:   &values.SFLOW{Enabled: false},
 			version: version202211,
 		},
 		{
 			name: "collector with empty name",
 			sflow: &values.SFLOW{
-				Enabled: true,
-				Collectors: []values.SFLOWCollector{{IP: "172.17.0.1" }},
+				Enabled:    true,
+				Collectors: []values.SFLOWCollector{{IP: "172.17.0.1"}},
 			},
 			version: version202211,
 			wantErr: true,
@@ -710,8 +710,8 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "collector with empty ip",
 			sflow: &values.SFLOW{
-				Enabled: true,
-				Collectors: []values.SFLOWCollector{{Name: "goflow2" }},
+				Enabled:    true,
+				Collectors: []values.SFLOWCollector{{Name: "goflow2"}},
 			},
 			version: version202211,
 			wantErr: true,
@@ -719,10 +719,10 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "enabled with default port",
 			sflow: &values.SFLOW{
-				Enabled: true,
+				Enabled:         true,
 				PollingInterval: 20,
 				Collectors: []values.SFLOWCollector{
-					{Name: "goflow2", IP: "172.17.0.1", VRF: "default" },
+					{Name: "goflow2", IP: "172.17.0.1", VRF: "default"},
 				},
 			},
 			version: version202211,
@@ -737,7 +737,7 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "enabled with multiple collectors and sessions",
 			sflow: &values.SFLOW{
-				Enabled: true,
+				Enabled:         true,
 				PollingInterval: 20,
 				Collectors: []values.SFLOWCollector{
 					{Name: "primary", IP: "172.17.0.1", Port: 9999},
@@ -762,7 +762,7 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "low polling interval and disabled session",
 			sflow: &values.SFLOW{
-				Enabled: true,
+				Enabled:         true,
 				PollingInterval: 2,
 				Sessions: []values.SFLOWSession{
 					{Interface: "Ethernet0", Enabled: &bFalse},
@@ -782,7 +782,7 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "202111 rejects collector_vrf",
 			sflow: &values.SFLOW{
-				Enabled: true,
+				Enabled:         true,
 				PollingInterval: 20,
 				Collectors: []values.SFLOWCollector{
 					{Name: "goflow2", IP: "172.17.0.1", VRF: "default"},
@@ -794,7 +794,7 @@ func Test_getSFLOW(t *testing.T) {
 		{
 			name: "202111 without collector_vrf",
 			sflow: &values.SFLOW{
-				Enabled: true,
+				Enabled:         true,
 				PollingInterval: 20,
 				Collectors: []values.SFLOWCollector{
 					{Name: "goflow2", IP: "172.17.0.1"},
