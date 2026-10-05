@@ -677,12 +677,12 @@ func Test_getSAG(t *testing.T) {
 
 func Test_getSFLOW(t *testing.T) {
 	bFalse := false
-	version202211 := &v.Version{Branch: string(v.Branch202211)}
-	version202111 := &v.Version{Branch: string(v.Branch202111)}
+	version202211 := v.Branch202211
+	version202111 := v.Branch202111
 	tests := []struct {
 		name          string
 		sflow         *values.SFLOW
-		version       *v.Version
+		version       v.Branch
 		wantGlobal    map[string]SFLOWGlobal
 		wantCollector map[string]SFLOWCollector
 		wantSessions  map[string]SFLOWSession

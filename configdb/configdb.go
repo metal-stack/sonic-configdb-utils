@@ -566,7 +566,7 @@ func getSAG(sag *values.SAG, version v.Branch) (*SAG, error) {
 	}, nil
 }
 
-func getSFLOW(sflow *values.SFLOW, version *v.Version) (map[string]SFLOWGlobal, map[string]SFLOWCollector, map[string]SFLOWSession, error) {
+func getSFLOW(sflow *values.SFLOW, version v.Branch) (map[string]SFLOWGlobal, map[string]SFLOWCollector, map[string]SFLOWSession, error) {
 	if sflow == nil || !sflow.Enabled {
 		return nil, nil, nil, nil
 	}
@@ -578,7 +578,7 @@ func getSFLOW(sflow *values.SFLOW, version *v.Version) (map[string]SFLOWGlobal, 
 		if c.IP == "" {
 			return nil, nil, nil, fmt.Errorf("sflow collector %q: ip must not be empty", c.Name)
 		}
-		if c.VRF != "" && version.Branch == string(v.Branch202111) {
+		if c.VRF != "" && version == v.Branch202111 {
 			return nil, nil, nil, fmt.Errorf("sflow collector %q: collector_vrf is not supported on the ec202111 branch", c.Name)
 		}
 	}
