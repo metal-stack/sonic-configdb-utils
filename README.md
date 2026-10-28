@@ -28,31 +28,38 @@ ASIC_TYPE=broadcom
 
 ## Configuration Parameters
 
-### acl
+### acls
 
-ACL tables and rules in the shape of `config_db.json`, added next to the ones generated from `ssh_sourceranges`.
-Rules are named `TABLE|RULE` and must refer to a table defined here or generated from `ssh_sourceranges`.
-Unknown fields, unknown packet actions, a missing `PRIORITY` or `type`, and names that clash with the generated SSH and NTP ACLs are rejected.
+Ordered list of L3 ACL tables, added next to the ones generated from `ssh_sourceranges`.
+Rules are evaluated in list order: they are named `RULE_1`, `RULE_2`, ... and get descending priorities, so the first matching rule wins.
 
-Supported table fields: `policy_desc`, `ports`, `services`, `stage`, `type`.
-Supported rule fields: `DST_IP`, `ETHER_TYPE`, `IP_TYPE`, `PACKET_ACTION` (`ACCEPT`, `DROP`, `FORWARD`), `PRIORITY`, `SRC_IP`.
+| Key          | Mandatory | Description                                                               |
+| ------------ | --------- | ------------------------------------------------------------------------- |
+| name         | yes       | the table name, `ALLOW_SSH` and `ALLOW_NTP` are reserved.                 |
+| ports        | yes       | the ports or VLANs the table is bound to.                                 |
+| rules        | yes       | the rules, see below.                                                     |
+| description  |           | the policy description of the table.                                      |
+| stage        |           | `ingress` (default) or `egress`.                                          |
+| rules.action | yes       | `forward` or `drop`.                                                      |
+| rules.dst    |           | the destination as IPv4 CIDR.                                             |
+| rules.src    |           | the source as IPv4 CIDR. A rule without `dst` and `src` matches any IPv4. |
+
+Unknown fields are rejected.
 
 Example:
 
 ```yaml
-acl:
-  ACL_TABLE:
-    PXE_IN:
-      policy_desc: PXE vlan must not reach the cluster
-      type: L3
-      stage: ingress
-      ports:
-        - Vlan4000
-  ACL_RULE:
-    PXE_IN|DENY_1:
-      PRIORITY: "8000"
-      PACKET_ACTION: DROP
-      DST_IP: 10.0.0.0/16
+acls:
+  - name: PXE_IN
+    description: PXE vlan must not reach the cluster
+    ports:
+      - Vlan4000
+    rules:
+      - action: forward
+        dst: 10.0.0.1/32
+      - action: drop
+        dst: 10.0.0.0/16
+      - action: forward
 ```
 
 Result:
@@ -60,10 +67,20 @@ Result:
 ```json
 {
   "ACL_RULE": {
-    "PXE_IN|DENY_1": {
+    "PXE_IN|RULE_1": {
+      "DST_IP": "10.0.0.1/32",
+      "PACKET_ACTION": "FORWARD",
+      "PRIORITY": "30"
+    },
+    "PXE_IN|RULE_2": {
       "DST_IP": "10.0.0.0/16",
       "PACKET_ACTION": "DROP",
-      "PRIORITY": "8000"
+      "PRIORITY": "20"
+    },
+    "PXE_IN|RULE_3": {
+      "IP_TYPE": "IPV4ANY",
+      "PACKET_ACTION": "FORWARD",
+      "PRIORITY": "10"
     }
   },
   "ACL_TABLE": {

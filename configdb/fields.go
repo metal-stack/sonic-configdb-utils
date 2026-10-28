@@ -165,8 +165,6 @@ const (
 	PacketActionForward PacketAction = "FORWARD"
 )
 
-var packetActions = []PacketAction{PacketActionAccept, PacketActionDrop, PacketActionForward}
-
 type Port struct {
 	AdminStatus    AdminStatus `json:"admin_status,omitempty"`
 	Alias          string      `json:"alias,omitempty"`

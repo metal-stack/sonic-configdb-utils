@@ -10,25 +10,17 @@ import (
 )
 
 type ACL struct {
-	Rules  map[string]ACLRule  `yaml:"ACL_RULE"`
-	Tables map[string]ACLTable `yaml:"ACL_TABLE"`
+	Description string    `yaml:"description"`
+	Name        string    `yaml:"name"`
+	Ports       []string  `yaml:"ports"`
+	Rules       []ACLRule `yaml:"rules"`
+	Stage       string    `yaml:"stage"`
 }
 
 type ACLRule struct {
-	DstIP        string `yaml:"DST_IP"`
-	EtherType    string `yaml:"ETHER_TYPE"`
-	IPType       string `yaml:"IP_TYPE"`
-	PacketAction string `yaml:"PACKET_ACTION"`
-	Priority     string `yaml:"PRIORITY"`
-	SrcIP        string `yaml:"SRC_IP"`
-}
-
-type ACLTable struct {
-	PolicyDesc string   `yaml:"policy_desc"`
-	Ports      []string `yaml:"ports"`
-	Services   []string `yaml:"services"`
-	Stage      string   `yaml:"stage"`
-	Type       string   `yaml:"type"`
+	Action string `yaml:"action"`
+	Dst    string `yaml:"dst"`
+	Src    string `yaml:"src"`
 }
 
 type AutonegMode string
@@ -123,7 +115,7 @@ type SAG struct {
 }
 
 type Values struct {
-	ACL                     ACL                     `yaml:"acl"`
+	ACLs                    []ACL                   `yaml:"acls"`
 	BGPPorts                []string                `yaml:"bgp_ports"`
 	Breakouts               map[string]string       `yaml:"breakouts"`
 	DockerRoutingConfigMode DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
@@ -201,11 +193,6 @@ func (a *ACL) UnmarshalYAML(node *yaml.Node) error {
 func (r *ACLRule) UnmarshalYAML(node *yaml.Node) error {
 	type plain ACLRule
 	return decodeKnownFields(node, "acl rule", (*plain)(r))
-}
-
-func (t *ACLTable) UnmarshalYAML(node *yaml.Node) error {
-	type plain ACLTable
-	return decodeKnownFields(node, "acl table", (*plain)(t))
 }
 
 func decodeKnownFields(node *yaml.Node, kind string, target any) error {

@@ -1,19 +1,19 @@
 {
   "ACL_RULE": {
-    "PXE_IN|DENY_1": {
-      "DST_IP": "10.0.0.0/16",
-      "PACKET_ACTION": "DROP",
-      "PRIORITY": "7999"
-    },
-    "PXE_IN|PERMIT_1": {
+    "PXE_IN|RULE_1": {
       "DST_IP": "10.1.1.1/32",
       "PACKET_ACTION": "FORWARD",
-      "PRIORITY": "8999"
+      "PRIORITY": "30"
     },
-    "PXE_IN|PERMIT_REST": {
+    "PXE_IN|RULE_2": {
+      "DST_IP": "10.0.0.0/16",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "20"
+    },
+    "PXE_IN|RULE_3": {
       "IP_TYPE": "IPV4ANY",
       "PACKET_ACTION": "FORWARD",
-      "PRIORITY": "1000"
+      "PRIORITY": "10"
     }
   },
   "ACL_TABLE": {

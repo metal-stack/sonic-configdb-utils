@@ -7,63 +7,51 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_UnmarshalValues_acl(t *testing.T) {
+func Test_UnmarshalValues_acls(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
-		want    ACL
+		want    []ACL
 		wantErr string
 	}{
 		{
-			name: "known fields, unquoted priority",
+			name: "known fields",
 			input: `
-acl:
-  ACL_TABLE:
-    PXE_IN:
-      policy_desc: pxe
-      type: L3
-      stage: ingress
-      ports: [Vlan4000]
-  ACL_RULE:
-    PXE_IN|DENY_1:
-      PRIORITY: 7999
-      PACKET_ACTION: DROP
-      DST_IP: 10.0.0.0/16
+acls:
+  - name: PXE_IN
+    description: pxe
+    ports: [Vlan4000]
+    rules:
+      - action: drop
+        dst: 10.0.0.0/16
+      - action: forward
 `,
-			want: ACL{
-				Tables: map[string]ACLTable{"PXE_IN": {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}},
-				Rules:  map[string]ACLRule{"PXE_IN|DENY_1": {DstIP: "10.0.0.0/16", PacketAction: "DROP", Priority: "7999"}},
-			},
+			want: []ACL{{
+				Name:        "PXE_IN",
+				Description: "pxe",
+				Ports:       []string{"Vlan4000"},
+				Rules:       []ACLRule{{Action: "drop", Dst: "10.0.0.0/16"}, {Action: "forward"}},
+			}},
 		},
 		{
 			name: "unknown rule field",
 			input: `
-acl:
-  ACL_RULE:
-    PXE_IN|DENY_1:
-      PRIORITY: "7999"
-      DST_IPS: 10.0.0.0/16
+acls:
+  - name: PXE_IN
+    rules:
+      - action: drop
+        dst_ip: 10.0.0.0/16
 `,
-			wantErr: `unknown field "DST_IPS" in acl rule, use one of DST_IP, ETHER_TYPE, IP_TYPE, PACKET_ACTION, PRIORITY, SRC_IP`,
+			wantErr: `unknown field "dst_ip" in acl rule, use one of action, dst, src`,
 		},
 		{
-			name: "unknown table field",
+			name: "unknown acl field",
 			input: `
-acl:
-  ACL_TABLE:
-    PXE_IN:
-      type: L3
-      port: [Vlan4000]
+acls:
+  - name: PXE_IN
+    port: [Vlan4000]
 `,
-			wantErr: `unknown field "port" in acl table, use one of policy_desc, ports, services, stage, type`,
-		},
-		{
-			name: "unknown acl section",
-			input: `
-acl:
-  ACL_RULES: {}
-`,
-			wantErr: `unknown field "ACL_RULES" in acl, use one of ACL_RULE, ACL_TABLE`,
+			wantErr: `unknown field "port" in acl, use one of description, name, ports, rules, stage`,
 		},
 	}
 
@@ -79,8 +67,8 @@ acl:
 			if err != nil {
 				t.Fatalf("UnmarshalValues() unexpected error = %v", err)
 			}
-			if diff := cmp.Diff(tt.want, got.ACL); diff != "" {
-				t.Errorf("UnmarshalValues() acl diff = %s", diff)
+			if diff := cmp.Diff(tt.want, got.ACLs); diff != "" {
+				t.Errorf("UnmarshalValues() acls diff = %s", diff)
 			}
 		})
 	}

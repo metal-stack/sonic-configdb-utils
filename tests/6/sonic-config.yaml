@@ -31,24 +31,14 @@ vlans:
       group: 1
       ip: 10.1.2.1/24
 
-acl:
-  ACL_TABLE:
-    PXE_IN:
-      policy_desc: PXE vlan must not reach the cluster
-      type: L3
-      stage: ingress
-      ports:
-        - Vlan1
-  ACL_RULE:
-    PXE_IN|PERMIT_1:
-      PRIORITY: 8999
-      PACKET_ACTION: FORWARD
-      DST_IP: 10.1.1.1/32
-    PXE_IN|DENY_1:
-      PRIORITY: "7999"
-      PACKET_ACTION: DROP
-      DST_IP: 10.0.0.0/16
-    PXE_IN|PERMIT_REST:
-      PRIORITY: "1000"
-      PACKET_ACTION: FORWARD
-      IP_TYPE: IPV4ANY
+acls:
+  - name: PXE_IN
+    description: PXE vlan must not reach the cluster
+    ports:
+      - Vlan1
+    rules:
+      - action: forward
+        dst: 10.1.1.1/32
+      - action: drop
+        dst: 10.0.0.0/16
+      - action: forward

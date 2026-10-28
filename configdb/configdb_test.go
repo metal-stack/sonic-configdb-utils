@@ -676,14 +676,27 @@ func Test_getSAG(t *testing.T) {
 }
 
 func Test_getACLRulesAndTables(t *testing.T) {
-	pxeTable := map[string]values.ACLTable{
-		"PXE_IN": {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
+	pxe := values.ACL{
+		Name:        "PXE_IN",
+		Description: "pxe",
+		Ports:       []string{"Vlan4000"},
+		Rules: []values.ACLRule{
+			{Action: "forward", Dst: "10.254.254.130/32"},
+			{Action: "drop", Dst: "10.254.0.0/16"},
+			{Action: "forward"},
+		},
 	}
+	pxeRules := map[string]ACLRule{
+		"PXE_IN|RULE_1": {DstIP: "10.254.254.130/32", PacketAction: PacketActionForward, Priority: "30"},
+		"PXE_IN|RULE_2": {DstIP: "10.254.0.0/16", PacketAction: PacketActionDrop, Priority: "20"},
+		"PXE_IN|RULE_3": {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "10"},
+	}
+	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}
 
 	tests := []struct {
 		name         string
 		sourceRanges []string
-		acl          values.ACL
+		acls         []values.ACL
 		wantRules    map[string]ACLRule
 		wantTables   map[string]ACLTable
 		wantErr      string
@@ -692,102 +705,93 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			name: "nothing given",
 		},
 		{
-			name: "custom table and rule without ssh sourceranges",
-			acl: values.ACL{
-				Tables: pxeTable,
-				Rules: map[string]values.ACLRule{
-					"PXE_IN|DENY_1": {DstIP: "10.0.0.0/16", PacketAction: "DROP", Priority: "7999"},
-				},
-			},
+			name:       "rules get names and descending priorities in list order",
+			acls:       []values.ACL{pxe},
+			wantRules:  pxeRules,
+			wantTables: map[string]ACLTable{"PXE_IN": pxeTable},
+		},
+		{
+			name: "src and egress stage",
+			acls: []values.ACL{{
+				Name:  "OUT",
+				Ports: []string{"Ethernet0"},
+				Stage: "egress",
+				Rules: []values.ACLRule{{Action: "drop", Src: "10.0.0.0/8", Dst: "192.168.0.0/16"}},
+			}},
 			wantRules: map[string]ACLRule{
-				"PXE_IN|DENY_1": {DstIP: "10.0.0.0/16", PacketAction: PacketActionDrop, Priority: "7999"},
+				"OUT|RULE_1": {DstIP: "192.168.0.0/16", PacketAction: PacketActionDrop, Priority: "10", SrcIP: "10.0.0.0/8"},
 			},
-			wantTables: map[string]ACLTable{
-				"PXE_IN": {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
-			},
+			wantTables: map[string]ACLTable{"OUT": {Ports: []string{"Ethernet0"}, Stage: "egress", Type: "L3"}},
 		},
 		{
 			name:         "custom acls are added next to the ssh acls",
 			sourceRanges: []string{"10.1.23.1/30"},
-			acl: values.ACL{
-				Tables: pxeTable,
-				Rules: map[string]values.ACLRule{
-					"PXE_IN|PERMIT_REST": {IPType: "IPV4ANY", PacketAction: "FORWARD", Priority: "1000"},
-				},
-			},
+			acls:         []values.ACL{pxe},
 			wantRules: map[string]ACLRule{
 				"ALLOW_SSH|DEFAULT_RULE": {EtherType: "2048", PacketAction: PacketActionDrop, Priority: "1"},
 				"ALLOW_NTP|DEFAULT_RULE": {EtherType: "2048", PacketAction: PacketActionDrop, Priority: "1"},
 				"ALLOW_NTP|RULE_1":       {PacketAction: PacketActionAccept, Priority: "99", SrcIP: "0.0.0.0/0"},
 				"ALLOW_SSH|RULE_1":       {PacketAction: PacketActionAccept, Priority: "91", SrcIP: "10.1.23.1/30"},
-				"PXE_IN|PERMIT_REST":     {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "1000"},
+				"PXE_IN|RULE_1":          pxeRules["PXE_IN|RULE_1"],
+				"PXE_IN|RULE_2":          pxeRules["PXE_IN|RULE_2"],
+				"PXE_IN|RULE_3":          pxeRules["PXE_IN|RULE_3"],
 			},
 			wantTables: map[string]ACLTable{
 				"ALLOW_SSH": {PolicyDesc: "Allow SSH access", Services: []string{"SSH"}, Stage: "ingress", Type: "CTRLPLANE"},
 				"ALLOW_NTP": {PolicyDesc: "Allow NTP", Services: []string{"NTP"}, Stage: "ingress", Type: "CTRLPLANE"},
-				"PXE_IN":    {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
+				"PXE_IN":    pxeTable,
 			},
 		},
 		{
-			name:         "table clashes with a generated ssh table",
-			sourceRanges: []string{"10.1.23.1/30"},
-			acl: values.ACL{
-				Tables: map[string]values.ACLTable{"ALLOW_SSH": {Stage: "ingress", Type: "CTRLPLANE"}},
-			},
-			wantErr: `acl table "ALLOW_SSH" is generated from ssh_sourceranges, choose another name`,
+			name:    "name reserved for the ssh acls even without ssh sourceranges",
+			acls:    []values.ACL{{Name: "ALLOW_SSH", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "ALLOW_SSH" is reserved for the acls generated from ssh_sourceranges, choose another name`,
 		},
 		{
-			name:         "rule clashes with a generated ssh rule",
-			sourceRanges: []string{"10.1.23.1/30"},
-			acl: values.ACL{
-				Rules: map[string]values.ACLRule{"ALLOW_SSH|RULE_1": {PacketAction: "ACCEPT", Priority: "50"}},
-			},
-			wantErr: `acl rule "ALLOW_SSH|RULE_1" is generated from ssh_sourceranges, choose another name`,
+			name:    "missing name",
+			acls:    []values.ACL{{Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: "acl number 1 has no name, set one",
 		},
 		{
-			name: "rule name without table",
-			acl: values.ACL{
-				Tables: pxeTable,
-				Rules:  map[string]values.ACLRule{"DENY_1": {PacketAction: "DROP", Priority: "10"}},
-			},
-			wantErr: `acl rule "DENY_1" must be named TABLE|RULE`,
+			name:    "duplicate name",
+			acls:    []values.ACL{pxe, pxe},
+			wantErr: `acl "PXE_IN" is defined twice, merge the rules into one entry`,
 		},
 		{
-			name: "rule for an unknown table",
-			acl: values.ACL{
-				Tables: pxeTable,
-				Rules:  map[string]values.ACLRule{"PXE|DENY_1": {PacketAction: "DROP", Priority: "10"}},
-			},
-			wantErr: `acl rule "PXE|DENY_1" refers to table "PXE", which is not defined in ACL_TABLE`,
+			name:    "no ports",
+			acls:    []values.ACL{{Name: "PXE_IN", Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "PXE_IN" has no ports, list the ports or vlans it applies to`,
 		},
 		{
-			name: "unknown packet action",
-			acl: values.ACL{
-				Tables: pxeTable,
-				Rules:  map[string]values.ACLRule{"PXE_IN|DENY_1": {PacketAction: "REJECT", Priority: "10"}},
-			},
-			wantErr: `acl rule "PXE_IN|DENY_1" has PACKET_ACTION "REJECT", use one of ACCEPT, DROP, FORWARD`,
+			name:    "no rules",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}}},
+			wantErr: `acl "PXE_IN" has no rules, add at least one`,
 		},
 		{
-			name: "rule without priority",
-			acl: values.ACL{
-				Tables: pxeTable,
-				Rules:  map[string]values.ACLRule{"PXE_IN|DENY_1": {PacketAction: "DROP"}},
-			},
-			wantErr: `acl rule "PXE_IN|DENY_1" has no PRIORITY, set one`,
+			name:    "unknown stage",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Stage: "in", Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "PXE_IN" has stage "in", use ingress or egress`,
 		},
 		{
-			name: "table without type",
-			acl: values.ACL{
-				Tables: map[string]values.ACLTable{"PXE_IN": {Stage: "ingress"}},
-			},
-			wantErr: `acl table "PXE_IN" has no type, set one such as L3 or CTRLPLANE`,
+			name:    "unknown action",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "accept"}}}},
+			wantErr: `acl "PXE_IN" rule 1 has action "accept", use forward or drop`,
+		},
+		{
+			name:    "invalid dst",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop", Dst: "10.254.0.0"}}}},
+			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.0.0", use an ipv4 cidr such as 10.0.0.0/16`,
+		},
+		{
+			name:    "ipv6 src",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop", Src: "fd00::/8"}}}},
+			wantErr: `acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr such as 10.0.0.0/16`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acl)
+			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acls)
 			if diff := cmp.Diff(tt.wantErr, errorString(err)); diff != "" {
 				t.Fatalf("getACLRulesAndTables() error diff = %s", diff)
 			}
