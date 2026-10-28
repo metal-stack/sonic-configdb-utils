@@ -45,7 +45,7 @@ Each port can carry one of these tables per stage, so the order between tables n
 | rules.dst    |           | the destination as IPv4 CIDR without host bits, e.g. `10.0.0.0/16`.                                                             |
 | rules.src    |           | the source as IPv4 CIDR without host bits. A rule without `dst` and `src` matches any IPv4.                                     |
 
-Unknown fields are rejected.
+Unknown fields are rejected, also when they come in through a YAML merge key.
 
 Limits:
 

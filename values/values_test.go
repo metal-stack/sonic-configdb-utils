@@ -45,6 +45,34 @@ acls:
 			wantErr: `unknown field "dst_ip" in acl rule, use one of action, dst, src`,
 		},
 		{
+			name: "fields from a merge key",
+			input: `
+common: &common
+  ports: [Vlan4000]
+acls:
+  - <<: *common
+    name: PXE_IN
+    rules:
+      - action: drop
+`,
+			want: []ACL{{
+				Name:  "PXE_IN",
+				Ports: []string{"Vlan4000"},
+				Rules: []ACLRule{{Action: "drop"}},
+			}},
+		},
+		{
+			name: "unknown field behind a merge key",
+			input: `
+common: &common
+  port: [Vlan4000]
+acls:
+  - <<: *common
+    name: PXE_IN
+`,
+			wantErr: `line 3: unknown field "port" in acl, use one of description, name, ports, rules, stage`,
+		},
+		{
 			name: "unknown acl field",
 			input: `
 acls:

@@ -196,14 +196,42 @@ func (r *ACLRule) UnmarshalYAML(node *yaml.Node) error {
 }
 
 func decodeKnownFields(node *yaml.Node, kind string, target any) error {
-	known := yamlFieldNames(target)
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		key := node.Content[i].Value
-		if !slices.Contains(known, key) {
-			return fmt.Errorf("line %d: unknown field %q in %s, use one of %s", node.Content[i].Line, key, kind, strings.Join(known, ", "))
-		}
+	if err := checkKnownFields(node, kind, yamlFieldNames(target)); err != nil {
+		return err
 	}
 	return node.Decode(target)
+}
+
+func checkKnownFields(node *yaml.Node, kind string, known []string) error {
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		key, value := node.Content[i], node.Content[i+1]
+		if key.ShortTag() == "!!merge" {
+			if err := checkMergedFields(value, kind, known); err != nil {
+				return err
+			}
+			continue
+		}
+		if !slices.Contains(known, key.Value) {
+			return fmt.Errorf("line %d: unknown field %q in %s, use one of %s", key.Line, key.Value, kind, strings.Join(known, ", "))
+		}
+	}
+	return nil
+}
+
+func checkMergedFields(node *yaml.Node, kind string, known []string) error {
+	switch node.Kind {
+	case yaml.AliasNode:
+		return checkMergedFields(node.Alias, kind, known)
+	case yaml.MappingNode:
+		return checkKnownFields(node, kind, known)
+	case yaml.SequenceNode:
+		for _, item := range node.Content {
+			if err := checkMergedFields(item, kind, known); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func yamlFieldNames(target any) []string {
