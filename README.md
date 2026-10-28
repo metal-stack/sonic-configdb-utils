@@ -28,6 +28,55 @@ ASIC_TYPE=broadcom
 
 ## Configuration Parameters
 
+### acl
+
+ACL tables and rules in the shape of `config_db.json`, added next to the ones generated from `ssh_sourceranges`.
+Rules are named `TABLE|RULE` and must refer to a table defined here or generated from `ssh_sourceranges`.
+Unknown fields, unknown packet actions, a missing `PRIORITY` or `type`, and names that clash with the generated SSH and NTP ACLs are rejected.
+
+Supported table fields: `policy_desc`, `ports`, `services`, `stage`, `type`.
+Supported rule fields: `DST_IP`, `ETHER_TYPE`, `IP_TYPE`, `PACKET_ACTION` (`ACCEPT`, `DROP`, `FORWARD`), `PRIORITY`, `SRC_IP`.
+
+Example:
+
+```yaml
+acl:
+  ACL_TABLE:
+    PXE_IN:
+      policy_desc: PXE vlan must not reach the cluster
+      type: L3
+      stage: ingress
+      ports:
+        - Vlan4000
+  ACL_RULE:
+    PXE_IN|DENY_1:
+      PRIORITY: "8000"
+      PACKET_ACTION: DROP
+      DST_IP: 10.0.0.0/16
+```
+
+Result:
+
+```json
+{
+  "ACL_RULE": {
+    "PXE_IN|DENY_1": {
+      "DST_IP": "10.0.0.0/16",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "8000"
+    }
+  },
+  "ACL_TABLE": {
+    "PXE_IN": {
+      "policy_desc": "PXE vlan must not reach the cluster",
+      "ports": ["Vlan4000"],
+      "stage": "ingress",
+      "type": "L3"
+    }
+  }
+}
+```
+
 ### bgp_ports
 
 Example:

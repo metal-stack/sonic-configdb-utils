@@ -674,3 +674,136 @@ func Test_getSAG(t *testing.T) {
 		})
 	}
 }
+
+func Test_getACLRulesAndTables(t *testing.T) {
+	pxeTable := map[string]values.ACLTable{
+		"PXE_IN": {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
+	}
+
+	tests := []struct {
+		name         string
+		sourceRanges []string
+		acl          values.ACL
+		wantRules    map[string]ACLRule
+		wantTables   map[string]ACLTable
+		wantErr      string
+	}{
+		{
+			name: "nothing given",
+		},
+		{
+			name: "custom table and rule without ssh sourceranges",
+			acl: values.ACL{
+				Tables: pxeTable,
+				Rules: map[string]values.ACLRule{
+					"PXE_IN|DENY_1": {DstIP: "10.0.0.0/16", PacketAction: "DROP", Priority: "7999"},
+				},
+			},
+			wantRules: map[string]ACLRule{
+				"PXE_IN|DENY_1": {DstIP: "10.0.0.0/16", PacketAction: PacketActionDrop, Priority: "7999"},
+			},
+			wantTables: map[string]ACLTable{
+				"PXE_IN": {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
+			},
+		},
+		{
+			name:         "custom acls are added next to the ssh acls",
+			sourceRanges: []string{"10.1.23.1/30"},
+			acl: values.ACL{
+				Tables: pxeTable,
+				Rules: map[string]values.ACLRule{
+					"PXE_IN|PERMIT_REST": {IPType: "IPV4ANY", PacketAction: "FORWARD", Priority: "1000"},
+				},
+			},
+			wantRules: map[string]ACLRule{
+				"ALLOW_SSH|DEFAULT_RULE": {EtherType: "2048", PacketAction: PacketActionDrop, Priority: "1"},
+				"ALLOW_NTP|DEFAULT_RULE": {EtherType: "2048", PacketAction: PacketActionDrop, Priority: "1"},
+				"ALLOW_NTP|RULE_1":       {PacketAction: PacketActionAccept, Priority: "99", SrcIP: "0.0.0.0/0"},
+				"ALLOW_SSH|RULE_1":       {PacketAction: PacketActionAccept, Priority: "91", SrcIP: "10.1.23.1/30"},
+				"PXE_IN|PERMIT_REST":     {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "1000"},
+			},
+			wantTables: map[string]ACLTable{
+				"ALLOW_SSH": {PolicyDesc: "Allow SSH access", Services: []string{"SSH"}, Stage: "ingress", Type: "CTRLPLANE"},
+				"ALLOW_NTP": {PolicyDesc: "Allow NTP", Services: []string{"NTP"}, Stage: "ingress", Type: "CTRLPLANE"},
+				"PXE_IN":    {PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
+			},
+		},
+		{
+			name:         "table clashes with a generated ssh table",
+			sourceRanges: []string{"10.1.23.1/30"},
+			acl: values.ACL{
+				Tables: map[string]values.ACLTable{"ALLOW_SSH": {Stage: "ingress", Type: "CTRLPLANE"}},
+			},
+			wantErr: `acl table "ALLOW_SSH" is generated from ssh_sourceranges, choose another name`,
+		},
+		{
+			name:         "rule clashes with a generated ssh rule",
+			sourceRanges: []string{"10.1.23.1/30"},
+			acl: values.ACL{
+				Rules: map[string]values.ACLRule{"ALLOW_SSH|RULE_1": {PacketAction: "ACCEPT", Priority: "50"}},
+			},
+			wantErr: `acl rule "ALLOW_SSH|RULE_1" is generated from ssh_sourceranges, choose another name`,
+		},
+		{
+			name: "rule name without table",
+			acl: values.ACL{
+				Tables: pxeTable,
+				Rules:  map[string]values.ACLRule{"DENY_1": {PacketAction: "DROP", Priority: "10"}},
+			},
+			wantErr: `acl rule "DENY_1" must be named TABLE|RULE`,
+		},
+		{
+			name: "rule for an unknown table",
+			acl: values.ACL{
+				Tables: pxeTable,
+				Rules:  map[string]values.ACLRule{"PXE|DENY_1": {PacketAction: "DROP", Priority: "10"}},
+			},
+			wantErr: `acl rule "PXE|DENY_1" refers to table "PXE", which is not defined in ACL_TABLE`,
+		},
+		{
+			name: "unknown packet action",
+			acl: values.ACL{
+				Tables: pxeTable,
+				Rules:  map[string]values.ACLRule{"PXE_IN|DENY_1": {PacketAction: "REJECT", Priority: "10"}},
+			},
+			wantErr: `acl rule "PXE_IN|DENY_1" has PACKET_ACTION "REJECT", use one of ACCEPT, DROP, FORWARD`,
+		},
+		{
+			name: "rule without priority",
+			acl: values.ACL{
+				Tables: pxeTable,
+				Rules:  map[string]values.ACLRule{"PXE_IN|DENY_1": {PacketAction: "DROP"}},
+			},
+			wantErr: `acl rule "PXE_IN|DENY_1" has no PRIORITY, set one`,
+		},
+		{
+			name: "table without type",
+			acl: values.ACL{
+				Tables: map[string]values.ACLTable{"PXE_IN": {Stage: "ingress"}},
+			},
+			wantErr: `acl table "PXE_IN" has no type, set one such as L3 or CTRLPLANE`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acl)
+			if diff := cmp.Diff(tt.wantErr, errorString(err)); diff != "" {
+				t.Fatalf("getACLRulesAndTables() error diff = %s", diff)
+			}
+			if diff := cmp.Diff(tt.wantRules, gotRules); diff != "" {
+				t.Errorf("getACLRulesAndTables() rules diff = %s", diff)
+			}
+			if diff := cmp.Diff(tt.wantTables, gotTables); diff != "" {
+				t.Errorf("getACLRulesAndTables() tables diff = %s", diff)
+			}
+		})
+	}
+}
+
+func errorString(err error) string {
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}

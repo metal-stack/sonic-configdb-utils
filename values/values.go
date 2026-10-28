@@ -1,6 +1,35 @@
 package values
 
-import "gopkg.in/yaml.v3"
+import (
+	"fmt"
+	"reflect"
+	"slices"
+	"strings"
+
+	"gopkg.in/yaml.v3"
+)
+
+type ACL struct {
+	Rules  map[string]ACLRule  `yaml:"ACL_RULE"`
+	Tables map[string]ACLTable `yaml:"ACL_TABLE"`
+}
+
+type ACLRule struct {
+	DstIP        string `yaml:"DST_IP"`
+	EtherType    string `yaml:"ETHER_TYPE"`
+	IPType       string `yaml:"IP_TYPE"`
+	PacketAction string `yaml:"PACKET_ACTION"`
+	Priority     string `yaml:"PRIORITY"`
+	SrcIP        string `yaml:"SRC_IP"`
+}
+
+type ACLTable struct {
+	PolicyDesc string   `yaml:"policy_desc"`
+	Ports      []string `yaml:"ports"`
+	Services   []string `yaml:"services"`
+	Stage      string   `yaml:"stage"`
+	Type       string   `yaml:"type"`
+}
 
 type AutonegMode string
 
@@ -94,6 +123,7 @@ type SAG struct {
 }
 
 type Values struct {
+	ACL                     ACL                     `yaml:"acl"`
 	BGPPorts                []string                `yaml:"bgp_ports"`
 	Breakouts               map[string]string       `yaml:"breakouts"`
 	DockerRoutingConfigMode DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
@@ -161,4 +191,40 @@ func UnmarshalValues(in []byte) (*Values, error) {
 	}
 
 	return &values, nil
+}
+
+func (a *ACL) UnmarshalYAML(node *yaml.Node) error {
+	type plain ACL
+	return decodeKnownFields(node, "acl", (*plain)(a))
+}
+
+func (r *ACLRule) UnmarshalYAML(node *yaml.Node) error {
+	type plain ACLRule
+	return decodeKnownFields(node, "acl rule", (*plain)(r))
+}
+
+func (t *ACLTable) UnmarshalYAML(node *yaml.Node) error {
+	type plain ACLTable
+	return decodeKnownFields(node, "acl table", (*plain)(t))
+}
+
+func decodeKnownFields(node *yaml.Node, kind string, target any) error {
+	known := yamlFieldNames(target)
+	for i := 0; i+1 < len(node.Content); i += 2 {
+		key := node.Content[i].Value
+		if !slices.Contains(known, key) {
+			return fmt.Errorf("line %d: unknown field %q in %s, use one of %s", node.Content[i].Line, key, kind, strings.Join(known, ", "))
+		}
+	}
+	return node.Decode(target)
+}
+
+func yamlFieldNames(target any) []string {
+	structType := reflect.TypeOf(target).Elem()
+	names := make([]string, 0, structType.NumField())
+	for i := range structType.NumField() {
+		names = append(names, strings.Split(structType.Field(i).Tag.Get("yaml"), ",")[0])
+	}
+	slices.Sort(names)
+	return names
 }
