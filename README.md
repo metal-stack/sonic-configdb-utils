@@ -32,19 +32,25 @@ ASIC_TYPE=broadcom
 
 Ordered list of L3 ACL tables, added next to the ones generated from `ssh_sourceranges`.
 Rules are evaluated in list order: they are named `RULE_1`, `RULE_2`, ... and get descending priorities, so the first matching rule wins.
+Each port can carry one of these tables per stage, so the order between tables never decides.
 
-| Key          | Mandatory | Description                                                               |
-| ------------ | --------- | ------------------------------------------------------------------------- |
-| name         | yes       | the table name, `ALLOW_SSH` and `ALLOW_NTP` are reserved.                 |
-| ports        | yes       | the ports or VLANs the table is bound to.                                 |
-| rules        | yes       | the rules, see below.                                                     |
-| description  |           | the policy description of the table.                                      |
-| stage        |           | `ingress` (default) or `egress`.                                          |
-| rules.action | yes       | `forward` or `drop`.                                                      |
-| rules.dst    |           | the destination as IPv4 CIDR.                                             |
-| rules.src    |           | the source as IPv4 CIDR. A rule without `dst` and `src` matches any IPv4. |
+| Key          | Mandatory | Description                                                                                                                     |
+| ------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| name         | yes       | the table name: letters, digits, `_` and `-`. `ALLOW_SSH` and `ALLOW_NTP` are reserved.                                         |
+| ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels` or `vlans`.            |
+| rules        | yes       | the rules, see below.                                                                                                           |
+| description  |           | the policy description of the table.                                                                                            |
+| stage        |           | `ingress` (default) or `egress`.                                                                                                |
+| rules.action | yes       | `forward` or `drop`.                                                                                                            |
+| rules.dst    |           | the destination as IPv4 CIDR without host bits, e.g. `10.0.0.0/16`.                                                             |
+| rules.src    |           | the source as IPv4 CIDR without host bits. A rule without `dst` and `src` matches any IPv4.                                     |
 
 Unknown fields are rejected.
+
+Limits:
+
+- The rules match IPv4 only. IPv6 and non-IP traffic is matched by no rule and is forwarded, so a closing `drop` does not block IPv6.
+- Ethernet ports are only checked against `ports` when a `ports` section is given, since the port list comes from `platform.json`.
 
 Example:
 

@@ -6,8 +6,10 @@ import (
 	"maps"
 	"net/netip"
 	"os"
+	"regexp"
 	"slices"
 	"strconv"
+	"strings"
 
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
@@ -82,7 +84,8 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 
 	features := getFeatures(input.Features)
 
-	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs)
+	aclInterfaces := getACLInterfaces(ports, input.VLANs, input.PortChannels.List)
+	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs, aclInterfaces)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +168,35 @@ var aclPacketActions = map[string]PacketAction{
 	"forward": PacketActionForward,
 }
 
-func getACLRulesAndTables(sourceRanges []string, acls []values.ACL) (map[string]ACLRule, map[string]ACLTable, error) {
+var aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+
+type aclInterfaces struct {
+	defined        map[string]bool
+	portsGenerated bool
+}
+
+func getACLInterfaces(ports map[string]Port, vlans []values.VLAN, portChannels []values.PortChannel) aclInterfaces {
+	defined := map[string]bool{}
+	for name := range ports {
+		defined[name] = true
+	}
+	for _, vlan := range vlans {
+		defined["Vlan"+vlan.ID] = true
+	}
+	for _, portChannel := range portChannels {
+		defined["PortChannel"+portChannel.Number] = true
+	}
+	return aclInterfaces{defined: defined, portsGenerated: len(ports) > 0}
+}
+
+func (i aclInterfaces) canBind(name string) bool {
+	if !i.portsGenerated && strings.HasPrefix(name, "Ethernet") {
+		return true
+	}
+	return i.defined[name]
+}
+
+func getACLRulesAndTables(sourceRanges []string, acls []values.ACL, interfaces aclInterfaces) (map[string]ACLRule, map[string]ACLTable, error) {
 	rules, tables := getSSHACLRulesAndTables(sourceRanges)
 	if len(acls) == 0 {
 		return rules, tables, nil
@@ -177,14 +208,18 @@ func getACLRulesAndTables(sourceRanges []string, acls []values.ACL) (map[string]
 	if tables == nil {
 		tables = map[string]ACLTable{}
 	}
+	aclByBinding := map[string]string{}
 
 	for i, acl := range acls {
-		table, err := getACLTable(i, acl)
+		table, err := getACLTable(i, acl, interfaces)
 		if err != nil {
 			return nil, nil, err
 		}
 		if _, defined := tables[acl.Name]; defined {
 			return nil, nil, fmt.Errorf("acl %q is defined twice, merge the rules into one entry", acl.Name)
+		}
+		if err := claimACLBindings(aclByBinding, acl.Name, *table); err != nil {
+			return nil, nil, err
 		}
 		tables[acl.Name] = *table
 
@@ -200,15 +235,34 @@ func getACLRulesAndTables(sourceRanges []string, acls []values.ACL) (map[string]
 	return rules, tables, nil
 }
 
-func getACLTable(index int, acl values.ACL) (*ACLTable, error) {
+func claimACLBindings(aclByBinding map[string]string, aclName string, table ACLTable) error {
+	for _, port := range table.Ports {
+		binding := port + "|" + table.Stage
+		if other, bound := aclByBinding[binding]; bound {
+			return fmt.Errorf("acls %q and %q are both bound to %q at stage %s, merge their rules into one acl", other, aclName, port, table.Stage)
+		}
+		aclByBinding[binding] = aclName
+	}
+	return nil
+}
+
+func getACLTable(index int, acl values.ACL, interfaces aclInterfaces) (*ACLTable, error) {
 	if acl.Name == "" {
 		return nil, fmt.Errorf("acl number %d has no name, set one", index+1)
+	}
+	if !aclNamePattern.MatchString(acl.Name) {
+		return nil, fmt.Errorf("acl %q has an invalid name, use only letters, digits, '_' and '-'", acl.Name)
 	}
 	if acl.Name == "ALLOW_SSH" || acl.Name == "ALLOW_NTP" {
 		return nil, fmt.Errorf("acl %q is reserved for the acls generated from ssh_sourceranges, choose another name", acl.Name)
 	}
 	if len(acl.Ports) == 0 {
 		return nil, fmt.Errorf("acl %q has no ports, list the ports or vlans it applies to", acl.Name)
+	}
+	for _, port := range acl.Ports {
+		if !interfaces.canBind(port) {
+			return nil, fmt.Errorf("acl %q is bound to %q, which is not defined, add it to vlans, portchannels or ports first", acl.Name, port)
+		}
 	}
 	if len(acl.Rules) == 0 {
 		return nil, fmt.Errorf("acl %q has no rules, add at least one", acl.Name)
@@ -235,15 +289,11 @@ func getACLRule(aclName string, index int, rule values.ACLRule, ruleCount int) (
 	if !ok {
 		return nil, fmt.Errorf("acl %q rule %d has action %q, use forward or drop", aclName, index+1, rule.Action)
 	}
-
-	for field, cidr := range map[string]string{"dst": rule.Dst, "src": rule.Src} {
-		if cidr == "" {
-			continue
-		}
-		prefix, err := netip.ParsePrefix(cidr)
-		if err != nil || !prefix.Addr().Is4() {
-			return nil, fmt.Errorf("acl %q rule %d has %s %q, use an ipv4 cidr such as 10.0.0.0/16", aclName, index+1, field, cidr)
-		}
+	if err := checkACLRuleCIDR(aclName, index, "dst", rule.Dst); err != nil {
+		return nil, err
+	}
+	if err := checkACLRuleCIDR(aclName, index, "src", rule.Src); err != nil {
+		return nil, err
 	}
 
 	aclRule := ACLRule{
@@ -257,6 +307,20 @@ func getACLRule(aclName string, index int, rule values.ACLRule, ruleCount int) (
 	}
 
 	return &aclRule, nil
+}
+
+func checkACLRuleCIDR(aclName string, index int, field, cidr string) error {
+	if cidr == "" {
+		return nil
+	}
+	prefix, err := netip.ParsePrefix(cidr)
+	if err != nil || !prefix.Addr().Is4() {
+		return fmt.Errorf("acl %q rule %d has %s %q, use an ipv4 cidr such as 10.0.0.0/16", aclName, index+1, field, cidr)
+	}
+	if prefix != prefix.Masked() {
+		return fmt.Errorf("acl %q rule %d has %s %q with host bits set, use %s", aclName, index+1, field, cidr, prefix.Masked())
+	}
+	return nil
 }
 
 func getSSHACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string]ACLTable) {

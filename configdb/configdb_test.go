@@ -692,6 +692,10 @@ func Test_getACLRulesAndTables(t *testing.T) {
 		"PXE_IN|RULE_3": {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "10"},
 	}
 	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}
+	interfaces := aclInterfaces{
+		defined:        map[string]bool{"Ethernet0": true, "Vlan4000": true, "Vlan4001": true},
+		portsGenerated: true,
+	}
 
 	tests := []struct {
 		name         string
@@ -783,6 +787,54 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.0.0", use an ipv4 cidr such as 10.0.0.0/16`,
 		},
 		{
+			name:    "name with the configdb key separator",
+			acls:    []values.ACL{{Name: "PXE|IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "PXE|IN" has an invalid name, use only letters, digits, '_' and '-'`,
+		},
+		{
+			name:    "undefined vlan",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan400"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "PXE_IN" is bound to "Vlan400", which is not defined, add it to vlans, portchannels or ports first`,
+		},
+		{
+			name:    "undefined ethernet port",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Ethernet9"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "PXE_IN" is bound to "Ethernet9", which is not defined, add it to vlans, portchannels or ports first`,
+		},
+		{
+			name: "two acls on the same port and stage",
+			acls: []values.ACL{
+				pxe,
+				{Name: "PXE_IN_2", Ports: []string{"Vlan4001", "Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}},
+			},
+			wantErr: `acls "PXE_IN" and "PXE_IN_2" are both bound to "Vlan4000" at stage ingress, merge their rules into one acl`,
+		},
+		{
+			name: "same port with different stages",
+			acls: []values.ACL{
+				{Name: "IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}},
+				{Name: "OUT", Ports: []string{"Vlan4000"}, Stage: "egress", Rules: []values.ACLRule{{Action: "drop"}}},
+			},
+			wantRules: map[string]ACLRule{
+				"IN|RULE_1":  {IPType: "IPV4ANY", PacketAction: PacketActionDrop, Priority: "10"},
+				"OUT|RULE_1": {IPType: "IPV4ANY", PacketAction: PacketActionDrop, Priority: "10"},
+			},
+			wantTables: map[string]ACLTable{
+				"IN":  {Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"},
+				"OUT": {Ports: []string{"Vlan4000"}, Stage: "egress", Type: "L3"},
+			},
+		},
+		{
+			name:    "host bits set",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "forward", Dst: "10.254.254.130/16"}}}},
+			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.254.130/16" with host bits set, use 10.254.0.0/16`,
+		},
+		{
+			name:    "dst is reported before src",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop", Dst: "x", Src: "y"}}}},
+			wantErr: `acl "PXE_IN" rule 1 has dst "x", use an ipv4 cidr such as 10.0.0.0/16`,
+		},
+		{
 			name:    "ipv6 src",
 			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop", Src: "fd00::/8"}}}},
 			wantErr: `acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr such as 10.0.0.0/16`,
@@ -791,7 +843,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acls)
+			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acls, interfaces)
 			if diff := cmp.Diff(tt.wantErr, errorString(err)); diff != "" {
 				t.Fatalf("getACLRulesAndTables() error diff = %s", diff)
 			}
@@ -800,6 +852,36 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.wantTables, gotTables); diff != "" {
 				t.Errorf("getACLRulesAndTables() tables diff = %s", diff)
+			}
+		})
+	}
+}
+
+func Test_aclInterfaces_canBind(t *testing.T) {
+	ports := map[string]Port{"Ethernet0": {}}
+	vlans := []values.VLAN{{ID: "4000"}}
+	portChannels := []values.PortChannel{{Number: "1"}}
+
+	tests := []struct {
+		name  string
+		ports map[string]Port
+		iface string
+		want  bool
+	}{
+		{name: "generated port", ports: ports, iface: "Ethernet0", want: true},
+		{name: "port missing from the generated ports", ports: ports, iface: "Ethernet1", want: false},
+		{name: "ethernet ports are not checked without a ports section", ports: nil, iface: "Ethernet1", want: true},
+		{name: "defined vlan", ports: nil, iface: "Vlan4000", want: true},
+		{name: "undefined vlan without a ports section", ports: nil, iface: "Vlan4001", want: false},
+		{name: "defined portchannel", ports: ports, iface: "PortChannel1", want: true},
+		{name: "undefined portchannel", ports: ports, iface: "PortChannel2", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := getACLInterfaces(tt.ports, vlans, portChannels).canBind(tt.iface)
+			if got != tt.want {
+				t.Errorf("canBind(%q) = %v, want %v", tt.iface, got, tt.want)
 			}
 		})
 	}
