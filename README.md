@@ -28,6 +28,9 @@ ASIC_TYPE=broadcom
 
 ## Configuration Parameters
 
+Unknown keys are rejected anywhere in `sonic-config.yaml`, also when they come in through a YAML merge key.
+A YAML anchor therefore has to sit on a known key; a top-level helper key that only carries an anchor is rejected as well.
+
 ### acls
 
 Ordered list of L3 ACL tables, added next to the ones generated from `ssh_sourceranges`.
@@ -44,8 +47,6 @@ Each port can carry one of these tables per stage, so the order between tables n
 | rules.action | yes       | `forward` or `drop`.                                                                                                            |
 | rules.dst    |           | the destination as IPv4 CIDR without host bits, e.g. `10.0.0.0/16`.                                                             |
 | rules.src    |           | the source as IPv4 CIDR without host bits. A rule without `dst` and `src` matches any IPv4.                                     |
-
-Unknown fields are rejected, also when they come in through a YAML merge key.
 
 Limits:
 

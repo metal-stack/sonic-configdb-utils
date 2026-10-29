@@ -1,10 +1,10 @@
 package values
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
-	"reflect"
-	"slices"
-	"strings"
+	"io"
 
 	"gopkg.in/yaml.v3"
 )
@@ -177,69 +177,15 @@ type VXLANTunnelMap struct {
 
 func UnmarshalValues(in []byte) (*Values, error) {
 	var values Values
-	err := yaml.Unmarshal(in, &values)
+	decoder := yaml.NewDecoder(bytes.NewReader(in))
+	decoder.KnownFields(true)
+	err := decoder.Decode(&values)
+	if errors.Is(err, io.EOF) {
+		return &values, nil
+	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w\nfix or remove the fields named above, the known fields are listed in the README", err)
 	}
 
 	return &values, nil
-}
-
-func (a *ACL) UnmarshalYAML(node *yaml.Node) error {
-	type plain ACL
-	return decodeKnownFields(node, "acl", (*plain)(a))
-}
-
-func (r *ACLRule) UnmarshalYAML(node *yaml.Node) error {
-	type plain ACLRule
-	return decodeKnownFields(node, "acl rule", (*plain)(r))
-}
-
-func decodeKnownFields(node *yaml.Node, kind string, target any) error {
-	if err := checkKnownFields(node, kind, yamlFieldNames(target)); err != nil {
-		return err
-	}
-	return node.Decode(target)
-}
-
-func checkKnownFields(node *yaml.Node, kind string, known []string) error {
-	for i := 0; i+1 < len(node.Content); i += 2 {
-		key, value := node.Content[i], node.Content[i+1]
-		if key.ShortTag() == "!!merge" {
-			if err := checkMergedFields(value, kind, known); err != nil {
-				return err
-			}
-			continue
-		}
-		if !slices.Contains(known, key.Value) {
-			return fmt.Errorf("line %d: unknown field %q in %s, use one of %s", key.Line, key.Value, kind, strings.Join(known, ", "))
-		}
-	}
-	return nil
-}
-
-func checkMergedFields(node *yaml.Node, kind string, known []string) error {
-	switch node.Kind {
-	case yaml.AliasNode:
-		return checkMergedFields(node.Alias, kind, known)
-	case yaml.MappingNode:
-		return checkKnownFields(node, kind, known)
-	case yaml.SequenceNode:
-		for _, item := range node.Content {
-			if err := checkMergedFields(item, kind, known); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func yamlFieldNames(target any) []string {
-	structType := reflect.TypeOf(target).Elem()
-	names := make([]string, 0, structType.NumField())
-	for i := range structType.NumField() {
-		names = append(names, strings.Split(structType.Field(i).Tag.Get("yaml"), ",")[0])
-	}
-	slices.Sort(names)
-	return names
 }

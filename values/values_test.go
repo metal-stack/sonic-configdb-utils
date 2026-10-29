@@ -42,35 +42,45 @@ acls:
       - action: drop
         dst_ip: 10.0.0.0/16
 `,
-			wantErr: `unknown field "dst_ip" in acl rule, use one of action, dst, src`,
+			wantErr: `line 6: field dst_ip not found in type values.ACLRule`,
 		},
 		{
 			name: "fields from a merge key",
+			input: `
+acls:
+  - &pxe
+    name: PXE_IN
+    ports: [Vlan4000]
+    rules:
+      - action: drop
+  - <<: *pxe
+    name: PXE_OUT
+    stage: egress
+`,
+			want: []ACL{
+				{
+					Name:  "PXE_IN",
+					Ports: []string{"Vlan4000"},
+					Rules: []ACLRule{{Action: "drop"}},
+				},
+				{
+					Name:  "PXE_OUT",
+					Ports: []string{"Vlan4000"},
+					Rules: []ACLRule{{Action: "drop"}},
+					Stage: "egress",
+				},
+			},
+		},
+		{
+			name: "helper key for an anchor",
 			input: `
 common: &common
   ports: [Vlan4000]
 acls:
   - <<: *common
     name: PXE_IN
-    rules:
-      - action: drop
 `,
-			want: []ACL{{
-				Name:  "PXE_IN",
-				Ports: []string{"Vlan4000"},
-				Rules: []ACLRule{{Action: "drop"}},
-			}},
-		},
-		{
-			name: "unknown field behind a merge key",
-			input: `
-common: &common
-  port: [Vlan4000]
-acls:
-  - <<: *common
-    name: PXE_IN
-`,
-			wantErr: `line 3: unknown field "port" in acl, use one of description, name, ports, rules, stage`,
+			wantErr: `line 2: field common not found in type values.Values`,
 		},
 		{
 			name: "unknown acl field",
@@ -79,7 +89,31 @@ acls:
   - name: PXE_IN
     port: [Vlan4000]
 `,
-			wantErr: `unknown field "port" in acl, use one of description, name, ports, rules, stage`,
+			wantErr: `line 4: field port not found in type values.ACL`,
+		},
+		{
+			name:  "empty input",
+			input: ``,
+		},
+		{
+			name: "misspelled acls key",
+			input: `
+acl:
+  - name: PXE_IN
+    ports: [Vlan4000]
+    rules:
+      - action: drop
+`,
+			wantErr: `line 2: field acl not found`,
+		},
+		{
+			name: "unknown field outside of acls",
+			input: `
+vlans:
+  - id: "4000"
+    vlan_id: "4000"
+`,
+			wantErr: `line 4: field vlan_id not found`,
 		},
 	}
 
