@@ -1,8 +1,6 @@
 package values
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -109,15 +107,30 @@ acl:
 			wantErr: `line 2: field acl not found`,
 		},
 		{
-			name: "extra keys inside other sections are accepted",
+			name: "frr keys that metal-roles passes through are accepted",
 			input: `
-vlans:
-  - id: "4000"
-    vlan_id: "4000"
 interconnects:
   external:
     vrf: Vrf46
+    vni: 46
     peer_group: EXTERNAL
+    neighbor_ip: 192.168.255.2
+    remote_as: 4200000000
+    keep_private_as: true
+    announcements:
+      - redistribute connected
+    routemap_in:
+      name: ALLOW-EXTERNAL-IN
+      entries:
+        - match ip address prefix-list EXTERNAL_IN
+    prefixlists:
+      - ip prefix-list EXTERNAL_IN seq 10 permit 10.64.64.0/22 ge 32
+vlans:
+  - id: "4000"
+    vrrp:
+      group: "1"
+      priority: 66
+      ip: 10.1.1.1/24
 `,
 		},
 		{
@@ -149,25 +162,6 @@ interconnects:
 			}
 			if diff := cmp.Diff(tt.want, got.ACLs); diff != "" {
 				t.Errorf("UnmarshalValues() acls diff = %s", diff)
-			}
-		})
-	}
-}
-
-func Test_UnmarshalValues_renderedByMetalRoles(t *testing.T) {
-	files, err := filepath.Glob("testdata/metal-roles/*.yaml")
-	if err != nil || len(files) == 0 {
-		t.Fatalf("no rendered metal-roles inputs found in testdata/metal-roles, err = %v", err)
-	}
-
-	for _, file := range files {
-		t.Run(filepath.Base(file), func(t *testing.T) {
-			input, err := os.ReadFile(file)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if _, err := UnmarshalValues(input); err != nil {
-				t.Errorf("UnmarshalValues() rejects a file rendered by metal-roles: %v", err)
 			}
 		})
 	}
