@@ -239,6 +239,9 @@ func claimACLBindings(aclByBinding map[string]string, aclName string, table ACLT
 	for _, port := range table.Ports {
 		binding := port + "|" + table.Stage
 		if other, bound := aclByBinding[binding]; bound {
+			if other == aclName {
+				return fmt.Errorf("acl %q lists %q twice, remove one", aclName, port)
+			}
 			return fmt.Errorf("acls %q and %q are both bound to %q at stage %s, merge their rules into one acl", other, aclName, port, table.Stage)
 		}
 		aclByBinding[binding] = aclName

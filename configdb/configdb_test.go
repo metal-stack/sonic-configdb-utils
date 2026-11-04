@@ -810,6 +810,11 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			wantErr: `acls "PXE_IN" and "PXE_IN_2" are both bound to "Vlan4000" at stage ingress, merge their rules into one acl`,
 		},
 		{
+			name:    "same port listed twice in one acl",
+			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan4000", "Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "PXE_IN" lists "Vlan4000" twice, remove one`,
+		},
+		{
 			name: "same port with different stages",
 			acls: []values.ACL{
 				{Name: "IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}},
