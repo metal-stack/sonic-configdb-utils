@@ -171,12 +171,14 @@ var aclPacketActions = map[string]PacketAction{
 var aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 
 type aclInterfaces struct {
-	defined        map[string]bool
-	portsGenerated bool
+	defined           map[string]bool
+	portChannelByPort map[string]string
+	portsGenerated    bool
 }
 
 func getACLInterfaces(ports map[string]Port, vlans []values.VLAN, portChannels []values.PortChannel) aclInterfaces {
 	defined := map[string]bool{}
+	portChannelByPort := map[string]string{}
 	for name := range ports {
 		defined[name] = true
 	}
@@ -184,9 +186,13 @@ func getACLInterfaces(ports map[string]Port, vlans []values.VLAN, portChannels [
 		defined["Vlan"+vlan.ID] = true
 	}
 	for _, portChannel := range portChannels {
-		defined["PortChannel"+portChannel.Number] = true
+		name := "PortChannel" + portChannel.Number
+		defined[name] = true
+		for _, member := range portChannel.Members {
+			portChannelByPort[member] = name
+		}
 	}
-	return aclInterfaces{defined: defined, portsGenerated: len(ports) > 0}
+	return aclInterfaces{defined: defined, portChannelByPort: portChannelByPort, portsGenerated: len(ports) > 0}
 }
 
 func (i aclInterfaces) canBind(name string) bool {
@@ -263,6 +269,9 @@ func getACLTable(index int, acl values.ACL, interfaces aclInterfaces) (*ACLTable
 		return nil, fmt.Errorf("acl %q has no ports, list the ports or vlans it applies to", acl.Name)
 	}
 	for _, port := range acl.Ports {
+		if portChannel, isMember := interfaces.portChannelByPort[port]; isMember {
+			return nil, fmt.Errorf("acl %q is bound to %q, which is a member of %s, bind it to %s instead", acl.Name, port, portChannel, portChannel)
+		}
 		if !interfaces.canBind(port) {
 			return nil, fmt.Errorf("acl %q is bound to %q, which is not defined, add it to vlans, portchannels or ports first", acl.Name, port)
 		}

@@ -862,6 +862,20 @@ func Test_getACLRulesAndTables(t *testing.T) {
 	}
 }
 
+func Test_getACLRulesAndTables_portChannelMember(t *testing.T) {
+	ports := map[string]Port{"Ethernet0": {}, "Ethernet4": {}}
+	portChannels := []values.PortChannel{{Number: "1", Members: []string{"Ethernet4"}}}
+	interfaces := getACLInterfaces(ports, nil, portChannels)
+	acls := []values.ACL{{Name: "IN", Ports: []string{"Ethernet0", "Ethernet4"}, Rules: []values.ACLRule{{Action: "drop"}}}}
+
+	_, _, err := getACLRulesAndTables(nil, acls, interfaces)
+
+	want := `acl "IN" is bound to "Ethernet4", which is a member of PortChannel1, bind it to PortChannel1 instead`
+	if diff := cmp.Diff(want, errorString(err)); diff != "" {
+		t.Errorf("getACLRulesAndTables() error diff = %s", diff)
+	}
+}
+
 func Test_aclInterfaces_canBind(t *testing.T) {
 	ports := map[string]Port{"Ethernet0": {}}
 	vlans := []values.VLAN{{ID: "4000"}}

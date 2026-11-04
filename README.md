@@ -40,7 +40,7 @@ Each port can carry one of these tables per stage, so the order between tables n
 | Key          | Mandatory | Description                                                                                                                     |
 | ------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | name         | yes       | the table name: letters, digits, `_` and `-`. `ALLOW_SSH` and `ALLOW_NTP` are reserved.                                         |
-| ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels` or `vlans`.            |
+| ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels` or `vlans`; a port channel member is rejected, bind the port channel instead. |
 | rules        | yes       | the rules, see below.                                                                                                           |
 | description  |           | the policy description of the table.                                                                                            |
 | stage        |           | `ingress` (default) or `egress`.                                                                                                |
