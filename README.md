@@ -37,16 +37,16 @@ Ordered list of L3 ACL tables, added next to the ones generated from `ssh_source
 Rules are evaluated in list order: they are named `RULE_1`, `RULE_2`, ... and get descending priorities, so the first matching rule wins.
 Each port can carry one of these tables per stage, so the order between tables never decides.
 
-| Key          | Mandatory | Description                                                                                                                     |
-| ------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| name         | yes       | the table name: letters, digits, `_` and `-`. `ALLOW_SSH` and `ALLOW_NTP` are reserved.                                         |
+| Key          | Mandatory | Description                                                                                                                                                                            |
+| ------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name         | yes       | the table name: letters, digits, `_` and `-`. `ALLOW_SSH` and `ALLOW_NTP` are reserved.                                                                                                |
 | ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels` or `vlans`; a port channel member is rejected, bind the port channel instead. |
-| rules        | yes       | the rules, see below.                                                                                                           |
-| description  |           | the policy description of the table.                                                                                            |
-| stage        |           | `ingress` (default) or `egress`.                                                                                                |
-| rules.action | yes       | `forward` or `drop`.                                                                                                            |
-| rules.dst    |           | the destination as IPv4 CIDR without host bits, e.g. `10.0.0.0/16`.                                                             |
-| rules.src    |           | the source as IPv4 CIDR without host bits. A rule without `dst` and `src` matches any IPv4.                                     |
+| rules        | yes       | the rules, see below.                                                                                                                                                                  |
+| description  |           | the policy description of the table.                                                                                                                                                   |
+| stage        |           | `ingress` (default) or `egress`.                                                                                                                                                       |
+| rules.action | yes       | `forward` or `drop`.                                                                                                                                                                   |
+| rules.dst    |           | the destination as IPv4 CIDR without host bits, e.g. `10.0.0.0/16`.                                                                                                                    |
+| rules.src    |           | the source as IPv4 CIDR without host bits. A rule without `dst` and `src` matches any IPv4.                                                                                            |
 
 Limits:
 
