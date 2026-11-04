@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -187,46 +188,39 @@ func UnmarshalValues(in []byte) (*Values, error) {
 	if err := yaml.Unmarshal(in, &values); err != nil {
 		return nil, err
 	}
-	if err := checkTopLevelKeys(in); err != nil {
-		return nil, withUnknownFieldHint(err)
-	}
-	if err := checkACLFields(in); err != nil {
-		return nil, withUnknownFieldHint(err)
+	if err := checkUnknownFields(in); err != nil {
+		return nil, fmt.Errorf("%w\nfix or remove the fields named above, the top-level keys and the acl fields are described in the README", err)
 	}
 	return &values, nil
 }
 
-func withUnknownFieldHint(err error) error {
-	return fmt.Errorf("%w\nfix or remove the fields named above, the top-level keys and the acl fields are described in the README", err)
-}
-
-func checkACLFields(in []byte) error {
+func checkUnknownFields(in []byte) error {
+	var strict valuesWithStrictACLs
 	decoder := yaml.NewDecoder(bytes.NewReader(in))
 	decoder.KnownFields(true)
-	err := decoder.Decode(&valuesWithStrictACLs{})
+	err := decoder.Decode(&strict)
 	if errors.Is(err, io.EOF) {
 		return nil
 	}
-	return err
-}
-
-func checkTopLevelKeys(in []byte) error {
-	var document yaml.Node
-	if err := yaml.Unmarshal(in, &document); err != nil || len(document.Content) == 0 {
+	if err != nil {
 		return err
 	}
+	return checkTopLevelKeys(strict.Other)
+}
 
+func checkTopLevelKeys(keys map[string]yaml.Node) error {
 	known := topLevelKeys()
 	var unknown []string
-	for _, key := range mappingKeys(document.Content[0]) {
-		if !known[key.Value] {
-			unknown = append(unknown, fmt.Sprintf("line %d: field %s not found in type values.Values", key.Line, key.Value))
+	for key := range keys {
+		if !known[key] {
+			unknown = append(unknown, key)
 		}
 	}
-	if len(unknown) > 0 {
-		return &yaml.TypeError{Errors: unknown}
+	if len(unknown) == 0 {
+		return nil
 	}
-	return nil
+	sort.Strings(unknown)
+	return fmt.Errorf("unknown top-level keys: %s", strings.Join(unknown, ", "))
 }
 
 func topLevelKeys() map[string]bool {
@@ -237,29 +231,4 @@ func topLevelKeys() map[string]bool {
 		keys[name] = true
 	}
 	return keys
-}
-
-func mappingKeys(node *yaml.Node) []*yaml.Node {
-	switch node.Kind {
-	case yaml.AliasNode:
-		return mappingKeys(node.Alias)
-	case yaml.SequenceNode:
-		var keys []*yaml.Node
-		for _, merged := range node.Content {
-			keys = append(keys, mappingKeys(merged)...)
-		}
-		return keys
-	case yaml.MappingNode:
-		var keys []*yaml.Node
-		for i := 0; i+1 < len(node.Content); i += 2 {
-			key, value := node.Content[i], node.Content[i+1]
-			if key.Tag == "!!merge" {
-				keys = append(keys, mappingKeys(value)...)
-				continue
-			}
-			keys = append(keys, key)
-		}
-		return keys
-	}
-	return nil
 }

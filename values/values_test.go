@@ -7,12 +7,15 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func Test_UnmarshalValues_acls(t *testing.T) {
+func Test_UnmarshalValues(t *testing.T) {
+	const fixHint = "fix or remove the fields named above"
+
 	tests := []struct {
-		name    string
-		input   string
-		want    []ACL
-		wantErr string
+		name        string
+		input       string
+		want        []ACL
+		wantErr     string
+		wantFixHint bool
 	}{
 		{
 			name: "known fields",
@@ -42,7 +45,8 @@ acls:
       - action: drop
         dst_ip: 10.0.0.0/16
 `,
-			wantErr: `line 6: field dst_ip not found in type values.ACLRule`,
+			wantErr:     `line 6: field dst_ip not found in type values.ACLRule`,
+			wantFixHint: true,
 		},
 		{
 			name: "fields from a merge key",
@@ -80,7 +84,8 @@ acls:
   - <<: *common
     name: PXE_IN
 `,
-			wantErr: `line 2: field common not found in type values.Values`,
+			wantErr:     `unknown top-level keys: common`,
+			wantFixHint: true,
 		},
 		{
 			name: "unknown acl field",
@@ -89,7 +94,8 @@ acls:
   - name: PXE_IN
     port: [Vlan4000]
 `,
-			wantErr: `line 4: field port not found in type values.ACL`,
+			wantErr:     `line 4: field port not found in type values.ACL`,
+			wantFixHint: true,
 		},
 		{
 			name:  "empty input",
@@ -104,7 +110,17 @@ acl:
     rules:
       - action: drop
 `,
-			wantErr: `line 2: field acl not found`,
+			wantErr:     `unknown top-level keys: acl`,
+			wantFixHint: true,
+		},
+		{
+			name: "several unknown top-level keys are listed sorted",
+			input: `
+vlan: []
+acl: []
+`,
+			wantErr:     `unknown top-level keys: acl, vlan`,
+			wantFixHint: true,
 		},
 		{
 			name: "frr keys that metal-roles passes through are accepted",
@@ -144,7 +160,15 @@ vlans:
 			input: `
 <<: {hostnme: leaf01}
 `,
-			wantErr: `line 2: field hostnme not found in type values.Values`,
+			wantErr:     `unknown top-level keys: hostnme`,
+			wantFixHint: true,
+		},
+		{
+			name: "a type error does not ask to remove fields",
+			input: `
+lldp_hello_time: ten
+`,
+			wantErr: "cannot unmarshal",
 		},
 	}
 
@@ -155,6 +179,9 @@ vlans:
 				if err == nil || !strings.Contains(err.Error(), tt.wantErr) {
 					t.Fatalf("UnmarshalValues() error = %v, want it to contain %q", err, tt.wantErr)
 				}
+				if hasFixHint := strings.Contains(err.Error(), fixHint); hasFixHint != tt.wantFixHint {
+					t.Errorf("UnmarshalValues() error = %v, want the fix hint %v", err, tt.wantFixHint)
+				}
 				return
 			}
 			if err != nil {
@@ -164,15 +191,5 @@ vlans:
 				t.Errorf("UnmarshalValues() acls diff = %s", diff)
 			}
 		})
-	}
-}
-
-func Test_UnmarshalValues_typeErrorHasNoUnknownFieldHint(t *testing.T) {
-	_, err := UnmarshalValues([]byte("lldp_hello_time: ten\n"))
-	if err == nil || !strings.Contains(err.Error(), "cannot unmarshal") {
-		t.Fatalf("UnmarshalValues() error = %v, want a type error", err)
-	}
-	if strings.Contains(err.Error(), "fix or remove the fields") {
-		t.Errorf("UnmarshalValues() error = %v, a type error must not ask to remove fields", err)
 	}
 }
