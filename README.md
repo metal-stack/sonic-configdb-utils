@@ -28,8 +28,9 @@ ASIC_TYPE=broadcom
 
 ## Configuration Parameters
 
-Unknown keys are rejected anywhere in `sonic-config.yaml`, also when they come in through a YAML merge key.
+Unknown keys are rejected at the top level of `sonic-config.yaml` and inside `acls`, also when they come in through a YAML merge key.
 A YAML anchor therefore has to sit on a known key; a top-level helper key that only carries an anchor is rejected as well.
+The other sections accept extra keys, since metal-roles passes `interconnects` and `vlans` through with keys that only `frr.conf` uses.
 
 ### acls
 

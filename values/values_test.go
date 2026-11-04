@@ -1,6 +1,8 @@
 package values
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -107,13 +109,29 @@ acl:
 			wantErr: `line 2: field acl not found`,
 		},
 		{
-			name: "unknown field outside of acls",
+			name: "extra keys inside other sections are accepted",
 			input: `
 vlans:
   - id: "4000"
     vlan_id: "4000"
+interconnects:
+  external:
+    vrf: Vrf46
+    peer_group: EXTERNAL
 `,
-			wantErr: `line 4: field vlan_id not found`,
+		},
+		{
+			name: "top-level keys from a merge key",
+			input: `
+<<: {hostname: leaf01}
+`,
+		},
+		{
+			name: "misspelled top-level key from a merge key",
+			input: `
+<<: {hostnme: leaf01}
+`,
+			wantErr: `line 2: field hostnme not found in type values.Values`,
 		},
 	}
 
@@ -133,5 +151,34 @@ vlans:
 				t.Errorf("UnmarshalValues() acls diff = %s", diff)
 			}
 		})
+	}
+}
+
+func Test_UnmarshalValues_renderedByMetalRoles(t *testing.T) {
+	files, err := filepath.Glob("testdata/metal-roles/*.yaml")
+	if err != nil || len(files) == 0 {
+		t.Fatalf("no rendered metal-roles inputs found in testdata/metal-roles, err = %v", err)
+	}
+
+	for _, file := range files {
+		t.Run(filepath.Base(file), func(t *testing.T) {
+			input, err := os.ReadFile(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := UnmarshalValues(input); err != nil {
+				t.Errorf("UnmarshalValues() rejects a file rendered by metal-roles: %v", err)
+			}
+		})
+	}
+}
+
+func Test_UnmarshalValues_typeErrorHasNoUnknownFieldHint(t *testing.T) {
+	_, err := UnmarshalValues([]byte("lldp_hello_time: ten\n"))
+	if err == nil || !strings.Contains(err.Error(), "cannot unmarshal") {
+		t.Fatalf("UnmarshalValues() error = %v, want a type error", err)
+	}
+	if strings.Contains(err.Error(), "fix or remove the fields") {
+		t.Errorf("UnmarshalValues() error = %v, a type error must not ask to remove fields", err)
 	}
 }

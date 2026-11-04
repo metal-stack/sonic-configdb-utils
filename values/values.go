@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"reflect"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -175,17 +177,89 @@ type VXLANTunnelMap struct {
 	VLAN string `yaml:"vlan"`
 }
 
+type valuesWithStrictACLs struct {
+	ACLs  []ACL                `yaml:"acls"`
+	Other map[string]yaml.Node `yaml:",inline"`
+}
+
 func UnmarshalValues(in []byte) (*Values, error) {
 	var values Values
+	if err := yaml.Unmarshal(in, &values); err != nil {
+		return nil, err
+	}
+	if err := checkTopLevelKeys(in); err != nil {
+		return nil, withUnknownFieldHint(err)
+	}
+	if err := checkACLFields(in); err != nil {
+		return nil, withUnknownFieldHint(err)
+	}
+	return &values, nil
+}
+
+func withUnknownFieldHint(err error) error {
+	return fmt.Errorf("%w\nfix or remove the fields named above, the top-level keys and the acl fields are described in the README", err)
+}
+
+func checkACLFields(in []byte) error {
 	decoder := yaml.NewDecoder(bytes.NewReader(in))
 	decoder.KnownFields(true)
-	err := decoder.Decode(&values)
+	err := decoder.Decode(&valuesWithStrictACLs{})
 	if errors.Is(err, io.EOF) {
-		return &values, nil
+		return nil
 	}
-	if err != nil {
-		return nil, fmt.Errorf("%w\nfix or remove the fields named above, the known fields are listed in the README", err)
+	return err
+}
+
+func checkTopLevelKeys(in []byte) error {
+	var document yaml.Node
+	if err := yaml.Unmarshal(in, &document); err != nil || len(document.Content) == 0 {
+		return err
 	}
 
-	return &values, nil
+	known := topLevelKeys()
+	var unknown []string
+	for _, key := range mappingKeys(document.Content[0]) {
+		if !known[key.Value] {
+			unknown = append(unknown, fmt.Sprintf("line %d: field %s not found in type values.Values", key.Line, key.Value))
+		}
+	}
+	if len(unknown) > 0 {
+		return &yaml.TypeError{Errors: unknown}
+	}
+	return nil
+}
+
+func topLevelKeys() map[string]bool {
+	keys := map[string]bool{}
+	valuesType := reflect.TypeOf(Values{})
+	for i := 0; i < valuesType.NumField(); i++ {
+		name, _, _ := strings.Cut(valuesType.Field(i).Tag.Get("yaml"), ",")
+		keys[name] = true
+	}
+	return keys
+}
+
+func mappingKeys(node *yaml.Node) []*yaml.Node {
+	switch node.Kind {
+	case yaml.AliasNode:
+		return mappingKeys(node.Alias)
+	case yaml.SequenceNode:
+		var keys []*yaml.Node
+		for _, merged := range node.Content {
+			keys = append(keys, mappingKeys(merged)...)
+		}
+		return keys
+	case yaml.MappingNode:
+		var keys []*yaml.Node
+		for i := 0; i+1 < len(node.Content); i += 2 {
+			key, value := node.Content[i], node.Content[i+1]
+			if key.Tag == "!!merge" {
+				keys = append(keys, mappingKeys(value)...)
+				continue
+			}
+			keys = append(keys, key)
+		}
+		return keys
+	}
+	return nil
 }
