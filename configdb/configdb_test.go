@@ -692,10 +692,11 @@ func Test_getACLRulesAndTables(t *testing.T) {
 		"PXE_IN|RULE_3": {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "10"},
 	}
 	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}
-	interfaces := aclInterfaces{
-		defined:        map[string]bool{"Ethernet0": true, "Vlan4000": true, "Vlan4001": true},
-		portsGenerated: true,
-	}
+	interfaces := getACLInterfaces(
+		map[string]Port{"Ethernet0": {}, "Ethernet4": {}},
+		[]values.VLAN{{ID: "4000"}, {ID: "4001"}},
+		[]values.PortChannel{{Number: "1", Members: []string{"Ethernet4"}}},
+	)
 
 	tests := []struct {
 		name         string
@@ -815,6 +816,11 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			wantErr: `acl "PXE_IN" lists "Vlan4000" twice, remove one`,
 		},
 		{
+			name:    "port channel member",
+			acls:    []values.ACL{{Name: "IN", Ports: []string{"Ethernet0", "Ethernet4"}, Rules: []values.ACLRule{{Action: "drop"}}}},
+			wantErr: `acl "IN" is bound to "Ethernet4", which is a member of PortChannel1, bind it to PortChannel1 instead`,
+		},
+		{
 			name: "same port with different stages",
 			acls: []values.ACL{
 				{Name: "IN", Ports: []string{"Vlan4000"}, Rules: []values.ACLRule{{Action: "drop"}}},
@@ -859,20 +865,6 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				t.Errorf("getACLRulesAndTables() tables diff = %s", diff)
 			}
 		})
-	}
-}
-
-func Test_getACLRulesAndTables_portChannelMember(t *testing.T) {
-	ports := map[string]Port{"Ethernet0": {}, "Ethernet4": {}}
-	portChannels := []values.PortChannel{{Number: "1", Members: []string{"Ethernet4"}}}
-	interfaces := getACLInterfaces(ports, nil, portChannels)
-	acls := []values.ACL{{Name: "IN", Ports: []string{"Ethernet0", "Ethernet4"}, Rules: []values.ACLRule{{Action: "drop"}}}}
-
-	_, _, err := getACLRulesAndTables(nil, acls, interfaces)
-
-	want := `acl "IN" is bound to "Ethernet4", which is a member of PortChannel1, bind it to PortChannel1 instead`
-	if diff := cmp.Diff(want, errorString(err)); diff != "" {
-		t.Errorf("getACLRulesAndTables() error diff = %s", diff)
 	}
 }
 
