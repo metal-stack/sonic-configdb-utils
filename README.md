@@ -230,6 +230,26 @@ Result:
 }
 ```
 
+### hostname
+
+Example:
+
+```yaml
+hostname: leaf01
+```
+
+Result:
+
+```json
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "leaf01"
+    }
+  }
+}
+```
+
 ### interconnects
 
 Example:
@@ -261,6 +281,30 @@ Result:
 }
 ```
 
+### interfaces
+
+IP addresses for interfaces by name, e.g. a port or a subinterface.
+
+Example:
+
+```yaml
+interfaces:
+  Ethernet1:
+    ips:
+      - 10.1.0.1/30
+```
+
+Result:
+
+```json
+{
+  "INTERFACE": {
+    "Ethernet1": {},
+    "Ethernet1|10.1.0.1/30": {}
+  }
+}
+```
+
 ### lldp_hello_time
 
 This configuration slightly differs across SONiC versions and might not always have an effect.
@@ -286,7 +330,7 @@ Result:
 
 Depending on the SONiC version, the resulting field names in may slightly differ.
 
-### looback_address
+### loopback_address
 
 Example:
 
