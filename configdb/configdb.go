@@ -70,9 +70,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse platform.json: %w", err)
 		}
-	}
 
-	if input.Ports != nil || len(input.Breakouts) > 0 {
 		ports, breakouts, err = getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
 		if err != nil {
 			return nil, err
@@ -86,11 +84,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 
 	features := getFeatures(input.Features)
 
-	aclPortNames, err := getACLPortNames(ports, platform)
-	if err != nil {
-		return nil, err
-	}
-	aclInterfaces := getACLInterfaces(aclPortNames, input.VLANs, input.PortChannels.List, input.Interfaces, input.VLANSubinterfaces)
+	aclInterfaces := getACLInterfaces(input.Ports, input.VLANs, input.PortChannels.List, input.Interfaces, input.VLANSubinterfaces)
 	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs, aclInterfaces)
 	if err != nil {
 		return nil, err
@@ -181,32 +175,14 @@ type aclInterfaces struct {
 	portChannelByPort map[string]string
 }
 
-func getACLPortNames(ports map[string]Port, platform *p.Platform) (map[string]bool, error) {
-	names := map[string]bool{}
-	if len(ports) > 0 {
-		for name := range ports {
-			names[name] = true
-		}
-		return names, nil
-	}
-	if platform == nil {
-		return names, nil
-	}
-	defaultPorts, _, err := getPortsAndBreakouts(nil, nil, platform)
-	if err != nil {
-		return nil, err
-	}
-	for name := range defaultPorts {
-		names[name] = true
-	}
-	return names, nil
-}
-
-func getACLInterfaces(ports map[string]bool, vlans []values.VLAN, portChannels []values.PortChannel, interfaces map[string]values.Interface, subinterfaces []values.VLANSubinterface) aclInterfaces {
+func getACLInterfaces(ports *values.Ports, vlans []values.VLAN, portChannels []values.PortChannel, interfaces map[string]values.Interface, subinterfaces []values.VLANSubinterface) aclInterfaces {
 	defined := map[string]bool{}
 	portChannelByPort := map[string]string{}
-	for name := range ports {
-		defined[name] = true
+
+	if ports != nil {
+		for _, port := range ports.List {
+			defined[port.Name] = true
+		}
 	}
 	for name := range interfaces {
 		defined[name] = true
@@ -224,6 +200,7 @@ func getACLInterfaces(ports map[string]bool, vlans []values.VLAN, portChannels [
 			portChannelByPort[member] = name
 		}
 	}
+
 	return aclInterfaces{defined: defined, portChannelByPort: portChannelByPort}
 }
 

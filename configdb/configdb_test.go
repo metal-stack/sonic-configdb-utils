@@ -693,7 +693,12 @@ func Test_getACLRulesAndTables(t *testing.T) {
 	}
 	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}
 	interfaces := getACLInterfaces(
-		map[string]bool{"Ethernet0": true, "Ethernet4": true},
+		&values.Ports{
+			List: []values.Port{
+				{Name: "Ethernet0"},
+				{Name: "Ethernet4"},
+			},
+		},
 		[]values.VLAN{{ID: "4000"}, {ID: "4001"}},
 		[]values.PortChannel{{Number: "1", Members: []string{"Ethernet4"}}},
 		nil,
@@ -872,7 +877,11 @@ func Test_getACLRulesAndTables(t *testing.T) {
 
 func Test_aclInterfaces_canBind(t *testing.T) {
 	ifaces := getACLInterfaces(
-		map[string]bool{"Ethernet0": true},
+		&values.Ports{
+			List: []values.Port{
+				{Name: "Ethernet0"},
+			},
+		},
 		[]values.VLAN{{ID: "4000"}},
 		[]values.PortChannel{{Number: "1"}},
 		map[string]values.Interface{"Ethernet10": {}},
@@ -902,43 +911,6 @@ func Test_aclInterfaces_canBind(t *testing.T) {
 				t.Errorf("canBind(%q) = %v, want %v", tt.iface, got, tt.want)
 			}
 		})
-	}
-}
-
-func Test_getACLPortNames(t *testing.T) {
-	fromPorts, err := getACLPortNames(map[string]Port{"Ethernet0": {}, "Ethernet4": {}}, nil)
-	if err != nil {
-		t.Fatalf("getACLPortNames() unexpected error = %v", err)
-	}
-	wantFromPorts := map[string]bool{"Ethernet0": true, "Ethernet4": true}
-	if diff := cmp.Diff(wantFromPorts, fromPorts); diff != "" {
-		t.Errorf("getACLPortNames() from ports diff = %s", diff)
-	}
-
-	platform := &p.Platform{
-		Interfaces: map[string]p.Interface{
-			"Ethernet0": {
-				BreakoutModes: map[string][]string{"1x100G": {"Ethernet0"}},
-				Index:         "1",
-				Lanes:         "1,2,3,4",
-			},
-		},
-	}
-	fromPlatform, err := getACLPortNames(nil, platform)
-	if err != nil {
-		t.Fatalf("getACLPortNames() unexpected error = %v", err)
-	}
-	wantFromPlatform := map[string]bool{"Ethernet0": true}
-	if diff := cmp.Diff(wantFromPlatform, fromPlatform); diff != "" {
-		t.Errorf("getACLPortNames() from platform diff = %s", diff)
-	}
-
-	empty, err := getACLPortNames(nil, nil)
-	if err != nil {
-		t.Fatalf("getACLPortNames() unexpected error = %v", err)
-	}
-	if diff := cmp.Diff(map[string]bool{}, empty); diff != "" {
-		t.Errorf("getACLPortNames() without ports and platform diff = %s", diff)
 	}
 }
 
