@@ -32,8 +32,9 @@ vlans:
       ip: 10.1.2.1/24
 
 acls:
-  - name: PXE_IN
+  PXE_IN:
     description: PXE vlan must not reach the cluster
+    stage: ingress
     ports:
       - Vlan1
     rules:

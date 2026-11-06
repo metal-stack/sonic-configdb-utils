@@ -77,20 +77,17 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		}
 	}
 
+	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs)
+	if err != nil {
+		return nil, err
+	}
+
 	deviceMetadata, err := getDeviceMetadata(input, environment)
 	if err != nil {
 		return nil, err
 	}
 
 	features := getFeatures(input.Features)
-
-	aclInterfaces := getACLInterfaces(input.Ports, input.VLANs, input.PortChannels.List, input.Interfaces, input.VLANSubinterfaces)
-	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs, aclInterfaces)
-	if err != nil {
-		return nil, err
-	}
-
-	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
 	sag, err := getSAG(input.SAG, version)
 	if err != nil {
@@ -106,6 +103,8 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 	if err != nil {
 		return nil, err
 	}
+
+	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
 	configdb := ConfigDB{
 		ACLRules:          rules,
@@ -168,47 +167,7 @@ var aclPacketActions = map[string]PacketAction{
 	"forward": PacketActionForward,
 }
 
-var aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
-
-type aclInterfaces struct {
-	defined           map[string]bool
-	portChannelByPort map[string]string
-}
-
-func getACLInterfaces(ports *values.Ports, vlans []values.VLAN, portChannels []values.PortChannel, interfaces map[string]values.Interface, subinterfaces []values.VLANSubinterface) aclInterfaces {
-	defined := map[string]bool{}
-	portChannelByPort := map[string]string{}
-
-	if ports != nil {
-		for _, port := range ports.List {
-			defined[port.Name] = true
-		}
-	}
-	for name := range interfaces {
-		defined[name] = true
-	}
-	for _, subinterface := range subinterfaces {
-		defined[subinterface.Port+"."+subinterface.VLAN] = true
-	}
-	for _, vlan := range vlans {
-		defined["Vlan"+vlan.ID] = true
-	}
-	for _, portChannel := range portChannels {
-		name := "PortChannel" + portChannel.Number
-		defined[name] = true
-		for _, member := range portChannel.Members {
-			portChannelByPort[member] = name
-		}
-	}
-
-	return aclInterfaces{defined: defined, portChannelByPort: portChannelByPort}
-}
-
-func (i aclInterfaces) canBind(name string) bool {
-	return i.defined[name]
-}
-
-func getACLRulesAndTables(sourceRanges []string, acls []values.ACL, interfaces aclInterfaces) (map[string]ACLRule, map[string]ACLTable, error) {
+func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL) (map[string]ACLRule, map[string]ACLTable, error) {
 	rules, tables := getSSHACLRulesAndTables(sourceRanges)
 	if len(acls) == 0 {
 		return rules, tables, nil
@@ -220,83 +179,86 @@ func getACLRulesAndTables(sourceRanges []string, acls []values.ACL, interfaces a
 	if tables == nil {
 		tables = map[string]ACLTable{}
 	}
-	aclByBinding := map[string]string{}
 
-	for i, acl := range acls {
-		table, err := getACLTable(i, acl, interfaces)
+	for aclName, acl := range acls {
+		if err := checkDuplicatePortStageCombination(aclName, acl, acls); err != nil {
+			return nil, nil, err
+		}
+
+		table, err := getACLTable(aclName, acl)
 		if err != nil {
 			return nil, nil, err
 		}
-		if _, defined := tables[acl.Name]; defined {
-			return nil, nil, fmt.Errorf("acl %q is defined twice, merge the rules into one entry", acl.Name)
-		}
-		if err := claimACLBindings(aclByBinding, acl.Name, *table); err != nil {
-			return nil, nil, err
-		}
-		tables[acl.Name] = *table
+		tables[aclName] = *table
 
 		for j, rule := range acl.Rules {
-			aclRule, err := getACLRule(acl.Name, j, rule, len(acl.Rules))
+			aclRule, err := getACLRule(aclName, j, rule, len(acl.Rules))
 			if err != nil {
 				return nil, nil, err
 			}
-			rules[fmt.Sprintf("%s|RULE_%d", acl.Name, j+1)] = *aclRule
+			rules[fmt.Sprintf("%s|RULE_%d", aclName, j+1)] = *aclRule
 		}
 	}
 
 	return rules, tables, nil
 }
 
-func claimACLBindings(aclByBinding map[string]string, aclName string, table ACLTable) error {
-	for _, port := range table.Ports {
-		binding := port + "|" + table.Stage
-		if other, bound := aclByBinding[binding]; bound {
-			if other == aclName {
-				return fmt.Errorf("acl %q lists %q twice, remove one", aclName, port)
-			}
-			return fmt.Errorf("acls %q and %q are both bound to %q at stage %s, merge their rules into one acl", other, aclName, port, table.Stage)
+func checkDuplicatePortStageCombination(name string, acl values.ACL, acls map[string]values.ACL) error {
+	for n, a := range acls {
+		if n == name {
+			continue
 		}
-		aclByBinding[binding] = aclName
+		if a.Stage != acl.Stage {
+			continue
+		}
+
+		for _, port := range a.Ports {
+			if slices.Contains(acl.Ports, port) {
+				return fmt.Errorf("acls %q and %q are both bound to %q at stage %s, merge their rules into one acl", name, n, port, a.Stage)
+			}
+		}
 	}
 	return nil
 }
 
-func getACLTable(index int, acl values.ACL, interfaces aclInterfaces) (*ACLTable, error) {
-	if acl.Name == "" {
-		return nil, fmt.Errorf("acl number %d has no name, set one", index+1)
+func getACLTable(aclName string, acl values.ACL) (*ACLTable, error) {
+	var (
+		aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+		ports          []string
+	)
+
+	if !aclNamePattern.MatchString(aclName) {
+		return nil, fmt.Errorf("acl %q has an invalid name, use only letters, digits, '_' and '-'", aclName)
 	}
-	if !aclNamePattern.MatchString(acl.Name) {
-		return nil, fmt.Errorf("acl %q has an invalid name, use only letters, digits, '_' and '-'", acl.Name)
-	}
-	if acl.Name == "ALLOW_SSH" || acl.Name == "ALLOW_NTP" {
-		return nil, fmt.Errorf("acl %q is reserved for the acls generated from ssh_sourceranges, choose another name", acl.Name)
+	if aclName == "ALLOW_SSH" || aclName == "ALLOW_NTP" {
+		return nil, fmt.Errorf("acl %q is reserved for the acls generated from ssh_sourceranges, choose another name", aclName)
 	}
 	if len(acl.Ports) == 0 {
-		return nil, fmt.Errorf("acl %q has no ports, list the ports or vlans it applies to", acl.Name)
-	}
-	for _, port := range acl.Ports {
-		if portChannel, isMember := interfaces.portChannelByPort[port]; isMember {
-			return nil, fmt.Errorf("acl %q is bound to %q, which is a member of %s, bind it to %s instead", acl.Name, port, portChannel, portChannel)
-		}
-		if !interfaces.canBind(port) {
-			return nil, fmt.Errorf("acl %q is bound to %q, which is not defined, add it to ports, portchannels, vlans, interfaces or vlan_subinterfaces first", acl.Name, port)
-		}
+		return nil, fmt.Errorf("acl %q has no ports, list the ports or vlans it applies to", aclName)
 	}
 	if len(acl.Rules) == 0 {
-		return nil, fmt.Errorf("acl %q has no rules, add at least one", acl.Name)
+		return nil, fmt.Errorf("acl %q has no rules, add at least one", aclName)
 	}
 
 	stage := acl.Stage
 	if stage == "" {
-		stage = "ingress"
+		return nil, fmt.Errorf("acl %q has no stage set", aclName)
 	}
+	// FIXME: use constants for stage
 	if stage != "ingress" && stage != "egress" {
-		return nil, fmt.Errorf("acl %q has stage %q, use ingress or egress", acl.Name, acl.Stage)
+		return nil, fmt.Errorf("acl %q has stage %q, use ingress or egress", aclName, acl.Stage)
+	}
+
+	for _, port := range acl.Ports {
+		if slices.Contains(ports, port) {
+			return nil, fmt.Errorf("acl %q lists %q twice, remove one", aclName, port)
+		}
+		ports = append(ports, port)
 	}
 
 	return &ACLTable{
 		PolicyDesc: acl.Description,
-		Ports:      acl.Ports,
+		Ports:      ports,
 		Stage:      stage,
 		Type:       "L3",
 	}, nil

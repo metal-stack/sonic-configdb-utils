@@ -1,20 +1,11 @@
 package values
 
 import (
-	"bytes"
-	"errors"
-	"fmt"
-	"io"
-	"reflect"
-	"sort"
-	"strings"
-
 	"gopkg.in/yaml.v3"
 )
 
 type ACL struct {
 	Description string    `yaml:"description"`
-	Name        string    `yaml:"name"`
 	Ports       []string  `yaml:"ports"`
 	Rules       []ACLRule `yaml:"rules"`
 	Stage       string    `yaml:"stage"`
@@ -118,7 +109,7 @@ type SAG struct {
 }
 
 type Values struct {
-	ACLs                    []ACL                   `yaml:"acls"`
+	ACLs                    map[string]ACL          `yaml:"acls"`
 	BGPPorts                []string                `yaml:"bgp_ports"`
 	Breakouts               map[string]string       `yaml:"breakouts"`
 	DockerRoutingConfigMode DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`
@@ -178,57 +169,10 @@ type VXLANTunnelMap struct {
 	VLAN string `yaml:"vlan"`
 }
 
-type valuesWithStrictACLs struct {
-	ACLs  []ACL                `yaml:"acls"`
-	Other map[string]yaml.Node `yaml:",inline"`
-}
-
 func UnmarshalValues(in []byte) (*Values, error) {
 	var values Values
 	if err := yaml.Unmarshal(in, &values); err != nil {
 		return nil, err
 	}
-	if err := checkUnknownFields(in); err != nil {
-		return nil, fmt.Errorf("%w\nfix or remove the fields named above, the top-level keys and the acl fields are described in the README", err)
-	}
 	return &values, nil
-}
-
-func checkUnknownFields(in []byte) error {
-	var strict valuesWithStrictACLs
-	decoder := yaml.NewDecoder(bytes.NewReader(in))
-	decoder.KnownFields(true)
-	err := decoder.Decode(&strict)
-	if errors.Is(err, io.EOF) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	return checkTopLevelKeys(strict.Other)
-}
-
-func checkTopLevelKeys(keys map[string]yaml.Node) error {
-	known := topLevelKeys()
-	var unknown []string
-	for key := range keys {
-		if !known[key] {
-			unknown = append(unknown, key)
-		}
-	}
-	if len(unknown) == 0 {
-		return nil
-	}
-	sort.Strings(unknown)
-	return fmt.Errorf("unknown top-level keys: %s", strings.Join(unknown, ", "))
-}
-
-func topLevelKeys() map[string]bool {
-	keys := map[string]bool{}
-	valuesType := reflect.TypeOf(Values{})
-	for i := 0; i < valuesType.NumField(); i++ {
-		name, _, _ := strings.Cut(valuesType.Field(i).Tag.Get("yaml"), ",")
-		keys[name] = true
-	}
-	return keys
 }
