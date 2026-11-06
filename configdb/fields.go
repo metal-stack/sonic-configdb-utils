@@ -1,7 +1,9 @@
 package configdb
 
 type ACLRule struct {
+	DstIP        string       `json:"DST_IP,omitempty"`
 	EtherType    string       `json:"ETHER_TYPE,omitempty"`
+	IPType       string       `json:"IP_TYPE,omitempty"`
 	PacketAction PacketAction `json:"PACKET_ACTION,omitempty"`
 	Priority     string       `json:"PRIORITY,omitempty"`
 	SrcIP        string       `json:"SRC_IP,omitempty"`
@@ -9,6 +11,7 @@ type ACLRule struct {
 
 type ACLTable struct {
 	PolicyDesc string   `json:"policy_desc,omitempty"`
+	Ports      []string `json:"ports,omitempty"`
 	Services   []string `json:"services,omitempty"`
 	Stage      string   `json:"stage,omitempty"`
 	Type       string   `json:"type,omitempty"`
@@ -157,8 +160,9 @@ type NTPGlobal struct {
 type PacketAction string
 
 const (
-	PacketActionDrop   PacketAction = "DROP"
-	PacketActionAccept PacketAction = "ACCEPT"
+	PacketActionAccept  PacketAction = "ACCEPT"
+	PacketActionDrop    PacketAction = "DROP"
+	PacketActionForward PacketAction = "FORWARD"
 )
 
 type Port struct {
