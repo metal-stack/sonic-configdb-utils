@@ -41,7 +41,7 @@ Each port can carry one of these tables per stage, so the order between tables n
 | Key          | Mandatory | Description                                                                                                                                                                            |
 | ------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | name         | yes       | the table name: letters, digits, `_` and `-`. `ALLOW_SSH` and `ALLOW_NTP` are reserved.                                                                                                |
-| ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels` or `vlans`; a port channel member is rejected, bind the port channel instead. |
+| ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels`, `vlans`, `interfaces` or `vlan_subinterfaces`; a port channel member is rejected, bind the port channel instead. |
 | rules        | yes       | the rules, see below.                                                                                                                                                                  |
 | description  |           | the policy description of the table.                                                                                                                                                   |
 | stage        |           | `ingress` (default) or `egress`.                                                                                                                                                       |
@@ -52,7 +52,7 @@ Each port can carry one of these tables per stage, so the order between tables n
 Limits:
 
 - The rules match IPv4 only. IPv6 and non-IP traffic is matched by no rule and is forwarded, so a closing `drop` does not block IPv6.
-- Ethernet ports are only checked against `ports` when a `ports` section is given, since the port list comes from `platform.json`.
+- Ethernet ports are validated against `platform.json`, so the switch's `platform.json` has to be readable whenever `acls` is set.
 
 Example:
 

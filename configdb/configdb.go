@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
-	"strings"
 
 	p "github.com/metal-stack/sonic-configdb-utils/platform"
 	"github.com/metal-stack/sonic-configdb-utils/values"
@@ -57,20 +56,23 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 	var (
 		ports     map[string]Port
 		breakouts map[string]BreakoutConfig
+		platform  *p.Platform
 		err       error
 	)
 
-	if input.Ports != nil || len(input.Breakouts) > 0 {
+	if input.Ports != nil || len(input.Breakouts) > 0 || len(input.ACLs) > 0 {
 		platformBytes, err := os.ReadFile(platformFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read platform.json file: %w", err)
 		}
 
-		platform, err := p.UnmarshalPlatformJSON(platformBytes)
+		platform, err = p.UnmarshalPlatformJSON(platformBytes)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse platform.json: %w", err)
 		}
+	}
 
+	if input.Ports != nil || len(input.Breakouts) > 0 {
 		ports, breakouts, err = getPortsAndBreakouts(input.Ports, input.Breakouts, platform)
 		if err != nil {
 			return nil, err
@@ -84,7 +86,11 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 
 	features := getFeatures(input.Features)
 
-	aclInterfaces := getACLInterfaces(ports, input.VLANs, input.PortChannels.List)
+	aclPortNames, err := getACLPortNames(ports, platform)
+	if err != nil {
+		return nil, err
+	}
+	aclInterfaces := getACLInterfaces(aclPortNames, input.VLANs, input.PortChannels.List, input.Interfaces, input.VLANSubinterfaces)
 	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs, aclInterfaces)
 	if err != nil {
 		return nil, err
@@ -173,14 +179,40 @@ var aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 type aclInterfaces struct {
 	defined           map[string]bool
 	portChannelByPort map[string]string
-	portsGenerated    bool
 }
 
-func getACLInterfaces(ports map[string]Port, vlans []values.VLAN, portChannels []values.PortChannel) aclInterfaces {
+func getACLPortNames(ports map[string]Port, platform *p.Platform) (map[string]bool, error) {
+	names := map[string]bool{}
+	if len(ports) > 0 {
+		for name := range ports {
+			names[name] = true
+		}
+		return names, nil
+	}
+	if platform == nil {
+		return names, nil
+	}
+	defaultPorts, _, err := getPortsAndBreakouts(nil, nil, platform)
+	if err != nil {
+		return nil, err
+	}
+	for name := range defaultPorts {
+		names[name] = true
+	}
+	return names, nil
+}
+
+func getACLInterfaces(ports map[string]bool, vlans []values.VLAN, portChannels []values.PortChannel, interfaces map[string]values.Interface, subinterfaces []values.VLANSubinterface) aclInterfaces {
 	defined := map[string]bool{}
 	portChannelByPort := map[string]string{}
 	for name := range ports {
 		defined[name] = true
+	}
+	for name := range interfaces {
+		defined[name] = true
+	}
+	for _, subinterface := range subinterfaces {
+		defined[subinterface.Port+"."+subinterface.VLAN] = true
 	}
 	for _, vlan := range vlans {
 		defined["Vlan"+vlan.ID] = true
@@ -192,13 +224,10 @@ func getACLInterfaces(ports map[string]Port, vlans []values.VLAN, portChannels [
 			portChannelByPort[member] = name
 		}
 	}
-	return aclInterfaces{defined: defined, portChannelByPort: portChannelByPort, portsGenerated: len(ports) > 0}
+	return aclInterfaces{defined: defined, portChannelByPort: portChannelByPort}
 }
 
 func (i aclInterfaces) canBind(name string) bool {
-	if !i.portsGenerated && strings.HasPrefix(name, "Ethernet") {
-		return true
-	}
 	return i.defined[name]
 }
 
@@ -273,7 +302,7 @@ func getACLTable(index int, acl values.ACL, interfaces aclInterfaces) (*ACLTable
 			return nil, fmt.Errorf("acl %q is bound to %q, which is a member of %s, bind it to %s instead", acl.Name, port, portChannel, portChannel)
 		}
 		if !interfaces.canBind(port) {
-			return nil, fmt.Errorf("acl %q is bound to %q, which is not defined, add it to vlans, portchannels or ports first", acl.Name, port)
+			return nil, fmt.Errorf("acl %q is bound to %q, which is not defined, add it to ports, portchannels, vlans, interfaces or vlan_subinterfaces first", acl.Name, port)
 		}
 	}
 	if len(acl.Rules) == 0 {

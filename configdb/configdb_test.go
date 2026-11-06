@@ -693,9 +693,11 @@ func Test_getACLRulesAndTables(t *testing.T) {
 	}
 	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}
 	interfaces := getACLInterfaces(
-		map[string]Port{"Ethernet0": {}, "Ethernet4": {}},
+		map[string]bool{"Ethernet0": true, "Ethernet4": true},
 		[]values.VLAN{{ID: "4000"}, {ID: "4001"}},
 		[]values.PortChannel{{Number: "1", Members: []string{"Ethernet4"}}},
+		nil,
+		nil,
 	)
 
 	tests := []struct {
@@ -795,12 +797,12 @@ func Test_getACLRulesAndTables(t *testing.T) {
 		{
 			name:    "undefined vlan",
 			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Vlan400"}, Rules: []values.ACLRule{{Action: "drop"}}}},
-			wantErr: `acl "PXE_IN" is bound to "Vlan400", which is not defined, add it to vlans, portchannels or ports first`,
+			wantErr: `acl "PXE_IN" is bound to "Vlan400", which is not defined, add it to ports, portchannels, vlans, interfaces or vlan_subinterfaces first`,
 		},
 		{
 			name:    "undefined ethernet port",
 			acls:    []values.ACL{{Name: "PXE_IN", Ports: []string{"Ethernet9"}, Rules: []values.ACLRule{{Action: "drop"}}}},
-			wantErr: `acl "PXE_IN" is bound to "Ethernet9", which is not defined, add it to vlans, portchannels or ports first`,
+			wantErr: `acl "PXE_IN" is bound to "Ethernet9", which is not defined, add it to ports, portchannels, vlans, interfaces or vlan_subinterfaces first`,
 		},
 		{
 			name: "two acls on the same port and stage",
@@ -869,32 +871,74 @@ func Test_getACLRulesAndTables(t *testing.T) {
 }
 
 func Test_aclInterfaces_canBind(t *testing.T) {
-	ports := map[string]Port{"Ethernet0": {}}
-	vlans := []values.VLAN{{ID: "4000"}}
-	portChannels := []values.PortChannel{{Number: "1"}}
+	ifaces := getACLInterfaces(
+		map[string]bool{"Ethernet0": true},
+		[]values.VLAN{{ID: "4000"}},
+		[]values.PortChannel{{Number: "1"}},
+		map[string]values.Interface{"Ethernet10": {}},
+		[]values.VLANSubinterface{{Port: "Ethernet0", VLAN: "100"}},
+	)
 
 	tests := []struct {
 		name  string
-		ports map[string]Port
 		iface string
 		want  bool
 	}{
-		{name: "generated port", ports: ports, iface: "Ethernet0", want: true},
-		{name: "port missing from the generated ports", ports: ports, iface: "Ethernet1", want: false},
-		{name: "ethernet ports are not checked without a ports section", ports: nil, iface: "Ethernet1", want: true},
-		{name: "defined vlan", ports: nil, iface: "Vlan4000", want: true},
-		{name: "undefined vlan without a ports section", ports: nil, iface: "Vlan4001", want: false},
-		{name: "defined portchannel", ports: ports, iface: "PortChannel1", want: true},
-		{name: "undefined portchannel", ports: ports, iface: "PortChannel2", want: false},
+		{name: "platform port", iface: "Ethernet0", want: true},
+		{name: "port missing from the platform ports", iface: "Ethernet1", want: false},
+		{name: "defined vlan", iface: "Vlan4000", want: true},
+		{name: "undefined vlan", iface: "Vlan4001", want: false},
+		{name: "defined portchannel", iface: "PortChannel1", want: true},
+		{name: "undefined portchannel", iface: "PortChannel2", want: false},
+		{name: "interface from the interfaces section", iface: "Ethernet10", want: true},
+		{name: "defined subinterface", iface: "Ethernet0.100", want: true},
+		{name: "undefined subinterface", iface: "Ethernet0.200", want: false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := getACLInterfaces(tt.ports, vlans, portChannels).canBind(tt.iface)
+			got := ifaces.canBind(tt.iface)
 			if got != tt.want {
 				t.Errorf("canBind(%q) = %v, want %v", tt.iface, got, tt.want)
 			}
 		})
+	}
+}
+
+func Test_getACLPortNames(t *testing.T) {
+	fromPorts, err := getACLPortNames(map[string]Port{"Ethernet0": {}, "Ethernet4": {}}, nil)
+	if err != nil {
+		t.Fatalf("getACLPortNames() unexpected error = %v", err)
+	}
+	wantFromPorts := map[string]bool{"Ethernet0": true, "Ethernet4": true}
+	if diff := cmp.Diff(wantFromPorts, fromPorts); diff != "" {
+		t.Errorf("getACLPortNames() from ports diff = %s", diff)
+	}
+
+	platform := &p.Platform{
+		Interfaces: map[string]p.Interface{
+			"Ethernet0": {
+				BreakoutModes: map[string][]string{"1x100G": {"Ethernet0"}},
+				Index:         "1",
+				Lanes:         "1,2,3,4",
+			},
+		},
+	}
+	fromPlatform, err := getACLPortNames(nil, platform)
+	if err != nil {
+		t.Fatalf("getACLPortNames() unexpected error = %v", err)
+	}
+	wantFromPlatform := map[string]bool{"Ethernet0": true}
+	if diff := cmp.Diff(wantFromPlatform, fromPlatform); diff != "" {
+		t.Errorf("getACLPortNames() from platform diff = %s", diff)
+	}
+
+	empty, err := getACLPortNames(nil, nil)
+	if err != nil {
+		t.Fatalf("getACLPortNames() unexpected error = %v", err)
+	}
+	if diff := cmp.Diff(map[string]bool{}, empty); diff != "" {
+		t.Errorf("getACLPortNames() without ports and platform diff = %s", diff)
 	}
 }
 
