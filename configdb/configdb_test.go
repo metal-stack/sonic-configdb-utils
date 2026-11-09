@@ -680,18 +680,18 @@ func Test_getACLRulesAndTables(t *testing.T) {
 		Description: "pxe",
 		Ports:       []string{"Vlan4000"},
 		Rules: []values.ACLRule{
-			{Action: "forward", Dst: "10.254.254.130/32"},
-			{Action: "drop", Dst: "10.254.0.0/16"},
-			{Action: "forward"},
+			{Action: string(PacketActionForward), Dst: "10.254.254.130/32"},
+			{Action: string(PacketActionDrop), Dst: "10.254.0.0/16"},
+			{Action: string(PacketActionForward)},
 		},
-		Stage: "ingress",
+		Stage: string(ACLStageIngress),
 	}
 	pxeRules := map[string]ACLRule{
 		"PXE_IN|RULE_1": {DstIP: "10.254.254.130/32", PacketAction: PacketActionForward, Priority: "30"},
 		"PXE_IN|RULE_2": {DstIP: "10.254.0.0/16", PacketAction: PacketActionDrop, Priority: "20"},
 		"PXE_IN|RULE_3": {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "10"},
 	}
-	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: "ingress", Type: "L3"}
+	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: ACLStageIngress, Type: "L3"}
 
 	tests := []struct {
 		name         string
@@ -717,8 +717,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"OUT": {
 					Ports: []string{"Ethernet0"},
-					Stage: "egress",
-					Rules: []values.ACLRule{{Action: "drop", Src: "10.0.0.0/8", Dst: "192.168.0.0/16"}},
+					Stage: string(ACLStageEgress),
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Src: "10.0.0.0/8", Dst: "192.168.0.0/16"}},
 				},
 			},
 			wantRules: map[string]ACLRule{
@@ -732,7 +732,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			wantTables: map[string]ACLTable{
 				"OUT": {
 					Ports: []string{"Ethernet0"},
-					Stage: "egress",
+					Stage: ACLStageEgress,
 					Type:  "L3",
 				},
 			},
@@ -753,8 +753,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"PXE_IN|RULE_3":          pxeRules["PXE_IN|RULE_3"],
 			},
 			wantTables: map[string]ACLTable{
-				"ALLOW_SSH": {PolicyDesc: "Allow SSH access", Services: []string{"SSH"}, Stage: "ingress", Type: "CTRLPLANE"},
-				"ALLOW_NTP": {PolicyDesc: "Allow NTP", Services: []string{"NTP"}, Stage: "ingress", Type: "CTRLPLANE"},
+				"ALLOW_SSH": {PolicyDesc: "Allow SSH access", Services: []string{"SSH"}, Stage: ACLStageIngress, Type: "CTRLPLANE"},
+				"ALLOW_NTP": {PolicyDesc: "Allow NTP", Services: []string{"NTP"}, Stage: ACLStageIngress, Type: "CTRLPLANE"},
 				"PXE_IN":    pxeTable,
 			},
 		},
@@ -763,8 +763,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"ALLOW_SSH": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "ALLOW_SSH" is reserved for the acls generated from ssh_sourceranges, choose another name`,
@@ -773,8 +773,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			name: "no ports",
 			acls: map[string]values.ACL{
 				"PXE_IN": {
-					Rules: []values.ACLRule{{Action: "drop"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" has no ports, list the ports or vlans it applies to`,
@@ -784,7 +784,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
-					Stage: "ingress",
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" has no rules, add at least one`,
@@ -795,7 +795,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
 					Stage: "in",
-					Rules: []values.ACLRule{{Action: "drop"}},
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
 				},
 			},
 			wantErr: `acl "PXE_IN" has stage "in", use ingress or egress`,
@@ -806,18 +806,18 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
 					Rules: []values.ACLRule{{Action: "accept"}},
-					Stage: "ingress",
+					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" rule 1 has action "accept", use forward or drop`,
+			wantErr: `acl "PXE_IN" rule 1 has action "accept", use "FORWARD" or "DROP"`,
 		},
 		{
 			name: "invalid dst",
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop", Dst: "10.254.0.0"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Dst: "10.254.0.0"}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.0.0", use an ipv4 cidr such as 10.0.0.0/16`,
@@ -827,8 +827,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE|IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE|IN" has an invalid name, use only letters, digits, '_' and '-'`,
@@ -839,8 +839,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"PXE_IN": pxe,
 				"PXE_IN_2": {
 					Ports: []string{"Vlan4001", "Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acls "PXE_IN" and "PXE_IN_2" are both bound to "Vlan4000" at stage ingress, merge their rules into one acl`,
@@ -850,8 +850,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000", "Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" lists "Vlan4000" twice, remove one`,
@@ -861,7 +861,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop"}},
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
 				},
 			},
 			wantErr: `acl "PXE_IN" has no stage set`,
@@ -871,13 +871,13 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
+					Stage: string(ACLStageIngress),
 				},
 				"OUT": {
 					Ports: []string{"Vlan4000"},
-					Stage: "egress",
-					Rules: []values.ACLRule{{Action: "drop"}},
+					Stage: string(ACLStageEgress),
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
 				},
 			},
 			wantRules: map[string]ACLRule{
@@ -895,12 +895,12 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			wantTables: map[string]ACLTable{
 				"IN": {
 					Ports: []string{"Vlan4000"},
-					Stage: "ingress",
+					Stage: ACLStageIngress,
 					Type:  "L3",
 				},
 				"OUT": {
 					Ports: []string{"Vlan4000"},
-					Stage: "egress",
+					Stage: ACLStageEgress,
 					Type:  "L3",
 				},
 			},
@@ -910,8 +910,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "forward", Dst: "10.254.254.130/16"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionForward), Dst: "10.254.254.130/16"}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.254.130/16" with host bits set, use 10.254.0.0/16`,
@@ -921,8 +921,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop", Dst: "x", Src: "y"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Dst: "x", Src: "y"}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" rule 1 has dst "x", use an ipv4 cidr such as 10.0.0.0/16`,
@@ -932,8 +932,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			acls: map[string]values.ACL{
 				"PXE_IN": {
 					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: "drop", Src: "fd00::/8"}},
-					Stage: "ingress",
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Src: "fd00::/8"}},
+					Stage: string(ACLStageIngress),
 				},
 			},
 			wantErr: `acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr such as 10.0.0.0/16`,

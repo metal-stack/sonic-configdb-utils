@@ -56,7 +56,6 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 	var (
 		ports     map[string]Port
 		breakouts map[string]BreakoutConfig
-		platform  *p.Platform
 		err       error
 	)
 
@@ -66,7 +65,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 			return nil, fmt.Errorf("failed to read platform.json file: %w", err)
 		}
 
-		platform, err = p.UnmarshalPlatformJSON(platformBytes)
+		platform, err := p.UnmarshalPlatformJSON(platformBytes)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse platform.json: %w", err)
 		}
@@ -162,11 +161,6 @@ func UnmarshalConfigDB(in []byte) (*ConfigDB, error) {
 	return &configDB, nil
 }
 
-var aclPacketActions = map[string]PacketAction{
-	"drop":    PacketActionDrop,
-	"forward": PacketActionForward,
-}
-
 func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL) (map[string]ACLRule, map[string]ACLTable, error) {
 	rules, tables := getSSHACLRulesAndTables(sourceRanges)
 	if len(acls) == 0 {
@@ -240,12 +234,11 @@ func getACLTable(aclName string, acl values.ACL) (*ACLTable, error) {
 		return nil, fmt.Errorf("acl %q has no rules, add at least one", aclName)
 	}
 
-	stage := acl.Stage
+	stage := ACLStage(acl.Stage)
 	if stage == "" {
 		return nil, fmt.Errorf("acl %q has no stage set", aclName)
 	}
-	// FIXME: use constants for stage
-	if stage != "ingress" && stage != "egress" {
+	if stage != ACLStageIngress && stage != ACLStageEgress {
 		return nil, fmt.Errorf("acl %q has stage %q, use ingress or egress", aclName, acl.Stage)
 	}
 
@@ -265,9 +258,9 @@ func getACLTable(aclName string, acl values.ACL) (*ACLTable, error) {
 }
 
 func getACLRule(aclName string, index int, rule values.ACLRule, ruleCount int) (*ACLRule, error) {
-	action, ok := aclPacketActions[rule.Action]
-	if !ok {
-		return nil, fmt.Errorf("acl %q rule %d has action %q, use forward or drop", aclName, index+1, rule.Action)
+	action := PacketAction(rule.Action)
+	if action != PacketActionForward && action != PacketActionDrop {
+		return nil, fmt.Errorf("acl %q rule %d has action %q, use %q or %q", aclName, index+1, rule.Action, PacketActionForward, PacketActionDrop)
 	}
 	if err := checkACLRuleCIDR(aclName, index, "dst", rule.Dst); err != nil {
 		return nil, err
