@@ -3,17 +3,23 @@
     "PXE_IN|RULE_1": {
       "DST_IP": "10.1.1.1/32",
       "PACKET_ACTION": "FORWARD",
-      "PRIORITY": "30"
+      "PRIORITY": "40"
     },
     "PXE_IN|RULE_2": {
       "DST_IP": "10.0.0.0/16",
       "PACKET_ACTION": "DROP",
-      "PRIORITY": "20"
+      "PRIORITY": "30"
     },
     "PXE_IN|RULE_3": {
       "IP_TYPE": "IPV4ANY",
       "PACKET_ACTION": "FORWARD",
-      "PRIORITY": "10"
+      "PRIORITY": "20"
+    },
+    "PXE_IN|RULE_4": {
+      "DST_IP": "100.1.1.0/24",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "10",
+      "SRC_IP": "10.2.2.2/32"
     }
   },
   "ACL_TABLE": {

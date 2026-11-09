@@ -691,12 +691,13 @@ func Test_getACLRulesAndTables(t *testing.T) {
 		"PXE_IN|RULE_2": {DstIP: "10.254.0.0/16", PacketAction: PacketActionDrop, Priority: "20"},
 		"PXE_IN|RULE_3": {IPType: "IPV4ANY", PacketAction: PacketActionForward, Priority: "10"},
 	}
-	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: ACLStageIngress, Type: "L3"}
+	pxeTable := ACLTable{PolicyDesc: "pxe", Ports: []string{"Vlan4000"}, Stage: ACLStageIngress, Type: ACLTypeL3}
 
 	tests := []struct {
 		name         string
 		sourceRanges []string
 		acls         map[string]values.ACL
+		portchannels []values.PortChannel
 		wantRules    map[string]ACLRule
 		wantTables   map[string]ACLTable
 		wantErr      error
@@ -733,7 +734,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"OUT": {
 					Ports: []string{"Ethernet0"},
 					Stage: ACLStageEgress,
-					Type:  "L3",
+					Type:  ACLTypeL3,
 				},
 			},
 		},
@@ -896,12 +897,12 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"IN": {
 					Ports: []string{"Vlan4000"},
 					Stage: ACLStageIngress,
-					Type:  "L3",
+					Type:  ACLTypeL3,
 				},
 				"OUT": {
 					Ports: []string{"Vlan4000"},
 					Stage: ACLStageEgress,
-					Type:  "L3",
+					Type:  ACLTypeL3,
 				},
 			},
 		},
@@ -938,11 +939,28 @@ func Test_getACLRulesAndTables(t *testing.T) {
 			},
 			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr`),
 		},
+		{
+			name: "fail to add portchannel member",
+			acls: map[string]values.ACL{
+				"PXE_IN": {
+					Ports: []string{"Ethernet0"},
+					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Src: "10.0.0.0/16"}},
+					Stage: string(ACLStageIngress),
+				},
+			},
+			portchannels: []values.PortChannel{
+				{
+					Number:  "01",
+					Members: []string{"Ethernet0"},
+				},
+			},
+			wantErr: fmt.Errorf(`cannot add "Ethernet0" to acl "PXE_IN" because it is a portchannel member of "PortChannel01"; add the portchannel instead`),
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acls)
+			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acls, tt.portchannels)
 			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Fatalf("getACLRulesAndTables() error diff = %s", diff)
 			}
@@ -985,6 +1003,11 @@ func Test_checkACLRuleCIDR(t *testing.T) {
 		{
 			name:    "invalid cidr",
 			cidr:    "10.1.1.1.1",
+			wantErr: true,
+		},
+		{
+			name:    "ip address without netmask",
+			cidr:    "10.1.1.1",
 			wantErr: true,
 		},
 	}

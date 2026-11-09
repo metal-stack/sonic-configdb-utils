@@ -175,5 +175,6 @@ func UnmarshalValues(in []byte) (*Values, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &values, nil
 }

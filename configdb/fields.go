@@ -14,7 +14,7 @@ type ACLTable struct {
 	Ports      []string `json:"ports,omitempty"`
 	Services   []string `json:"services,omitempty"`
 	Stage      ACLStage `json:"stage,omitempty"`
-	Type       string   `json:"type,omitempty"`
+	Type       ACLType  `json:"type,omitempty"`
 }
 
 type ACLStage string
@@ -22,6 +22,12 @@ type ACLStage string
 const (
 	ACLStageIngress = ACLStage("ingress")
 	ACLStageEgress  = ACLStage("egress")
+)
+
+type ACLType string
+
+const (
+	ACLTypeL3 = ACLType("L3")
 )
 
 type AdminStatus string

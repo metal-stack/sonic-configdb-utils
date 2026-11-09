@@ -76,7 +76,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		}
 	}
 
-	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs)
+	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs, input.PortChannels.List)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func UnmarshalConfigDB(in []byte) (*ConfigDB, error) {
 	return &configDB, nil
 }
 
-func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL) (map[string]ACLRule, map[string]ACLTable, error) {
+func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL, portchannels []values.PortChannel) (map[string]ACLRule, map[string]ACLTable, error) {
 	rules, tables := getSSHACLRulesAndTables(sourceRanges)
 	if len(acls) == 0 {
 		return rules, tables, nil
@@ -179,14 +179,14 @@ func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL) (ma
 			return nil, nil, err
 		}
 
-		table, err := getACLTable(aclName, acl)
+		table, err := getACLTable(aclName, acl, portchannels)
 		if err != nil {
 			return nil, nil, err
 		}
 		tables[aclName] = *table
 
 		for j, rule := range acl.Rules {
-			aclRule, err := getACLRule(aclName, j, rule, len(acl.Rules))
+			aclRule, err := getACLRule(aclName, rule, j, len(acl.Rules))
 			if err != nil {
 				return nil, nil, err
 			}
@@ -215,7 +215,7 @@ func checkDuplicatePortStageCombination(name string, acl values.ACL, acls map[st
 	return nil
 }
 
-func getACLTable(aclName string, acl values.ACL) (*ACLTable, error) {
+func getACLTable(aclName string, acl values.ACL, portchannels []values.PortChannel) (*ACLTable, error) {
 	var (
 		aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 		ports          []string
@@ -246,6 +246,13 @@ func getACLTable(aclName string, acl values.ACL) (*ACLTable, error) {
 		if slices.Contains(ports, port) {
 			return nil, fmt.Errorf("acl %q lists %q twice, remove one", aclName, port)
 		}
+
+		for _, pc := range portchannels {
+			if slices.Contains(pc.Members, port) {
+				return nil, fmt.Errorf("cannot add %q to acl %q because it is a portchannel member of %q; add the portchannel instead", port, aclName, fmt.Sprintf("PortChannel%s", pc.Number))
+			}
+		}
+
 		ports = append(ports, port)
 	}
 
@@ -253,11 +260,11 @@ func getACLTable(aclName string, acl values.ACL) (*ACLTable, error) {
 		PolicyDesc: acl.Description,
 		Ports:      ports,
 		Stage:      stage,
-		Type:       "L3",
+		Type:       ACLTypeL3,
 	}, nil
 }
 
-func getACLRule(aclName string, index int, rule values.ACLRule, ruleCount int) (*ACLRule, error) {
+func getACLRule(aclName string, rule values.ACLRule, index, ruleCount int) (*ACLRule, error) {
 	action := PacketAction(rule.Action)
 	if action != PacketActionForward && action != PacketActionDrop {
 		return nil, fmt.Errorf("acl %q rule %d has action %q, use %q or %q", aclName, index+1, rule.Action, PacketActionForward, PacketActionDrop)
@@ -288,7 +295,7 @@ func checkACLRuleCIDR(aclName string, index int, field, cidr string) error {
 	}
 	prefix, err := netip.ParsePrefix(cidr)
 	if err != nil || !prefix.Addr().Is4() {
-		return fmt.Errorf("acl %q rule %d has %s %q, use an ipv4 cidr such as 10.0.0.0/16", aclName, index+1, field, cidr)
+		return fmt.Errorf("acl %q rule %d has %s %q, use an ipv4 cidr", aclName, index+1, field, cidr)
 	}
 	if prefix != prefix.Masked() {
 		return fmt.Errorf("acl %q rule %d has %s %q with host bits set, use %s", aclName, index+1, field, cidr, prefix.Masked())

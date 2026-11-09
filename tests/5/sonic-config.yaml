@@ -43,3 +43,6 @@ acls:
       - action: DROP
         dst: 10.0.0.0/16
       - action: FORWARD
+      - action: DROP
+        src: 10.2.2.2/32
+        dst: 100.1.1.0/24
