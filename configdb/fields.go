@@ -27,7 +27,8 @@ const (
 type ACLType string
 
 const (
-	ACLTypeL3 = ACLType("L3")
+	ACLTypeL3        = ACLType("L3")
+	ACLTypeCTRLPLANE = ACLType("CTRLPLANE")
 )
 
 type AdminStatus string

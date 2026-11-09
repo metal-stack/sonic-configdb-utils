@@ -331,13 +331,13 @@ func getSSHACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[str
 			PolicyDesc: "Allow SSH access",
 			Services:   []string{"SSH"},
 			Stage:      "ingress",
-			Type:       "CTRLPLANE",
+			Type:       ACLTypeCTRLPLANE,
 		},
 		"ALLOW_NTP": {
 			PolicyDesc: "Allow NTP",
 			Services:   []string{"NTP"},
 			Stage:      "ingress",
-			Type:       "CTRLPLANE",
+			Type:       ACLTypeCTRLPLANE,
 		},
 	}
 

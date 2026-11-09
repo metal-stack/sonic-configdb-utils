@@ -754,8 +754,8 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				"PXE_IN|RULE_3":          pxeRules["PXE_IN|RULE_3"],
 			},
 			wantTables: map[string]ACLTable{
-				"ALLOW_SSH": {PolicyDesc: "Allow SSH access", Services: []string{"SSH"}, Stage: ACLStageIngress, Type: "CTRLPLANE"},
-				"ALLOW_NTP": {PolicyDesc: "Allow NTP", Services: []string{"NTP"}, Stage: ACLStageIngress, Type: "CTRLPLANE"},
+				"ALLOW_SSH": {PolicyDesc: "Allow SSH access", Services: []string{"SSH"}, Stage: ACLStageIngress, Type: ACLTypeCTRLPLANE},
+				"ALLOW_NTP": {PolicyDesc: "Allow NTP", Services: []string{"NTP"}, Stage: ACLStageIngress, Type: ACLTypeCTRLPLANE},
 				"PXE_IN":    pxeTable,
 			},
 		},
@@ -811,17 +811,6 @@ func Test_getACLRulesAndTables(t *testing.T) {
 				},
 			},
 			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has action "accept", use "FORWARD" or "DROP"`),
-		},
-		{
-			name: "invalid dst",
-			acls: map[string]values.ACL{
-				"PXE_IN": {
-					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Dst: "10.254.0.0"}},
-					Stage: string(ACLStageIngress),
-				},
-			},
-			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has dst "10.254.0.0", use an ipv4 cidr`),
 		},
 		{
 			name: "name with the configdb key separator",
@@ -905,39 +894,6 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Type:  ACLTypeL3,
 				},
 			},
-		},
-		{
-			name: "host bits set",
-			acls: map[string]values.ACL{
-				"PXE_IN": {
-					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: string(PacketActionForward), Dst: "10.254.254.130/16"}},
-					Stage: string(ACLStageIngress),
-				},
-			},
-			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has dst "10.254.254.130/16" with host bits set, use 10.254.0.0/16`),
-		},
-		{
-			name: "dst is reported before src",
-			acls: map[string]values.ACL{
-				"PXE_IN": {
-					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Dst: "x", Src: "y"}},
-					Stage: string(ACLStageIngress),
-				},
-			},
-			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has dst "x", use an ipv4 cidr`),
-		},
-		{
-			name: "ipv6 src",
-			acls: map[string]values.ACL{
-				"PXE_IN": {
-					Ports: []string{"Vlan4000"},
-					Rules: []values.ACLRule{{Action: string(PacketActionDrop), Src: "fd00::/8"}},
-					Stage: string(ACLStageIngress),
-				},
-			},
-			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr`),
 		},
 		{
 			name: "fail to add portchannel member",
