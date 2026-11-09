@@ -28,31 +28,14 @@ ASIC_TYPE=broadcom
 
 ## Configuration Parameters
 
-Unknown keys are rejected at the top level of `sonic-config.yaml` and inside `acls`, also when they come in through a YAML merge key.
-A YAML anchor therefore has to sit on a known key; a top-level helper key that only carries an anchor is rejected as well.
-The other sections accept extra keys, since metal-roles passes `interconnects` and `vlans` through with keys that only `frr.conf` uses.
-
 ### acls
 
 Ordered list of L3 ACL tables, added next to the ones generated from `ssh_sourceranges`.
 Rules are evaluated in list order: they are named `RULE_1`, `RULE_2`, ... and get descending priorities, so the first matching rule wins.
 Each port can carry one of these tables per stage, so the order between tables never decides.
 
-| Key          | Mandatory | Description                                                                                                                                                                            |
-| ------------ | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name         | yes       | the table name: letters, digits, `_` and `-`. `ALLOW_SSH` and `ALLOW_NTP` are reserved.                                                                                                |
-| ports        | yes       | the ports, port channels or VLANs the table is bound to. They must be defined in `ports`, `portchannels`, `vlans`, `interfaces` or `vlan_subinterfaces`; a port channel member is rejected, bind the port channel instead. |
-| rules        | yes       | the rules, see below.                                                                                                                                                                  |
-| description  |           | the policy description of the table.                                                                                                                                                   |
-| stage        |           | `ingress` (default) or `egress`.                                                                                                                                                       |
-| rules.action | yes       | `forward` or `drop`.                                                                                                                                                                   |
-| rules.dst    |           | the destination as IPv4 CIDR without host bits, e.g. `10.0.0.0/16`.                                                                                                                    |
-| rules.src    |           | the source as IPv4 CIDR without host bits. A rule without `dst` and `src` matches any IPv4.                                                                                            |
-
-Limits:
-
-- The rules match IPv4 only. IPv6 and non-IP traffic is matched by no rule and is forwarded, so a closing `drop` does not block IPv6.
-- Ethernet ports are validated against `platform.json`, so the switch's `platform.json` has to be readable whenever `acls` is set.
+The rules match IPv4 only.
+IPv6 and non-IP traffic is matched by no rule and is forwarded, so a closing `DROP` does not block IPv6.
 
 Example:
 
