@@ -171,7 +171,8 @@ type VXLANTunnelMap struct {
 
 func UnmarshalValues(in []byte) (*Values, error) {
 	var values Values
-	if err := yaml.Unmarshal(in, &values); err != nil {
+	err := yaml.Unmarshal(in, &values)
+	if err != nil {
 		return nil, err
 	}
 	return &values, nil

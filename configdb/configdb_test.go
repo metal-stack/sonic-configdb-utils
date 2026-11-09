@@ -699,7 +699,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 		acls         map[string]values.ACL
 		wantRules    map[string]ACLRule
 		wantTables   map[string]ACLTable
-		wantErr      string
+		wantErr      error
 	}{
 		{
 			name: "nothing given",
@@ -767,7 +767,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "ALLOW_SSH" is reserved for the acls generated from ssh_sourceranges, choose another name`,
+			wantErr: fmt.Errorf(`acl "ALLOW_SSH" is reserved for the acls generated from ssh_sourceranges, choose another name`),
 		},
 		{
 			name: "no ports",
@@ -777,7 +777,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" has no ports, list the ports or vlans it applies to`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" has no ports, list the ports or vlans it applies to`),
 		},
 		{
 			name: "no rules",
@@ -787,7 +787,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" has no rules, add at least one`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" has no rules, add at least one`),
 		},
 		{
 			name: "unknown stage",
@@ -798,7 +798,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
 				},
 			},
-			wantErr: `acl "PXE_IN" has stage "in", use ingress or egress`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" has stage "in", use ingress or egress`),
 		},
 		{
 			name: "unknown action",
@@ -809,7 +809,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" rule 1 has action "accept", use "FORWARD" or "DROP"`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has action "accept", use "FORWARD" or "DROP"`),
 		},
 		{
 			name: "invalid dst",
@@ -820,7 +820,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.0.0", use an ipv4 cidr such as 10.0.0.0/16`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has dst "10.254.0.0", use an ipv4 cidr`),
 		},
 		{
 			name: "name with the configdb key separator",
@@ -831,7 +831,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE|IN" has an invalid name, use only letters, digits, '_' and '-'`,
+			wantErr: fmt.Errorf(`acl "PXE|IN" has an invalid name, use only letters, digits, '_' and '-'`),
 		},
 		{
 			name: "two acls on the same port and stage",
@@ -843,7 +843,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acls "PXE_IN" and "PXE_IN_2" are both bound to "Vlan4000" at stage ingress, merge their rules into one acl`,
+			wantErr: fmt.Errorf(`acls "PXE_IN" and "PXE_IN_2" are both bound to "Vlan4000" at stage ingress, merge their rules into one acl`),
 		},
 		{
 			name: "same port listed twice in one acl",
@@ -854,7 +854,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" lists "Vlan4000" twice, remove one`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" lists "Vlan4000" twice, remove one`),
 		},
 		{
 			name: "missing stage",
@@ -864,7 +864,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Rules: []values.ACLRule{{Action: string(PacketActionDrop)}},
 				},
 			},
-			wantErr: `acl "PXE_IN" has no stage set`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" has no stage set`),
 		},
 		{
 			name: "same port with different stages",
@@ -914,7 +914,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" rule 1 has dst "10.254.254.130/16" with host bits set, use 10.254.0.0/16`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has dst "10.254.254.130/16" with host bits set, use 10.254.0.0/16`),
 		},
 		{
 			name: "dst is reported before src",
@@ -925,7 +925,7 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" rule 1 has dst "x", use an ipv4 cidr such as 10.0.0.0/16`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has dst "x", use an ipv4 cidr`),
 		},
 		{
 			name: "ipv6 src",
@@ -936,14 +936,14 @@ func Test_getACLRulesAndTables(t *testing.T) {
 					Stage: string(ACLStageIngress),
 				},
 			},
-			wantErr: `acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr such as 10.0.0.0/16`,
+			wantErr: fmt.Errorf(`acl "PXE_IN" rule 1 has src "fd00::/8", use an ipv4 cidr`),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gotRules, gotTables, err := getACLRulesAndTables(tt.sourceRanges, tt.acls)
-			if diff := cmp.Diff(tt.wantErr, errorString(err)); diff != "" {
+			if diff := cmp.Diff(tt.wantErr, err, testcommon.ErrorStringComparer()); diff != "" {
 				t.Fatalf("getACLRulesAndTables() error diff = %s", diff)
 			}
 			if diff := cmp.Diff(tt.wantRules, gotRules); diff != "" {
@@ -956,9 +956,43 @@ func Test_getACLRulesAndTables(t *testing.T) {
 	}
 }
 
-func errorString(err error) string {
-	if err == nil {
-		return ""
+func Test_checkACLRuleCIDR(t *testing.T) {
+	tests := []struct {
+		name    string
+		cidr    string
+		wantErr bool
+	}{
+		{
+			name:    "valid cidr",
+			cidr:    "10.0.0.0/16",
+			wantErr: false,
+		},
+		{
+			name:    "valid /32 cidr",
+			cidr:    "10.0.0.1/32",
+			wantErr: false,
+		},
+		{
+			name:    "invalid cidr with host bits set",
+			cidr:    "10.0.0.1/24",
+			wantErr: true,
+		},
+		{
+			name:    "ipv6 is invalid",
+			cidr:    "fd7a:115a::/128",
+			wantErr: true,
+		},
+		{
+			name:    "invalid cidr",
+			cidr:    "10.1.1.1.1",
+			wantErr: true,
+		},
 	}
-	return err.Error()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := checkACLRuleCIDR("acl", 0, "src", tt.cidr); (err != nil) != tt.wantErr {
+				t.Errorf("checkACLRuleCIDR() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }
