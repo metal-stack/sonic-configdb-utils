@@ -174,7 +174,8 @@ func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL, por
 		tables = map[string]ACLTable{}
 	}
 
-	for aclName, acl := range acls {
+	for _, aclName := range slices.Sorted(maps.Keys(acls)) {
+		acl := acls[aclName]
 		if err := checkDuplicatePortStageCombination(aclName, acl, acls); err != nil {
 			return nil, nil, err
 		}
@@ -198,7 +199,8 @@ func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL, por
 }
 
 func checkDuplicatePortStageCombination(name string, acl values.ACL, acls map[string]values.ACL) error {
-	for n, a := range acls {
+	for _, n := range slices.Sorted(maps.Keys(acls)) {
+		a := acls[n]
 		if n == name {
 			continue
 		}
