@@ -30,7 +30,8 @@ ASIC_TYPE=broadcom
 
 ### acls
 
-Ordered list of L3 ACL tables, added next to the ones generated from `ssh_sourceranges`.
+L3 ACL tables keyed by table name, added next to the ones generated from `ssh_sourceranges`.
+Each table needs a `stage` (`ingress` or `egress`), and each rule an `action` (`FORWARD` or `DROP`).
 Rules are evaluated in list order: they are named `RULE_1`, `RULE_2`, ... and get descending priorities, so the first matching rule wins.
 Each port can carry one of these tables per stage, so the order between tables never decides.
 
@@ -41,16 +42,17 @@ Example:
 
 ```yaml
 acls:
-  - name: PXE_IN
+  PXE_IN:
     description: PXE vlan must not reach the cluster
+    stage: ingress
     ports:
       - Vlan4000
     rules:
-      - action: forward
+      - action: FORWARD
         dst: 10.0.0.1/32
-      - action: drop
+      - action: DROP
         dst: 10.0.0.0/16
-      - action: forward
+      - action: FORWARD
 ```
 
 Result:
