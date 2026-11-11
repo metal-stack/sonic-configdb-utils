@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"net/netip"
 	"os"
+	"regexp"
 	"slices"
 	"strconv"
 
@@ -57,7 +59,7 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		err       error
 	)
 
-	if input.Ports != nil || len(input.Breakouts) > 0 {
+	if input.Ports != nil || len(input.Breakouts) > 0 || len(input.ACLs) > 0 {
 		platformBytes, err := os.ReadFile(platformFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read platform.json file: %w", err)
@@ -74,14 +76,17 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 		}
 	}
 
+	rules, tables, err := getACLRulesAndTables(input.SSHSourceranges, input.ACLs, input.PortChannels.List)
+	if err != nil {
+		return nil, err
+	}
+
 	deviceMetadata, err := getDeviceMetadata(input, environment)
 	if err != nil {
 		return nil, err
 	}
 
 	features := getFeatures(input.Features)
-	rules, tables := getACLRulesAndTables(input.SSHSourceranges)
-	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
 	sag, err := getSAG(input.SAG, version)
 	if err != nil {
@@ -97,6 +102,8 @@ func GenerateConfigDB(input *values.Values, platformFile string, environment *p.
 	if err != nil {
 		return nil, err
 	}
+
+	vxlanevpn, vxlanTunnel, vxlanTunnelMap := getVXLAN(input.VTEP, input.LoopbackAddress)
 
 	configdb := ConfigDB{
 		ACLRules:          rules,
@@ -154,7 +161,151 @@ func UnmarshalConfigDB(in []byte) (*ConfigDB, error) {
 	return &configDB, nil
 }
 
-func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string]ACLTable) {
+func getACLRulesAndTables(sourceRanges []string, acls map[string]values.ACL, portchannels []values.PortChannel) (map[string]ACLRule, map[string]ACLTable, error) {
+	rules, tables := getSSHACLRulesAndTables(sourceRanges)
+	if len(acls) == 0 {
+		return rules, tables, nil
+	}
+
+	if rules == nil {
+		rules = map[string]ACLRule{}
+	}
+	if tables == nil {
+		tables = map[string]ACLTable{}
+	}
+
+	for _, aclName := range slices.Sorted(maps.Keys(acls)) {
+		acl := acls[aclName]
+		if err := checkDuplicatePortStageCombination(aclName, acl, acls); err != nil {
+			return nil, nil, err
+		}
+
+		table, err := getACLTable(aclName, acl, portchannels)
+		if err != nil {
+			return nil, nil, err
+		}
+		tables[aclName] = *table
+
+		for j, rule := range acl.Rules {
+			aclRule, err := getACLRule(aclName, rule, j, len(acl.Rules))
+			if err != nil {
+				return nil, nil, err
+			}
+			rules[fmt.Sprintf("%s|RULE_%d", aclName, j+1)] = *aclRule
+		}
+	}
+
+	return rules, tables, nil
+}
+
+func checkDuplicatePortStageCombination(name string, acl values.ACL, acls map[string]values.ACL) error {
+	for _, n := range slices.Sorted(maps.Keys(acls)) {
+		a := acls[n]
+		if n == name {
+			continue
+		}
+		if a.Stage != acl.Stage {
+			continue
+		}
+
+		for _, port := range a.Ports {
+			if slices.Contains(acl.Ports, port) {
+				return fmt.Errorf("acls %q and %q are both bound to %q at stage %s, merge their rules into one acl", name, n, port, a.Stage)
+			}
+		}
+	}
+	return nil
+}
+
+func getACLTable(aclName string, acl values.ACL, portchannels []values.PortChannel) (*ACLTable, error) {
+	var (
+		aclNamePattern = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+		ports          []string
+	)
+
+	if !aclNamePattern.MatchString(aclName) {
+		return nil, fmt.Errorf("acl %q has an invalid name, use only letters, digits, '_' and '-'", aclName)
+	}
+	if aclName == "ALLOW_SSH" || aclName == "ALLOW_NTP" {
+		return nil, fmt.Errorf("acl %q is reserved for the acls generated from ssh_sourceranges, choose another name", aclName)
+	}
+	if len(acl.Ports) == 0 {
+		return nil, fmt.Errorf("acl %q has no ports, list the ports or vlans it applies to", aclName)
+	}
+	if len(acl.Rules) == 0 {
+		return nil, fmt.Errorf("acl %q has no rules, add at least one", aclName)
+	}
+
+	stage := ACLStage(acl.Stage)
+	if stage == "" {
+		return nil, fmt.Errorf("acl %q has no stage set", aclName)
+	}
+	if stage != ACLStageIngress && stage != ACLStageEgress {
+		return nil, fmt.Errorf("acl %q has stage %q, use ingress or egress", aclName, acl.Stage)
+	}
+
+	for _, port := range acl.Ports {
+		if slices.Contains(ports, port) {
+			return nil, fmt.Errorf("acl %q lists %q twice, remove one", aclName, port)
+		}
+
+		for _, pc := range portchannels {
+			if slices.Contains(pc.Members, port) {
+				return nil, fmt.Errorf("cannot add %q to acl %q because it is a portchannel member of %q; add the portchannel instead", port, aclName, fmt.Sprintf("PortChannel%s", pc.Number))
+			}
+		}
+
+		ports = append(ports, port)
+	}
+
+	return &ACLTable{
+		PolicyDesc: acl.Description,
+		Ports:      ports,
+		Stage:      stage,
+		Type:       ACLTypeL3,
+	}, nil
+}
+
+func getACLRule(aclName string, rule values.ACLRule, index, ruleCount int) (*ACLRule, error) {
+	action := PacketAction(rule.Action)
+	if action != PacketActionForward && action != PacketActionDrop {
+		return nil, fmt.Errorf("acl %q rule %d has action %q, use %q or %q", aclName, index+1, rule.Action, PacketActionForward, PacketActionDrop)
+	}
+	if err := checkACLRuleCIDR(aclName, index, "dst", rule.Dst); err != nil {
+		return nil, err
+	}
+	if err := checkACLRuleCIDR(aclName, index, "src", rule.Src); err != nil {
+		return nil, err
+	}
+
+	aclRule := ACLRule{
+		DstIP:        rule.Dst,
+		PacketAction: action,
+		Priority:     strconv.Itoa(10 * (ruleCount - index)),
+		SrcIP:        rule.Src,
+	}
+	if rule.Dst == "" && rule.Src == "" {
+		aclRule.IPType = "IPV4ANY"
+	}
+
+	return &aclRule, nil
+}
+
+func checkACLRuleCIDR(aclName string, index int, field, cidr string) error {
+	if cidr == "" {
+		return nil
+	}
+	prefix, err := netip.ParsePrefix(cidr)
+	if err != nil || !prefix.Addr().Is4() {
+		return fmt.Errorf("acl %q rule %d has %s %q, use an ipv4 cidr", aclName, index+1, field, cidr)
+	}
+	if prefix != prefix.Masked() {
+		return fmt.Errorf("acl %q rule %d has %s %q with host bits set, use %s", aclName, index+1, field, cidr, prefix.Masked())
+	}
+	return nil
+}
+
+func getSSHACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string]ACLTable) {
 	if len(sourceRanges) == 0 {
 		return nil, nil
 	}
@@ -182,13 +333,13 @@ func getACLRulesAndTables(sourceRanges []string) (map[string]ACLRule, map[string
 			PolicyDesc: "Allow SSH access",
 			Services:   []string{"SSH"},
 			Stage:      "ingress",
-			Type:       "CTRLPLANE",
+			Type:       ACLTypeCTRLPLANE,
 		},
 		"ALLOW_NTP": {
 			PolicyDesc: "Allow NTP",
 			Services:   []string{"NTP"},
 			Stage:      "ingress",
-			Type:       "CTRLPLANE",
+			Type:       ACLTypeCTRLPLANE,
 		},
 	}
 

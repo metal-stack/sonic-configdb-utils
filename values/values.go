@@ -1,6 +1,21 @@
 package values
 
-import "gopkg.in/yaml.v3"
+import (
+	"gopkg.in/yaml.v3"
+)
+
+type ACL struct {
+	Description string    `yaml:"description"`
+	Ports       []string  `yaml:"ports"`
+	Rules       []ACLRule `yaml:"rules"`
+	Stage       string    `yaml:"stage"`
+}
+
+type ACLRule struct {
+	Action string `yaml:"action"`
+	Dst    string `yaml:"dst"`
+	Src    string `yaml:"src"`
+}
 
 type AutonegMode string
 
@@ -94,6 +109,7 @@ type SAG struct {
 }
 
 type Values struct {
+	ACLs                    map[string]ACL          `yaml:"acls"`
 	BGPPorts                []string                `yaml:"bgp_ports"`
 	Breakouts               map[string]string       `yaml:"breakouts"`
 	DockerRoutingConfigMode DockerRoutingConfigMode `yaml:"docker_routing_config_mode"`

@@ -28,6 +28,65 @@ ASIC_TYPE=broadcom
 
 ## Configuration Parameters
 
+### acls
+
+L3 ACL tables keyed by table name, added next to the ones generated from `ssh_sourceranges`.
+Each table needs a `stage` (`ingress` or `egress`), and each rule an `action` (`FORWARD` or `DROP`).
+Rules are evaluated in list order: they are named `RULE_1`, `RULE_2`, ... and get descending priorities, so the first matching rule wins.
+Each port can carry one of these tables per stage, so the order between tables never decides.
+
+The rules match IPv4 only.
+IPv6 and non-IP traffic is matched by no rule and is forwarded, so a closing `DROP` does not block IPv6.
+
+Example:
+
+```yaml
+acls:
+  PXE_IN:
+    description: PXE vlan must not reach the cluster
+    stage: ingress
+    ports:
+      - Vlan4000
+    rules:
+      - action: FORWARD
+        dst: 10.0.0.1/32
+      - action: DROP
+        dst: 10.0.0.0/16
+      - action: FORWARD
+```
+
+Result:
+
+```json
+{
+  "ACL_RULE": {
+    "PXE_IN|RULE_1": {
+      "DST_IP": "10.0.0.1/32",
+      "PACKET_ACTION": "FORWARD",
+      "PRIORITY": "30"
+    },
+    "PXE_IN|RULE_2": {
+      "DST_IP": "10.0.0.0/16",
+      "PACKET_ACTION": "DROP",
+      "PRIORITY": "20"
+    },
+    "PXE_IN|RULE_3": {
+      "IP_TYPE": "IPV4ANY",
+      "PACKET_ACTION": "FORWARD",
+      "PRIORITY": "10"
+    }
+  },
+  "ACL_TABLE": {
+    "PXE_IN": {
+      "policy_desc": "PXE vlan must not reach the cluster",
+      "ports": ["Vlan4000"],
+      "stage": "ingress",
+      "type": "L3"
+    }
+  }
+}
+```
+
 ### bgp_ports
 
 Example:
@@ -156,6 +215,26 @@ Result:
 }
 ```
 
+### hostname
+
+Example:
+
+```yaml
+hostname: leaf01
+```
+
+Result:
+
+```json
+{
+  "DEVICE_METADATA": {
+    "localhost": {
+      "hostname": "leaf01"
+    }
+  }
+}
+```
+
 ### interconnects
 
 Example:
@@ -187,6 +266,30 @@ Result:
 }
 ```
 
+### interfaces
+
+IP addresses for interfaces by name, e.g. a port or a subinterface.
+
+Example:
+
+```yaml
+interfaces:
+  Ethernet1:
+    ips:
+      - 10.1.0.1/30
+```
+
+Result:
+
+```json
+{
+  "INTERFACE": {
+    "Ethernet1": {},
+    "Ethernet1|10.1.0.1/30": {}
+  }
+}
+```
+
 ### lldp_hello_time
 
 This configuration slightly differs across SONiC versions and might not always have an effect.
@@ -212,7 +315,7 @@ Result:
 
 Depending on the SONiC version, the resulting field names in may slightly differ.
 
-### looback_address
+### loopback_address
 
 Example:
 

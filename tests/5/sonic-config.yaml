@@ -30,3 +30,19 @@ vlans:
     vrrp:
       group: 1
       ip: 10.1.2.1/24
+
+acls:
+  PXE_IN:
+    description: PXE vlan must not reach the cluster
+    stage: ingress
+    ports:
+      - Vlan1
+    rules:
+      - action: FORWARD
+        dst: 10.1.1.1/32
+      - action: DROP
+        dst: 10.0.0.0/16
+      - action: FORWARD
+      - action: DROP
+        src: 10.2.2.2/32
+        dst: 100.1.1.0/24
